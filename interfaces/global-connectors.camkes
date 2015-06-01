@@ -1,0 +1,46 @@
+/*
+ * Copyright 2014, NICTA
+ *
+ * This software may be distributed and modified according to the terms of
+ * the BSD 2-Clause license. Note that NO WARRANTY is provided.
+ * See "LICENSE_BSD2.txt" for details.
+ *
+ * @TAG(NICTA_BSD)
+ */
+
+/**
+ * @file
+ *
+ * This file defines a list of connectors. A connection is an instance of a
+ * connector, allowing two components to communicate with each other.
+ * Different connectors are used for different purposes.
+ *
+ * In essence, a connector defines how exactly a component connects to another
+ * component. There are two parts, from and to. Most of the connectors are
+ * defined such that the "from" component sends data to the "to" component. So
+ * the "from" component is more like a sender and the "to" component is like a
+ * receiver. Having said that, a totally different semantic can be implemented.
+ * It's really up to the programmer to decide it.
+ *
+ * To use the connector, you define it like this:
+ *
+ *    connection RPC util_fatfs_FS(from util.fs, to fatfs.fs);
+ *
+ * where the util_fatfs_FS connection is an instance of the RPC connector. It
+ * connects util.fs interface to fatfs.fs interface.
+ */
+
+/**
+ * RPCCallDataport connector
+ *
+ * Once the connection has been established, the user could wait for regular
+ * RPC signal sending from the provider. The sending and waiting phase are
+ * blocked. This connector allocates and uses a shared dataport between
+ * sender and receiver.  It requires an attribute to define a badge for it 
+ * to use.  The badge can be any unique number.
+ * 	<from_component>.<from_interface>_attributes = "<badge>";
+ */
+connector seL4RPCCallDataport {
+    from Procedure user_inf;
+    to Procedure provider_inf;
+}
