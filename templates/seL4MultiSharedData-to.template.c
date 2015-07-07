@@ -11,6 +11,8 @@
 #include <camkes/dataport.h>
 #include <utils/util.h>
 
+/*? macros.show_includes(me.to_instance.type.includes) ?*/
+
 /*# Enumerate all the incoming interfaces #*/
 /*- set dataports = [] -*/
 /*- set client_ids = {} -*/

@@ -10,6 +10,8 @@
 
 #include <camkes/dataport.h>
 
+/*? macros.show_includes(me.from_instance.type.includes) ?*/
+
 /*- set client_id = configuration[me.from_instance.name].get("%s_attributes" % me.from_interface.name) -*/
 /*- set client_id = int(client_id.strip('"')) -*/
 /*- set dataport_name = me.from_interface.name + "_" + str(client_id) -*/
