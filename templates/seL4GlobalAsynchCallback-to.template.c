@@ -19,12 +19,13 @@
 /*- include 'global-endpoint.template.c' -*/
 /*- set aep = pop('aep') -*/
 
-void /*? me.to_interface.name ?*/_callback(void);
+void /*? me.to_interface.name ?*/_callback(seL4_Word badge);
 
 void /*? me.to_interface.name ?*/__run(void) {
     while(1) {
-        seL4_Wait(/*? aep ?*/, NULL);
-        /*? me.to_interface.name ?*/_callback();
+        seL4_Word badge;
+        seL4_Wait(/*? aep ?*/, &badge);
+        /*? me.to_interface.name ?*/_callback(badge);
     }
 }
 
