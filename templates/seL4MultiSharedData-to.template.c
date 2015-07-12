@@ -28,7 +28,7 @@
                                         (configuration[c.from_instance.name].get("%s_dataport_type" % c.from_interface.name)) -*/
                 /*- set dataport_section = me.to_interface.name + "_" + str(client_id) -*/
                 /*- set p = Perspective(dataport=dataport_name) -*/
-                #define SHM_ALIGN (1 << 12)
+                #define SHM_ALIGN (1 << 22)
                 struct {
                     char content[ROUND_UP_UNSAFE(sizeof(/*? dataport_type ?*/),
                         PAGE_SIZE_4K)];
