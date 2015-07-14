@@ -34,7 +34,7 @@
 /*- do composition.connections.append(connection) -*/
 
 /*- set p = Perspective(dataport=dataport_name) -*/
-#define SHM_ALIGN (1 << 22)
+#define SHM_ALIGN (1 << 12)
 struct {
     char content[ROUND_UP_UNSAFE(sizeof(/*? dataport_type ?*/),
         PAGE_SIZE_4K)];
