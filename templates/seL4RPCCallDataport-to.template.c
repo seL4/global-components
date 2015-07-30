@@ -22,6 +22,7 @@ static void *get_buffer() {
 
 /*- set base = 'get_buffer()' -*/
 /*- set userspace_ipc = True -*/
+/*- set dataport_type = configuration[me.from_instance.name].get('%s_dataport_type' % me.from_interface.name, 'Buf') -*/
 /*- set trust_partner = configuration[me.to_instance.name].get('trusted') == '"true"' -*/
 /*- include 'rpc-connector-common-to.c' -*/
 
