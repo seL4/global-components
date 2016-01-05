@@ -8,7 +8,6 @@
  *# @TAG(NICTA_BSD)
  #*/
 
-#include <assert.h>
 #include <sel4/sel4.h>
 
 /*? macros.show_includes(me.to_instance.type.includes) ?*/
