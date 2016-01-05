@@ -12,25 +12,14 @@
 /*? assert(isinstance(interface, str)) ?*/
 /*? assert(isinstance(is_reader, bool)) ?*/
 
-/*- set _name = [] -*/
-/*- set _badge = [] -*/
-/*- for s in configuration.settings -*/
-    /*- if s.instance == instance -*/
-        /*- if s.attribute == "%s_global_endpoint" % (interface) -*/
-            /*- set name = s.value.strip('"') -*/
-            /*- do _name.append(name) -*/
-        /*- elif s.attribute == "%s_badge" % (interface) -*/
-            /*- set badge = s.value.strip('"') -*/
-            /*- do _badge.append(badge) -*/
-        /*- endif -*/
-    /*- endif -*/
-/*- endfor -*/
-
-/*- set name = _name.pop() -*/
-/*- if len(_badge) == 0 -*/
-    /*- do _badge.append("0") -*/
+/*- set name = configuration[instance].get('%s_global_endpoint' % interface) -*/
+/*- if name is none -*/
+  /*? raise(Exception('%s.%s_global_endpoint not set' % (instance, interface))) ?*/
+/*- else -*/
+  /*- set name = name.strip('"') -*/
 /*- endif -*/
-/*- set badge = _badge.pop() -*/
+
+/*- set badge = configuration[instance].get('%s_badge' % interface, '"0"').strip('"') -*/
 
 /*- set stash_name = "%s_global_aep" % (name) -*/
 
