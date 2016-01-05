@@ -25,17 +25,13 @@
 
 /*# Check the global stash for our endpoint #*/
 /*- set maybe_aep = _pop(stash_name) -*/
-/*- set _aep_object = [] -*/
 
 /*# Create the endpoint if we need to #*/
 /*- if maybe_aep is none -*/
     /*- set aep_object = alloc_obj(name, seL4_NotificationObject) -*/
-    /*- do _aep_object.append(aep_object) -*/
 /*- else -*/
-    /*- do _aep_object.append(maybe_aep) -*/
+    /*- set aep_object = maybe_aep -*/
 /*- endif -*/
-
-/*- set aep_object = _aep_object.pop() -*/
 
 /*# Put it back into the stash #*/
 /*- do _stash(stash_name, aep_object) -*/
