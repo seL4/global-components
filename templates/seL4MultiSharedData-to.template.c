@@ -15,7 +15,7 @@
 
 /*# Enumerate all the incoming interfaces #*/
 /*- set dataports = [] -*/
-/*- set client_ids = {} -*/
+/*- set client_ids = set() -*/
 /*- for id, c in enumerate(composition.connections) -*/
     /*- if c.to_instance.name == me.to_instance.name and c.to_interface.name == me.to_interface.name -*/
         /*- if c.type.name == me.type.name -*/
@@ -25,7 +25,7 @@
             /*- endif -*/
             /*- set client_id = client_id.strip('"') -*/
             /*- if client_id not in client_ids -*/
-                /*- do client_ids.update({client_id:true}) -*/
+                /*- do client_ids.add(client_id) -*/
                 /*- set dataport_name = '%s_%s' % (c.from_interface.name, client_id) -*/
                 /*- set dataport_type = configuration[c.from_instance.name].get("%s_dataport_type" % c.from_interface.name, 'Buf') -*/
                 /*- set dataport_section = '%s_%s' % (me.to_interface.name, client_id) -*/
