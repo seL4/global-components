@@ -14,6 +14,9 @@
 /*? macros.show_includes(me.from_instance.type.includes) ?*/
 
 /*- set client_id = configuration[me.from_instance.name].get("%s_attributes" % me.from_interface.name) -*/
+/*- if client_id is none or re.match('"\\d+"$', client_id) is none -*/
+  /*? raise(Exception('%s.%s_attributes must be set to a number' % (me.from_instance.name, me.from_interface.name))) ?*/
+/*- endif -*/
 /*- set client_id = int(client_id.strip('"')) -*/
 /*- set dataport_name = me.from_interface.name + "_" + str(client_id) -*/
 /*- set dataport_type = lambda('x: "Buf" if x is None else x')

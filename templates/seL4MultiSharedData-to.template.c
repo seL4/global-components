@@ -20,6 +20,9 @@
     /*- if c.to_instance.name == me.to_instance.name and c.to_interface.name == me.to_interface.name -*/
         /*- if c.type.name == me.type.name -*/
             /*- set client_id = configuration[c.from_instance.name].get("%s_attributes" % c.from_interface.name) -*/
+            /*- if client_id is none or re.match('"\\d+"$', client_id) is none -*/
+              /*? raise(Exception('%s.%s_attributes must be set to a number' % (c.from_instance.name, c.from_interface.name))) ?*/
+            /*- endif -*/
             /*- set client_id = int(client_id.strip('"')) -*/
             /*- if client_id not in client_ids -*/
                 /*- do client_ids.update({client_id:true}) -*/
