@@ -46,7 +46,9 @@ struct {
         __attribute__((section("shared_/*? dataport_section ?*/")))
         __attribute__((externally_visible));
 
-/*- set suffix = lambda('x: "" if x is None else x')(suffix) -*/
+/*- if suffix is not defined -*/
+  /*- set suffix = '' -*/
+/*- endif -*/
 
 volatile /*? dataport_type ?*/ * /*? me.from_interface.name ?*//*? suffix ?*/  =
     (volatile /*? dataport_type ?*/ *) & /*? p['dataport_symbol'] ?*/;
