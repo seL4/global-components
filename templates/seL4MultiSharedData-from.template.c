@@ -17,12 +17,12 @@
 /*- if client_id is none or re.match('"\\d+"$', client_id) is none -*/
   /*? raise(Exception('%s.%s_attributes must be set to a number' % (me.from_instance.name, me.from_interface.name))) ?*/
 /*- endif -*/
-/*- set client_id = int(client_id.strip('"')) -*/
-/*- set dataport_name = me.from_interface.name + "_" + str(client_id) -*/
+/*- set client_id = client_id.strip('"') -*/
+/*- set dataport_name = '%s_%s' % (me.from_interface.name, client_id) -*/
 /*- set dataport_type = lambda('x: "Buf" if x is None else x')
                         (configuration[me.from_instance.name].get("%s_dataport_type" % me.from_interface.name)) -*/
 
-/*- set dataport_section = me.from_interface.name + "_" + str(client_id) -*/
+/*- set dataport_section = '%s_%s' % (me.from_interface.name, client_id) -*/
 
 /*# Create a fake instance in the assembly #*/
 /*- set port = lambda('x: AST.Port(type = x)')(str(dataport_type)) -*/

@@ -23,13 +23,13 @@
             /*- if client_id is none or re.match('"\\d+"$', client_id) is none -*/
               /*? raise(Exception('%s.%s_attributes must be set to a number' % (c.from_instance.name, c.from_interface.name))) ?*/
             /*- endif -*/
-            /*- set client_id = int(client_id.strip('"')) -*/
+            /*- set client_id = client_id.strip('"') -*/
             /*- if client_id not in client_ids -*/
                 /*- do client_ids.update({client_id:true}) -*/
-                /*- set dataport_name = c.from_interface.name + "_" + str(client_id) -*/
+                /*- set dataport_name = '%s_%s' % (c.from_interface.name, client_id) -*/
                 /*- set dataport_type = lambda('x: "Buf" if x is None else x')
                                         (configuration[c.from_instance.name].get("%s_dataport_type" % c.from_interface.name)) -*/
-                /*- set dataport_section = me.to_interface.name + "_" + str(client_id) -*/
+                /*- set dataport_section = '%s_%s' % (me.to_interface.name, client_id) -*/
                 /*- set p = Perspective(dataport=dataport_name) -*/
                 #define SHM_ALIGN (1 << 12)
                 struct {
@@ -42,7 +42,7 @@
 
                 volatile /*? dataport_type ?*/ * /*? me.to_interface.name ?*/_buf_/*? client_id ?*/ =
                     (volatile /*? dataport_type ?*/ *) & /*? p['dataport_symbol'] ?*/;
-                /*- do dataports.append( (me.to_interface.name + "_buf_" + str(client_id), client_id) ) -*/
+                /*- do dataports.append( ('%s_buf_%s' % (me.to_interface.name, client_id), client_id) ) -*/
             /*- else -*/
                 /* skipping /*? client_id ?*/ */
             /*- endif -*/
