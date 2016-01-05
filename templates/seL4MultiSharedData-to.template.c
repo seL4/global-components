@@ -27,8 +27,7 @@
             /*- if client_id not in client_ids -*/
                 /*- do client_ids.update({client_id:true}) -*/
                 /*- set dataport_name = '%s_%s' % (c.from_interface.name, client_id) -*/
-                /*- set dataport_type = lambda('x: "Buf" if x is None else x')
-                                        (configuration[c.from_instance.name].get("%s_dataport_type" % c.from_interface.name)) -*/
+                /*- set dataport_type = configuration[c.from_instance.name].get("%s_dataport_type" % c.from_interface.name, 'Buf') -*/
                 /*- set dataport_section = '%s_%s' % (me.to_interface.name, client_id) -*/
                 /*- set p = Perspective(dataport=dataport_name) -*/
                 #define SHM_ALIGN (1 << 12)

@@ -19,8 +19,7 @@
 /*- endif -*/
 /*- set client_id = client_id.strip('"') -*/
 /*- set dataport_name = '%s_%s' % (me.from_interface.name, client_id) -*/
-/*- set dataport_type = lambda('x: "Buf" if x is None else x')
-                        (configuration[me.from_instance.name].get("%s_dataport_type" % me.from_interface.name)) -*/
+/*- set dataport_type = configuration[me.from_instance.name].get("%s_dataport_type" % me.from_interface.name, 'Buf') -*/
 
 /*- set dataport_section = '%s_%s' % (me.from_interface.name, client_id) -*/
 
