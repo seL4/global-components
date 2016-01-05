@@ -8,6 +8,7 @@
  *# @TAG(NICTA_BSD)
  #*/
 
+#include <assert.h>
 #include <sel4/sel4.h>
 
 /*- include 'seL4MultiSharedData-to.template.c' -*/

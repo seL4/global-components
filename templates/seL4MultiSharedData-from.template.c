@@ -9,6 +9,7 @@
  #*/
 
 #include <camkes/dataport.h>
+#include <utils/util.h>
 
 /*? macros.show_includes(me.from_instance.type.includes) ?*/
 
