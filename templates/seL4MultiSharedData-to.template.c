@@ -73,7 +73,7 @@ unsigned int /*? me.to_interface.name ?*/_enumerate_badge(unsigned int i) {
         return -1;
     /*- else -*/
         switch (i) {
-            /*- for symbol, id in dataports -*/
+            /*- for _, id in dataports -*/
                 case /*? loop.index0 ?*/:
                     return /*? id ?*/;
             /*- endfor -*/
