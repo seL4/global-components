@@ -13,10 +13,10 @@
 
 /*- include 'seL4MultiSharedData-to.template.c' -*/
 
-seL4_Word /*? me.to_interface.name ?*/_get_badge(void);
+seL4_Word /*? me.to_interface.name ?*/_get_sender_id(void);
 
 static void *get_buffer() {
-    void *base = /*? me.to_interface.name ?*/_buf(/*? me.to_interface.name ?*/_get_badge());
+    void *base = /*? me.to_interface.name ?*/_buf(/*? me.to_interface.name ?*/_get_sender_id());
     assert(base);
     return base;
 }
