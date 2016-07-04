@@ -17,7 +17,7 @@
 /*- set interface = me.from_interface.name -*/
 /*- include 'global-endpoint.template.c' -*/
 
-/*- set aep = pop('aep') -*/
+/*- set notification = pop('notification') -*/
 
 int /*? me.from_interface.name ?*/__run(void) {
     /* Nothing required. */
@@ -25,5 +25,5 @@ int /*? me.from_interface.name ?*/__run(void) {
 }
 
 void /*? me.from_interface.name ?*/_emit_underlying(void) {
-    seL4_Signal(/*? aep ?*/);
+    seL4_Signal(/*? notification ?*/);
 }

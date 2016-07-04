@@ -16,18 +16,18 @@
 /*- set instance = me.to_instance.name -*/
 /*- set interface = me.to_interface.name -*/
 /*- include 'global-endpoint.template.c' -*/
-/*- set aep = pop('aep') -*/
+/*- set notification = pop('notification') -*/
 
 void /*? me.to_interface.name ?*/_callback(seL4_Word badge);
 
 void /*? me.to_interface.name ?*/__run(void) {
     while(1) {
         seL4_Word badge;
-        seL4_Wait(/*? aep ?*/, &badge);
+        seL4_Wait(/*? notification ?*/, &badge);
         /*? me.to_interface.name ?*/_callback(badge);
     }
 }
 
 seL4_CPtr /*? me.to_interface.name ?*/_aep(void) {
-    return /*? aep ?*/;
+    return /*? notification ?*/;
 }

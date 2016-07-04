@@ -21,23 +21,23 @@
 
 /*- set badge = configuration[instance].get('%s_badge' % interface, '"0"').strip('"') -*/
 
-/*- set stash_name = "%s_global_aep" % (name) -*/
+/*- set stash_name = "%s_global_notification" % (name) -*/
 
 /*# Check the global stash for our endpoint #*/
-/*- set maybe_aep = _pop(stash_name) -*/
+/*- set maybe_notification = _pop(stash_name) -*/
 
 /*# Create the endpoint if we need to #*/
-/*- if maybe_aep is none -*/
-    /*- set aep_object = alloc_obj(name, seL4_NotificationObject) -*/
+/*- if maybe_notification is none -*/
+    /*- set notification_object = alloc_obj(name, seL4_NotificationObject) -*/
 /*- else -*/
-    /*- set aep_object = maybe_aep -*/
+    /*- set notification_object = maybe_notification -*/
 /*- endif -*/
 
 /*# Put it back into the stash #*/
-/*- do _stash(stash_name, aep_object) -*/
+/*- do _stash(stash_name, notification_object) -*/
 
 /*# Create the badged endpoint #*/
-/*- set aep = alloc_cap('%s_%s_aep_object_cap' % (name, badge), aep_object, read=is_reader, write=True) -*/
-/*- do cap_space.cnode[aep].set_badge(int(badge, 10)) -*/
+/*- set notification = alloc_cap('%s_%s_notification_object_cap' % (name, badge), notification_object, read=is_reader, write=True) -*/
+/*- do cap_space.cnode[notification].set_badge(int(badge, 10)) -*/
 
-/*- do stash('aep', aep) -*/
+/*- do stash('notification', notification) -*/
