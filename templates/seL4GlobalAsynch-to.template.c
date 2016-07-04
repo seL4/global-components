@@ -18,6 +18,6 @@
 /*- include 'global-endpoint.template.c' -*/
 /*- set notification = pop('notification') -*/
 
-seL4_CPtr /*? me.to_interface.name ?*/_aep(void) {
+seL4_CPtr /*? me.to_interface.name ?*/_notification(void) {
     return /*? notification ?*/;
 }

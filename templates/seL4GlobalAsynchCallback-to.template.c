@@ -28,6 +28,6 @@ void /*? me.to_interface.name ?*/__run(void) {
     }
 }
 
-seL4_CPtr /*? me.to_interface.name ?*/_aep(void) {
+seL4_CPtr /*? me.to_interface.name ?*/_notification(void) {
     return /*? notification ?*/;
 }
