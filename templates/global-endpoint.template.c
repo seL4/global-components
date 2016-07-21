@@ -8,8 +8,8 @@
  *# @TAG(NICTA_BSD)
  #*/
 
-/*? assert(isinstance(instance, str)) ?*/
-/*? assert(isinstance(interface, str)) ?*/
+/*? assert(isinstance(instance, six.string_types)) ?*/
+/*? assert(isinstance(interface, six.string_types)) ?*/
 /*? assert(isinstance(is_reader, bool)) ?*/
 
 /*- set name = configuration[instance].get('%s_global_endpoint' % interface) -*/
