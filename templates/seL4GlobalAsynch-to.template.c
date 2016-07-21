@@ -10,14 +10,14 @@
 
 #include <sel4/sel4.h>
 
-/*? macros.show_includes(me.to_instance.type.includes) ?*/
+/*? macros.show_includes(me.instance.type.includes) ?*/
 
 /*- set is_reader = True -*/
-/*- set instance = me.to_instance.name -*/
-/*- set interface = me.to_interface.name -*/
+/*- set instance = me.instance.name -*/
+/*- set interface = me.interface.name -*/
 /*- include 'global-endpoint.template.c' -*/
 /*- set notification = pop('notification') -*/
 
-seL4_CPtr /*? me.to_interface.name ?*/_notification(void) {
+seL4_CPtr /*? me.interface.name ?*/_notification(void) {
     return /*? notification ?*/;
 }

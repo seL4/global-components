@@ -10,20 +10,20 @@
 
 #include <sel4/sel4.h>
 
-/*? macros.show_includes(me.from_instance.type.includes) ?*/
+/*? macros.show_includes(me.instance.type.includes) ?*/
 
 /*- set is_reader = False -*/
-/*- set instance = me.from_instance.name -*/
-/*- set interface = me.from_interface.name -*/
+/*- set instance = me.instance.name -*/
+/*- set interface = me.interface.name -*/
 /*- include 'global-endpoint.template.c' -*/
 
 /*- set notification = pop('notification') -*/
 
-int /*? me.from_interface.name ?*/__run(void) {
+int /*? me.interface.name ?*/__run(void) {
     /* Nothing required. */
     return 0;
 }
 
-void /*? me.from_interface.name ?*/_emit_underlying(void) {
+void /*? me.interface.name ?*/_emit_underlying(void) {
     seL4_Signal(/*? notification ?*/);
 }
