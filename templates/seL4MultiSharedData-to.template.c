@@ -27,7 +27,7 @@
     /*- if client_id not in client_ids -*/
         /*- do client_ids.add(client_id) -*/
 
-        /*- set shmem_size = configuration[c.instance.name].get("%s_shmem_size" % c.interface.name) -*/
+        /*- set shmem_size = configuration[c.instance.name].get("%s_shmem_size" % c.interface.name, 4096) -*/
         /*- set shmem_section = 'to_%s_%s' % (me.interface.name, client_id) -*/
         /*- set shmem_symbol = 'to_%s_%s_data' % (me.interface.name, client_id) -*/
         /*- set shmem_name = "%s_buf_%s" % (me.interface.name, client_id) -*/
