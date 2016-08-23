@@ -20,14 +20,14 @@
 /*- endif -*/
 /*- set client_id = client_id.strip('"') -*/
 
-/*- set shmem_size = configuration[me.instance.name].get("%s_shmem_size" % me.interface.name) -*/
-/*- set shmem_section = 'from_%s' % me.interface.name -*/
-/*- set shmem_symbol = 'from_%s_data' % me.interface.name -*/
-/*- set shmem_name = '%s%s' % (me.interface.name, suffix) -*/
-
 /*- if suffix is not defined -*/
   /*- set suffix = '' -*/
 /*- endif -*/
+
+/*- set shmem_size = configuration[me.instance.name].get("%s_shmem_size" % me.interface.name, 4096) -*/
+/*- set shmem_section = 'from_%s' % me.interface.name -*/
+/*- set shmem_symbol = 'from_%s_data' % me.interface.name -*/
+/*- set shmem_name = '%s%s' % (me.interface.name, suffix) -*/
 
 #define SHM_ALIGN (1 << 12)
 struct {
