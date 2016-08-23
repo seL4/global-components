@@ -85,3 +85,12 @@ unsigned int /*? me.interface.name ?*/_enumerate_badge(unsigned int i) {
         }
     /*- endif -*/
 }
+
+
+int /*? me.interface.name ?*/_wrap_ptr(dataport_ptr_t *p, void *ptr) {
+    return -1;
+}
+
+void * /*? me.interface.name ?*/_unwrap_ptr(dataport_ptr_t *p) {
+    return NULL;
+}
