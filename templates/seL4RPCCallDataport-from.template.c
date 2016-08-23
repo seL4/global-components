@@ -12,11 +12,11 @@
 /*- include 'seL4MultiSharedData-from.template.c' -*/
 
 static void *get_buffer() {
-    return (void*)/*? me.from_interface.name + suffix ?*/;
+    return (void*)/*? me.interface.name + suffix ?*/;
 }
 
 /*- set base = 'get_buffer()' -*/
 /*- set userspace_ipc = True -*/
-/*- set dataport_type = configuration[me.from_instance.name].get('%s_dataport_type' % me.from_interface.name, 'Buf') -*/
-/*- set trust_partner = configuration[me.from_instance.name].get('trusted') == '"true"' -*/
+/*- set dataport_type = configuration[me.instance.name].get('%s_dataport_type' % me.interface.name, 'Buf') -*/
+/*- set trust_partner = configuration[me.instance.name].get('trusted') == '"true"' -*/
 /*- include 'rpc-connector-common-from.c' -*/
