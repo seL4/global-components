@@ -71,7 +71,7 @@ unsigned int /*? me.interface.name ?*/_num_badges(void) {
     return /*? len(shmems) ?*/;
 }
 
-unsigned int /*? me.interface.name ?*/_enumerate_badge(unsigned int i) {
+seL4_Word /*? me.interface.name ?*/_enumerate_badge(unsigned int i) {
     /*- if len(shmems) == 0 -*/
        return -1;
     /*- else -*/
