@@ -43,8 +43,8 @@
  * 	<from_component>.<from_interface>_attributes = "<badge>";
  */
 connector seL4RPCCallDataport {
-    from Procedure user_inf template "seL4RPCCallDataport-from.template.c";
-    to Procedure provider_inf template "seL4RPCCallDataport-to.template.c";
+    from Procedures template "seL4RPCCallDataport-from.template.c";
+    to Procedure template "seL4RPCCallDataport-to.template.c";
 }
 
 /**
