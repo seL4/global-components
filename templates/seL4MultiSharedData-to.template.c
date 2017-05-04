@@ -53,7 +53,7 @@
 /*- endfor -*/
 
 
-void * /*? me.interface.name ?*/_buf(unsigned int client_id) {
+void * /*? me.interface.name ?*/_buf(seL4_Word client_id) {
     /*- if len(shmems) == 0 -*/
         return NULL;
     /*- else -*/
