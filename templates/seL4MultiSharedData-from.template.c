@@ -41,6 +41,10 @@ struct {
 
 volatile void * /*? shmem_name ?*/ = (volatile void *) & /*? shmem_symbol ?*/;
 
+size_t /*? me.interface.name ?*/_get_size(void) {
+    return ROUND_UP_UNSAFE(/*? shmem_size ?*/, PAGE_SIZE_4K);
+}
+
 int /*? me.interface.name ?*/_wrap_ptr(dataport_ptr_t *p, void *ptr) {
     return -1;
 }

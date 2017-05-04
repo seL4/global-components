@@ -45,7 +45,7 @@
 
         volatile void * /*? shmem_name ?*/ = (volatile void *) & /*? shmem_symbol ?*/;
 
-        /*- do shmems.append((shmem_name, client_id)) -*/
+        /*- do shmems.append((shmem_name, client_id, shmem_size)) -*/
     /*- else -*/
         /* skipping /*? client_id ?*/ */
     /*- endif -*/
@@ -58,12 +58,27 @@ void * /*? me.interface.name ?*/_buf(seL4_Word client_id) {
         return NULL;
     /*- else -*/
         switch (client_id) {
-            /*- for symbol, id in shmems -*/
+            /*- for symbol, id, _ in shmems -*/
             case /*? id ?*/:
                 return (void *) /*? symbol ?*/;
             /*- endfor -*/
         default:
             return NULL;
+        }
+    /*- endif -*/
+}
+
+size_t /*? me.interface.name ?*/_buf_size(seL4_Word client_id) {
+    /*- if len(shmems) == 0 -*/
+        return 0;
+    /*- else -*/
+        switch (client_id) {
+            /*- for _, id, size in shmems -*/
+            case /*? id ?*/:
+                return ROUND_UP_UNSAFE(/*? size ?*/, PAGE_SIZE_4K);
+            /*- endfor -*/
+        default:
+            return 0;
         }
     /*- endif -*/
 }
@@ -77,7 +92,7 @@ seL4_Word /*? me.interface.name ?*/_enumerate_badge(unsigned int i) {
        return -1;
     /*- else -*/
         switch (i) {
-            /*- for _, id in shmems -*/
+            /*- for _, id, _ in shmems -*/
                 case /*? loop.index0 ?*/:
                     return /*? id ?*/;
             /*- endfor -*/
