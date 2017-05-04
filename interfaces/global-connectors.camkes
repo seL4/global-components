@@ -48,6 +48,34 @@ connector seL4RPCCallDataport {
 }
 
 /**
+ * RPCDataport connect
+ *
+ * This connect provides a regular RPCCall connector, except that
+ * it allocates an additional shared dataport between each sender
+ * and receiver. The intention being that each client can place
+ * data directory into a buffer, and then use RPC as the control
+ * interface.
+ *
+ * It requires an attribute to define a badge for it to use and to couple
+ * the RPC connector and the associated dataport. The badge can be any
+ * unique number.
+ * 	<from_component>.<from_interface>_attributes = "<badge>";
+ *
+ * The 'from' side of the connector can access its dataport by
+ * using a symbol named '<from_interface>_buf', which is just an
+ * alias for the actual shared memory allocation.
+ *
+ * The 'to' side of the connection can get a specific dataport
+ * with <from_interface>_buf(<badge>) and can enumerate badges
+ * with <from_interface>_enumerate_badge(<badge_number>) and
+ * <from_interface>_num_badges()
+ */
+connector seL4RPCDataport {
+    from Procedures template "seL4RPCDataport-from.template.c";
+    to Procedure template "seL4RPCDataport-to.template.c";
+}
+
+/**
  * seL4GlobalAsynch
  *
  * This is a 1-to-n global endpoint Event connector that makes the underlying
