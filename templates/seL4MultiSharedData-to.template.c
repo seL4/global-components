@@ -42,6 +42,7 @@
                 __attribute__((externally_visible));
 
         /*- do register_shared_variable('%s_%s_data' % (me.parent.name, client_id), shmem_symbol) -*/
+        /*- do keep_symbol(shmem_symbol) -*/
 
         volatile void * /*? shmem_name ?*/ = (volatile void *) & /*? shmem_symbol ?*/;
 
