@@ -17,6 +17,7 @@
 #include <string.h>
 
 #include <sel4/sel4.h>
+#include <utils/attribute.h>
 #include <camkes.h>
 
 /* configuration */
@@ -107,11 +108,11 @@
 #define CLIENT_OUTPUT_BUFFER_SIZE 4096
 
 /* TODO: have the MultiSharedData template generate a header with these */
-void getchar_emit(unsigned int id);
-seL4_Word getchar_enumerate_badge(unsigned int id);
-unsigned int getchar_num_badges();
-void *getchar_buf(unsigned int id);
-int getchar_largest_badge(void);
+void getchar_emit(unsigned int id) WEAK;
+seL4_Word getchar_enumerate_badge(unsigned int id) WEAK;
+unsigned int getchar_num_badges() WEAK;
+void *getchar_buf(unsigned int id) WEAK;
+int getchar_largest_badge(void) WEAK;
 
 typedef struct getchar_buffer {
     uint32_t head;
@@ -466,6 +467,11 @@ static void give_client_char(uint8_t c) {
 }
 
 static void handle_char(uint8_t c) {
+    /* If there are no getchar clients, then we return immediately */
+    if (!getchar_num_badges) {
+        return;
+    }
+
     /* some manually written state machine magic to detect switching of input direction */
     switch (statemachine) {
     case 0:
@@ -701,14 +707,16 @@ void pre_init(void) {
     clear_iir(false);
     // all done
     /* query what getchar clients exist */
-    num_getchar_clients = getchar_num_badges();
-    getchar_clients = calloc(num_getchar_clients, sizeof(getchar_client_t));
-    for (int i = 0; i < num_getchar_clients; i++) {
-        unsigned int badge = getchar_enumerate_badge(i);
-        assert(badge <= num_getchar_clients);
-        getchar_clients[badge].client_id = badge;
-        getchar_clients[badge].buf = getchar_buf(badge);
-        getchar_clients[badge].last_head = -1;
+    if (getchar_num_badges) {
+        num_getchar_clients = getchar_num_badges();
+        getchar_clients = calloc(num_getchar_clients, sizeof(getchar_client_t));
+        for (int i = 0; i < num_getchar_clients; i++) {
+            unsigned int badge = getchar_enumerate_badge(i);
+            assert(badge <= num_getchar_clients);
+            getchar_clients[badge].client_id = badge;
+            getchar_clients[badge].buf = getchar_buf(badge);
+            getchar_clients[badge].last_head = -1;
+        }
     }
     set_putchar(serial_putchar);
     error = serial_irq_acknowledge();
@@ -717,8 +725,7 @@ void pre_init(void) {
     error = serial_unlock();
 }
 
-seL4_Word processed_putchar_get_sender_id(void);
-
+seL4_Word processed_putchar_get_sender_id(void) WEAK;
 void processed_putchar_putchar(int c) {
     seL4_Word n = processed_putchar_get_sender_id();
     internal_putchar((int)n, c);
@@ -727,8 +734,7 @@ void processed_putchar_putchar(int c) {
     }
 }
 
-seL4_Word raw_putchar_get_sender_id(void);
-
+seL4_Word raw_putchar_get_sender_id(void) WEAK;
 void raw_putchar_putchar(int c) {
     seL4_Word n = raw_putchar_get_sender_id();
     internal_putchar((int)n + MAX_CLIENTS, c);
