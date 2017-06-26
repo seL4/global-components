@@ -41,7 +41,7 @@ component TimeServer {
     attribute int timers_per_client;
     attribute int heap_size = 8192;
 
-    /* Connect the hardware pit to the timer driver */ \
+    /* Connect the hardware pit to the timer driver */
     composition {
         component PIT pit;
         connection seL4HardwareIOPort pit_command(from pit_command, to pit.command);
