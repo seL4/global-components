@@ -611,7 +611,7 @@ static void reset_mcr() {
     write_mcr(MCR_DTR | MCR_RTS | MCR_AO1 | MCR_AO2);
 }
 
-static void clear_iir() {
+static void clear_iir(bool initialised) {
     uint8_t iir;
     while (! ((iir = read_iir()) & IIR_PENDING)) {
         switch(iir & IIR_REASON) {
@@ -622,7 +622,7 @@ static void clear_iir() {
             break;
         case IIR_RDA:
         case IIR_TIME:
-            while (read_lsr() & LSR_DATA_READY) {
+            while (initialised && (read_lsr() & LSR_DATA_READY)) {
                 handle_char(read_rbr());
             }
             break;
@@ -640,7 +640,7 @@ static void enable_interrupt() {
 void serial_irq_handle() {
     int UNUSED error;
     error = serial_lock();
-    clear_iir();
+    clear_iir(true);
     error = serial_irq_acknowledge();
     error = serial_unlock();
 }
@@ -693,12 +693,12 @@ void pre_init(void) {
     disable_fifo();
     reset_lcr();
     reset_mcr();
-    clear_iir();
+    clear_iir(false);
     set_baud_rate(BAUD_RATE);
     reset_state();
     enable_fifo();
     enable_interrupt();
-    clear_iir();
+    clear_iir(false);
     // all done
     /* query what getchar clients exist */
     num_getchar_clients = getchar_num_badges();
