@@ -30,7 +30,7 @@ seL4_Word the_timer_get_sender_id();
 /* Frequency of timer interrupts that we use for processing timeouts */
 #define TIMER_FREQUENCY 500
 
-static pstimer_t *timer = NULL;
+static pit_t timer;
 
 #define TIMER_TYPE_OFF 0
 #define TIMER_TYPE_PERIODIC 1
@@ -125,7 +125,6 @@ void irq_handle() {
     ZF_LOGF_IF(error, "Failed to lock time server");
 
     signal_clients(current_time_ns());
-    timer_handle_irq(timer, 0);
     error = irq_acknowledge();
     ZF_LOGF_IF(error, "irq acknowledge failed");
     error = time_server_unlock();
@@ -323,18 +322,18 @@ void post_init() {
         }
     }
     ps_io_port_ops_t ops = (ps_io_port_ops_t){.io_port_in_fn = pit_port_in, .io_port_out_fn = pit_port_out};
-    timer = pit_get_timer(&ops);
-    ZF_LOGF_IF(timer == NULL, "Failed to get timer");
-
-    tsc_frequency = tsc_calculate_frequency(timer);
-    ZF_LOGF_IF(tsc_frequency == 0, "Failed to calculate tsc freq");
+    error = pit_init(&timer, ops);
+    ZF_LOGF_IF(error, "Failed to get timer");
 
     error = irq_acknowledge();
     ZF_LOGF_IF(error, "Failed to ack irq");
 
+    /* now use the pit to calculate the tsc freq */
+    tsc_frequency = tsc_calculate_frequency_pit(&timer);
+    ZF_LOGF_IF(tsc_frequency == 0, "Failed to calculate tsc freq");
+
     /* start timer */
-    timer_start(timer);
-    timer_periodic(timer, NS_IN_S / TIMER_FREQUENCY);
+    pit_set_timeout(&timer, NS_IN_S / TIMER_FREQUENCY, true);
     error = time_server_unlock();
     ZF_LOGF_IF(error, "Failed to unlock timer server");
 
