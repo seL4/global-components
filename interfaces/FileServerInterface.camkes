@@ -7,9 +7,8 @@
  * the BSD 2-Clause license. Note that NO WARRANTY is provided.
  * See "LICENSE_BSD2.txt" for details.
  *
- * @TAG(D61_BSD)
+ * @TAG(DATA61_BSD)
  */
-
 procedure FileServerInterface {
     /* open a file returning a file descriptor. flags and return codes are the same as
      * posix 'open' syscall. Actual flags supported dependent upon file server implementation */
