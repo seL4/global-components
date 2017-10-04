@@ -18,6 +18,7 @@
 
 #include <sel4/sel4.h>
 #include <utils/attribute.h>
+#include <utils/ansi.h>
 #include <camkes.h>
 
 /* configuration */
@@ -64,46 +65,6 @@
 #define IIR_PENDING BIT(0)
 
 #define ESCAPE_CHAR '@'
-/* No background */
-
-// Standard colours
-#define COLOUR_R "\033[31m"
-#define COLOUR_G "\033[32m"
-#define COLOUR_Y "\033[33m"
-#define COLOUR_B "\033[34m"
-#define COLOUR_M "\033[35m"
-#define COLOUR_C "\033[36m"
-
-// Bright colours
-#define COLOUR_BR "\033[31;1m"
-#define COLOUR_BG "\033[32;1m"
-#define COLOUR_BY "\033[33;1m"
-#define COLOUR_BB "\033[34;1m"
-#define COLOUR_BM "\033[35;1m"
-#define COLOUR_BC "\033[36;1m"
-
-
-/* Grey background */
-
-// Standard colours
-#define COLOUR_BG_R "\033[31;40m"
-#define COLOUR_BG_G "\033[32;40m"
-#define COLOUR_BG_Y "\033[33;40m"
-#define COLOUR_BG_B "\033[34;40m"
-#define COLOUR_BG_M "\033[35;40m"
-#define COLOUR_BG_C "\033[36;40m"
-
-// Bright colours
-#define COLOUR_BG_BR "\033[31;1;40m"
-#define COLOUR_BG_BG "\033[32;1;40m"
-#define COLOUR_BG_BY "\033[33;1;40m"
-#define COLOUR_BG_BB "\033[34;1;40m"
-#define COLOUR_BG_BM "\033[35;1;40m"
-#define COLOUR_BG_BC "\033[36;1;40m"
-
-
-#define COLOUR_RESET "\033[0m"
-
 #define MAX_CLIENTS 12
 #define CLIENT_OUTPUT_BUFFER_SIZE 4096
 
@@ -147,32 +108,32 @@ static getchar_client_t *getchar_clients = NULL;
 /* We predefine output colours for clients */
 const char *all_output_colours[MAX_CLIENTS * 2] = {
     /* Processed streams */
-    COLOUR_R,
-    COLOUR_G,
-    COLOUR_B,
-    COLOUR_M,
-    COLOUR_Y,
-    COLOUR_C,
-    COLOUR_BR,
-    COLOUR_BG,
-    COLOUR_BB,
-    COLOUR_BM,
-    COLOUR_BY,
-    COLOUR_BC,
+    ANSI_COLOR(RED),
+    ANSI_COLOR(GREEN),
+    ANSI_COLOR(BLUE),
+    ANSI_COLOR(MAGENTA),
+    ANSI_COLOR(YELLOW),
+    ANSI_COLOR(CYAN),
+    ANSI_COLOR(RED, BOLD)
+    ANSI_COLOR(GREEN, BOLD),
+    ANSI_COLOR(BLUE, BOLD),
+    ANSI_COLOR(MAGENTA, BOLD),
+    ANSI_COLOR(YELLOW, BOLD),
+    ANSI_COLOR(CYAN, BOLD),
 
     /* Raw streams */
-    COLOUR_BG_R,
-    COLOUR_BG_G,
-    COLOUR_BG_B,
-    COLOUR_BG_M,
-    COLOUR_BG_Y,
-    COLOUR_BG_C,
-    COLOUR_BG_BR,
-    COLOUR_BG_BG,
-    COLOUR_BG_BB,
-    COLOUR_BG_BM,
-    COLOUR_BG_BY,
-    COLOUR_BG_BC,
+    ANSI_COLOR2(RED, WHITE),
+    ANSI_COLOR2(GREEN, WHITE),
+    ANSI_COLOR2(BLUE, WHITE),
+    ANSI_COLOR2(MAGENTA, WHITE),
+    ANSI_COLOR2(YELLOW, WHITE),
+    ANSI_COLOR2(CYAN, WHITE),
+    ANSI_COLOR2(RED, WHITE, BOLD)
+    ANSI_COLOR2(GREEN, WHITE, BOLD),
+    ANSI_COLOR2(BLUE, WHITE, BOLD),
+    ANSI_COLOR2(MAGENTA, WHITE, BOLD),
+    ANSI_COLOR2(YELLOW, WHITE, BOLD),
+    ANSI_COLOR2(CYAN, WHITE, BOLD),
 };
 
 static inline void write_ier(uint8_t val) {
@@ -239,7 +200,7 @@ static void flush_buffer(int b) {
         return;
     }
     if (b != last_out) {
-        printf("%s%s", COLOUR_RESET, col);
+        printf("%s%s", COLOR_RESET, col);
         last_out = b;
     }
     for (i = 0; i < output_buffers_used[b]; i++) {
@@ -279,7 +240,7 @@ static bool flush_buffer_line(int b) {
         return 0;
     }
     if (b != last_out) {
-        printf("%s%s", COLOUR_RESET, all_output_colours[b]);
+        printf("%s%s", COLOR_RESET, all_output_colours[b]);
         last_out = b;
     }
     int i;
@@ -348,7 +309,7 @@ static int try_coalesce_output() {
     }
     if (n_used > 1 && length > 0) {
         if (last_out != -1) {
-            printf("%s", COLOUR_RESET);
+            printf("%s", COLOR_RESET);
         }
         for (int i = 0; i < length; i++) {
             printf("%c", output_buffers[used[0]][i]);
@@ -416,7 +377,7 @@ static void internal_putchar(int b, int c) {
          * it's probably going to overflow again, so let's avoid
          * that. */
         if (last_out != b) {
-            printf("%s%s", COLOUR_RESET, all_output_colours[b]);
+            printf("%s%s", COLOR_RESET, all_output_colours[b]);
             last_out = b;
         }
     } else if ((index >= 1 && is_newline(buffer + index - 1) && coalesce_status == -1)
@@ -499,18 +460,18 @@ static void handle_char(uint8_t c) {
             active_multiclients = 0;
             active_client = -1;
             last_out = -1;
-            printf(COLOUR_RESET "\r\nMulti-client input to clients: ");
+            printf(COLOR_RESET "\r\nMulti-client input to clients: ");
             fflush(stdout);
             break;
         case 'd':
             debug = (debug + 1) % 3;
-            printf(COLOUR_RESET "\r\nDebug: %i\r\n", debug);
+            printf(COLOR_RESET "\r\nDebug: %i\r\n", debug);
             last_out = -1;
             statemachine = 1;
             break;
         case '?':
             last_out = -1;
-            printf(COLOUR_RESET "\r\n --- SerialServer help ---"
+            printf(COLOR_RESET "\r\n --- SerialServer help ---"
                    "\r\n Escape char: %c"
                    "\r\n 0 - %-2d switches input to that client"
                    "\r\n ?      shows this help"
@@ -526,7 +487,7 @@ static void handle_char(uint8_t c) {
             if (c >= '0' && c < '0' + (getchar_largest_badge()+1)) {
                 last_out = -1;
                 int client = c - '0';
-                printf(COLOUR_RESET "\r\nSwitching input to %d\r\n",client);
+                printf(COLOR_RESET "\r\nSwitching input to %d\r\n",client);
                 active_client = client;
                 statemachine = 1;
             } else {
@@ -538,13 +499,13 @@ static void handle_char(uint8_t c) {
         break;
     case 3:
         if (c >= '0' && c < '0' + (getchar_largest_badge()+1)) {
-            printf(COLOUR_RESET "%s%d", (active_multiclients != 0 ? "," : "") ,(c - '0'));
+            printf(COLOR_RESET "%s%d", (active_multiclients != 0 ? "," : "") ,(c - '0'));
             active_multiclients |= BIT(c - '0');
             last_out = -1;
             fflush(stdout);
         } else if (c == 'm' || c == 'M' || c == '\r' || c == '\n') {
             last_out = -1;
-            printf(COLOUR_RESET "\r\nSwitching input to multi-client. Output will be best-effort coalesced (colored white).\r\n");
+            printf(COLOR_RESET "\r\nSwitching input to multi-client. Output will be best-effort coalesced (colored white).\r\n");
             statemachine = 1;
         }
         break;
