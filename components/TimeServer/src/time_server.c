@@ -81,11 +81,6 @@ void irq_handle() {
     ZF_LOGF_IF(error, "Failed to unlock time server");
 }
 
-static int tick(uintptr_t token) {
-    irq_handle();
-    return 0;
-}
-
 static int _oneshot_relative(int cid, int tid, uint64_t ns) {
     if (tid >= timers_per_client || tid < 0) {
         ZF_LOGE("invalid tid, 0 >= %d >= %d\n", tid, timers_per_client);
@@ -269,10 +264,6 @@ void post_init() {
         error = tm_alloc_id_at(&time_manager, i);
         ZF_LOGF_IF(error, "Failed to alloc id at %u\n", i);
     }
-
-    /* set a tick so that we can always program the PIT with a small enough value */
-    error = tm_register_periodic_cb(&time_manager, 50 * NS_IN_MS, 0, 0, tick, 0);
-    ZF_LOGF_IF(error, "Failed to register tick");
 
     error = time_server_unlock();
     ZF_LOGF_IF(error, "Failed to unlock timer server");
