@@ -71,11 +71,11 @@ void irq_handle() {
     int error = time_server_lock();
     ZF_LOGF_IF(error, "Failed to lock time server");
 
-    error = tm_update(&time_manager);
-    ZF_LOGF_IF(error, "Failed to update time manager");
-
     error = irq_acknowledge();
     ZF_LOGF_IF(error, "irq acknowledge failed");
+
+    error = tm_update(&time_manager);
+    ZF_LOGF_IF(error, "Failed to update time manager");
 
     error = time_server_unlock();
     ZF_LOGF_IF(error, "Failed to unlock time server");
