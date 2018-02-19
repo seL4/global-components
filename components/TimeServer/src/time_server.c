@@ -26,6 +26,8 @@
 #include <platsupport/io.h>
 #include <utils/util.h>
 #include <sel4utils/sel4_zf_logif.h>
+#include <simple/simple.h>
+#include <sel4utils/arch/tsc.h>
 
 /* ltimer for accessing timer devices */
 static ltimer_t ltimer;
@@ -238,6 +240,11 @@ static int pit_port_out(void *cookie, uint32_t port, int io_size, uint32_t val) 
     }
 }
 
+// We declare this with a weak attribute here as we would like this component to work
+// regardless of whether the assembly declared this to have a simple template or not.
+// Having this as weak allows us to test for this at run time / link time
+void camkes_make_simple(simple_t *simple) __attribute__((weak));
+
 void post_init() {
     int error = time_server_lock();
     ZF_LOGF_IF(error, "Failed to lock timer server");
@@ -267,7 +274,19 @@ void post_init() {
         ZF_LOGF_IF(error, "Failed to alloc id at %u\n", i);
     }
 
-    tsc_frequency = ltimer_pit_get_tsc_freq(&ltimer);
+    // Attempt to detect the presence of a simple interface and try and get the
+    // tsc frequency from it
+    tsc_frequency = 0;
+    if (camkes_make_simple) {
+        simple_t simple;
+        camkes_make_simple(&simple);
+        tsc_frequency = x86_get_tsc_freq_from_simple(&simple);
+    }
+
+    if (tsc_frequency == 0) {
+        // failed to detect from bootinfo for whatever reason, rely on the pit calibration
+        tsc_frequency = ltimer_pit_get_tsc_freq(&ltimer);
+    }
 
     error = time_server_unlock();
     ZF_LOGF_IF(error, "Failed to unlock timer server");
