@@ -10,10 +10,24 @@
      @TAG(DATA61_BSD)
 -->
 Global Components
------------------
+=================
 
 This repository contains a collection of reusable CAmkES components and 
-interfaces. To include components and interfaces from this repository
+interfaces.
+
+cmake
+-----
+
+To include components and interfaces from this repository ensure this directory is
+added using `add_subdirectory` in your cmake scripts. In a normal project where
+this repository is checked out into the projects/ directory and all subdirectories
+of projects/ automatically have `add_subdirectory` performed on them nothing additional
+needs to be done.
+
+make
+----
+
+To include components and interfaces from this repository
 in an application, set the option "Search path for components and interfaces" 
 in the "CAmkES Options" section of menuconfig to the directory where this
 repository is cloned.
