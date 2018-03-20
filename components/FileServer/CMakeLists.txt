@@ -12,12 +12,8 @@
 
 cmake_minimum_required(VERSION 3.8.2)
 
-CAmkESAddImportPath(components)
-CAmkESAddImportPath(interfaces)
-CAmkESAddTemplatesPath(templates)
+project(FileServer C)
 
-add_subdirectory(components/PCIConfigIO)
-add_subdirectory(components/RTC)
-add_subdirectory(components/SerialServer)
-add_subdirectory(components/TimeServer)
-add_subdirectory(components/FileServer)
+# The FileServer expects a cpio_archive to be linked into it. This needs to be provided
+# on a per instances basis by the system through ExtendCAmkESComponentInstance
+DeclareCAmkESComponent(FileServer SOURCES src/server.c)
