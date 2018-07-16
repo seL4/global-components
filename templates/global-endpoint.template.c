@@ -20,8 +20,12 @@
   /*- set name = name.strip('"') -*/
 /*- endif -*/
 
-/*- set badge = configuration[instance].get('%s_badge' % interface, '"0"').strip('"') -*/
-
+/*- set badge_maybestring = configuration[instance].get('%s_badge' % interface, '"0"') -*/
+/*- if isinstance(badge_maybestring, six.string_types) -*/
+    /*- set badge = badge_maybestring.strip('"') -*/
+/*- else -*/
+    /*- set badge = str(badge_maybestring) -*/
+/*- endif -*/
 /*- set stash_name = "%s_global_notification" % (name) -*/
 
 /*# Check the global stash for our endpoint #*/
