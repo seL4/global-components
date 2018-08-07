@@ -1,5 +1,5 @@
 <!--
-     Copyright 2017, Data61
+     Copyright 2018, Data61
      Commonwealth Scientific and Industrial Research Organisation (CSIRO)
      ABN 41 687 119 230.
 
@@ -29,11 +29,3 @@ if("${GLOBAL_COMPONENTS_PATH}" STREQUAL "GLOBAL_COMPONENTS_PATH-NOTFOUND")
 endif()
 include(${GLOBAL_COMPONENTS_PATH})
 ```
-
-make
-----
-
-To include components and interfaces from this repository
-in an application, set the option "Search path for components and interfaces" 
-in the "CAmkES Options" section of menuconfig to the directory where this
-repository is cloned.
