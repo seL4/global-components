@@ -15,3 +15,4 @@ cmake_minimum_required(VERSION 3.8.2)
 project(TimeServer C)
 
 DeclareCAmkESComponent(TimeServer SOURCES src/time_server.c)
+CAmkESAddCPPInclude("${CMAKE_CURRENT_LIST_DIR}/include/plat/${KernelPlatform}/")
