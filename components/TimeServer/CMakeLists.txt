@@ -18,6 +18,6 @@ set(CAmkESCPP ON CACHE BOOL "" FORCE)
 
 DeclareCAmkESComponent(TimeServer SOURCES src/time_server.c
                                           src/plat/${KernelPlatform}/plat.c
-                                          INCLUDES src/plat.h)
+                                          INCLUDES src/plat.h src/time_server.h)
 
 CAmkESAddCPPInclude("${CMAKE_CURRENT_LIST_DIR}/include/plat/${KernelPlatform}/")

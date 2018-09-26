@@ -25,6 +25,7 @@
 #include <sel4utils/sel4_zf_logif.h>
 #include <simple/simple.h>
 
+#include "time_server.h"
 #include "plat.h"
 
 /* ltimer for accessing timer devices */
@@ -67,7 +68,7 @@ static int signal_client(uintptr_t token) {
     return 0;
 }
 
-void irq_handle() {
+void time_server_irq_handle(irq_ack_fn irq_acknowledge) {
     int error = time_server_lock();
     ZF_LOGF_IF(error, "Failed to lock time server");
 

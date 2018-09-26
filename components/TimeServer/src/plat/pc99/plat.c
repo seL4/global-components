@@ -22,6 +22,7 @@
 #include <simple/simple.h>
 #include <sel4utils/arch/tsc.h>
 
+#include "../../time_server.h"
 #include "../../plat.h"
 
 static uint64_t tsc_frequency = 0;
@@ -60,6 +61,10 @@ static int pit_port_out(void *cookie, uint32_t port, int io_size, uint32_t val) 
     default:
         return -1;
     }
+}
+
+void irq_handle(void) {
+    time_server_irq_handle(irq_acknowledge);
 }
 
 // We declare this with a weak attribute here as we would like this component to work
