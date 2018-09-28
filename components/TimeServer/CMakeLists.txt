@@ -14,7 +14,9 @@ cmake_minimum_required(VERSION 3.8.2)
 
 project(TimeServer C)
 
+if(KernelArchARM)
 set(CAmkESDTS ON CACHE BOOL "" FORCE)
+endif()
 set(CAmkESCPP ON CACHE BOOL "" FORCE)
 
 DeclareCAmkESComponent(TimeServer SOURCES src/time_server.c
