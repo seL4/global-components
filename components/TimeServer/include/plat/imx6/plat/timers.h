@@ -35,3 +35,4 @@
         gpt.mem_size  <-  gpt.dtb["reg"][1];                                                        \
         gpt.irq_irq_number <- gpt.dtb["interrupts"][1];                                             \
         gpt.irq_spi_number <- gpt.dtb["interrupts"][0];
+#define HARDWARE_TIMER_PLAT_INTERFACES

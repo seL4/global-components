@@ -27,11 +27,6 @@
 #define GPT_ADDR (unsigned int)gpt_mem
 #define EPIT2_ADDR (unsigned int)epit2_mem
 
-static uint64_t tsc_frequency = 0;
-uint64_t the_timer_tsc_frequency() {
-    return tsc_frequency;
-}
-
 void epit2_irq_handle() {
     time_server_irq_handle(epit2_irq_acknowledge);
 }

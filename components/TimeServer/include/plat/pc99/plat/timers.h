@@ -34,3 +34,6 @@
         pit.irq_irq_ioapic  <- irq_irq_ioapic;                         \
         pit.irq_irq_ioapic_pin  <- irq_irq_ioapic_pin;                 \
         pit.irq_irq_vector  <- irq_irq_vector;
+
+#define HARDWARE_TIMER_PLAT_INTERFACES                                  \
+    uint64_t tsc_frequency();
