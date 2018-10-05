@@ -40,10 +40,10 @@
         } /*? shmem_symbol ?*/
                 __attribute__((aligned(SHM_ALIGN)))
                 __attribute__((section("shared_/*? shmem_section ?*/")))
-                __attribute__((externally_visible));
+                __attribute__((externally_visible))
+                USED;
 
         /*- do register_shared_variable('%s_%s_data' % (me.parent.name, client_id), shmem_symbol) -*/
-        /*- do keep_symbol(shmem_symbol) -*/
 
         volatile void * /*? shmem_name ?*/ = (volatile void *) & /*? shmem_symbol ?*/;
 
