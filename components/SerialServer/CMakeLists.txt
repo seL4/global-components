@@ -14,6 +14,10 @@ cmake_minimum_required(VERSION 3.8.2)
 
 project(SerialServer C)
 
+set(CAmkESCPP ON CACHE BOOL "" FORCE)
+
 DeclareCAmkESComponent(SerialServer SOURCES src/serial.c
                                             src/plat/${KernelPlatform}/plat.c
                                     INCLUDES src/plat.h)
+
+CAmkESAddCPPInclude("${CMAKE_CURRENT_LIST_DIR}/include/plat/${KernelPlatform}/")

@@ -10,6 +10,8 @@
  * @TAG(DATA61_BSD)
  */
 
+#include <plat/serial.h>
+
 import <GetChar.idl4>;
 import <PutChar.idl4>;
 import <Timer.idl4>;
@@ -20,13 +22,8 @@ component SerialServer {
     has mutex serial;
     provides PutChar processed_putchar;
     provides PutChar raw_putchar;
-
     provides GetChar getchar;
-
     uses Timer timeout;
-
-    uses IOPort serial_port;
-    consumes Irq4 serial_irq;
 
     /* Size of the driver's heap */
     attribute int heap_size = 4096;
@@ -35,17 +32,14 @@ component SerialServer {
     /* Badge number for timer notifications coming into the serial driver */
     attribute string timeout_badge = "1";
 
+    HARDWARE_SERIAL_INTERFACES
+    HARDWARE_SERIAL_ATTRIBUTES
+
     composition {
-        component Serial hw_serial;
-        connection seL4HardwareIOPort serial_ioport(from serial_port, to hw_serial.serial);
-        connection seL4HardwareInterrupt serial_irq(from hw_serial.serial_irq, to serial_irq);
+        HARDWARE_SERIAL_COMPOSITION
     }
 
     configuration {
-        hw_serial.serial_attributes <- serial_attributes;
-        hw_serial.serial_irq_irq_type <- serial_irq_irq_type;
-        hw_serial.serial_irq_irq_ioapic <- serial_irq_irq_ioapic;
-        hw_serial.serial_irq_irq_ioapic_pin <- serial_irq_irq_ioapic_pin;
-        hw_serial.serial_irq_irq_vector <- serial_irq_irq_vector;
+        HARDWARE_SERIAL_CONFIG
     }
 }
