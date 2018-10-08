@@ -14,6 +14,10 @@ cmake_minimum_required(VERSION 3.8.2)
 
 project(SerialServer C)
 
+if(KernelArchARM)
+set(CAmkESDTS ON CACHE BOOL "" FORCE)
+endif()
+
 set(CAmkESCPP ON CACHE BOOL "" FORCE)
 
 DeclareCAmkESComponent(SerialServer SOURCES src/serial.c
