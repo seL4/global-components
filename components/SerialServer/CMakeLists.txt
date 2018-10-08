@@ -14,4 +14,6 @@ cmake_minimum_required(VERSION 3.8.2)
 
 project(SerialServer C)
 
-DeclareCAmkESComponent(SerialServer SOURCES src/serial.c)
+DeclareCAmkESComponent(SerialServer SOURCES src/serial.c
+                                            src/plat/${KernelPlatform}/plat.c
+                                    INCLUDES src/plat.h)
