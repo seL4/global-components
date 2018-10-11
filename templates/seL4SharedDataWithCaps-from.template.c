@@ -18,7 +18,6 @@
 
 /*- set index = me.parent.from_ends.index(me) -*/
 
-#define SHM_ALIGN (1 << 12)
 
 /*- set dataport_symbol_name = "from_%d_%s_data" % (index, me.interface.name) -*/
 /*- set type_size = macros.dataport_size(me.interface.type) -*/
@@ -33,8 +32,8 @@ struct {
     char content[ROUND_UP_UNSAFE(/*? type_size ?*/,
         PAGE_SIZE_4K)];
 } /*? dataport_symbol_name ?*/
-        __attribute__((aligned(SHM_ALIGN)))
-        __attribute__((section("shared_from_/*? index ?*/_/*? me.interface.name ?*/")))
+        ALIGN(/*? page_size ?*/)
+        SECTION("align_/*? page_size_bits ?*/bit")
         USED;
 /*- set perm = configuration[me.instance.name].get('%s_access' % me.interface.name) -*/
 /*- if perm is not none and not re.match('^R?W?X?$', perm) -*/

@@ -44,8 +44,8 @@
         struct {
             char content[ROUND_UP_UNSAFE(/*? shmem_size ?*/, PAGE_SIZE_4K)];
         } /*? shmem_symbol ?*/
-                __attribute__((aligned(SHM_ALIGN)))
-                __attribute__((section("shared_/*? shmem_section ?*/")))
+                ALIGN(/*? page_size ?*/)
+                SECTION("align_/*? page_size_bits ?*/bit")
                 __attribute__((externally_visible))
                 USED;
 
