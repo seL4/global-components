@@ -39,7 +39,7 @@ struct {
 /*- if perm is not none and not re.match('^R?W?X?$', perm) -*/
   /*? raise(TemplateError('invalid permissions attribute %s.%s_access' % (me.instance.name, me.interface.name), configuration)) ?*/
 /*- endif -*/
-/*- do register_shared_variable('%s_data' % me.parent.name, dataport_symbol_name, perm if perm is not none else 'RWX') -*/
+/*? register_shared_variable('%s_data' % me.parent.name, dataport_symbol_name, size, frame_size=page_size, perm=perm if perm is not none else 'RWX') ?*/
 
 volatile /*? macros.dataport_type(me.interface.type) ?*/ * /*? me.interface.name ?*/ =
     (volatile /*? macros.dataport_type(me.interface.type) ?*/ *) & from_/*? index ?*/_/*? me.interface.name ?*/_data;

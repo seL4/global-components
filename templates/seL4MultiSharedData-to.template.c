@@ -49,7 +49,7 @@
                 __attribute__((externally_visible))
                 USED;
 
-        /*- do register_shared_variable('%s_%s_data' % (me.parent.name, client_id), shmem_symbol) -*/
+        /*? register_shared_variable('%s_%s_data' % (me.parent.name, client_id), shmem_symbol, shmem_size, frame_size=page_size) ?*/
 
         volatile void * /*? shmem_name ?*/ = (volatile void *) & /*? shmem_symbol ?*/;
 

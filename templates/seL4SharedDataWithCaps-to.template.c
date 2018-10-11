@@ -42,24 +42,18 @@ struct {
 /*- if perm is not none and not re.match('^R?W?X?$', perm) -*/
   /*? raise(TemplateError('invalid permissions attribute %s.%s_access' % (me.instance.name, me.interface.name), configuration)) ?*/
 /*- endif -*/
+/*? register_shared_variable('%s_data' % me.parent.name, dataport_symbol_name, dataport_size, frame_size=page_size, perm=perm if perm is not none else 'RWX') ?*/
 
-/*- set dataport_size = configuration[me.instance.name].get('%s_size' % me.interface.name) -*/
-
-/*- set frames = [] -*/
-/*- set num_frame_caps = int(math.ceil(dataport_size / macros.PAGE_SIZE)) -*/
-
-/*- for i in range(0, num_frame_caps) -*/
-    /*- set frame = alloc_obj("%s_%s_frame_%d" % (me.interface.name, me.instance.name, i), seL4_FrameObject, size=macros.PAGE_SIZE) -*/
-    /*- do frames.append(frame) -*/
-/*- endfor -*/
-
+/*- set frame_objs = get_shared_variable_backing_frames('%s_data' % me.parent.name, dataport_size) -*/
+/*- set frame_caps = [] -*/
 static seL4_CPtr frame_caps[] = {
-    /*- for (i, frame) in enumerate(frames) -*/
-        /*? hex(alloc_cap("%s_%s_frame_%d" % (me.interface.name, me.instance.name, i), frame, read=True, write=True, grant=True)) ?*/,
-    /*- endfor -*/
+/*- for (i, frame) in enumerate(frame_objs) -*/
+    /*- set frame_cap = alloc_cap('%s_%d' % ('%s_data' % me.parent.name, i), frame) -*/
+    /*- do frame_caps.append(frame_cap) -*/
+    /*? frame_cap ?*/,
+/*- endfor -*/
 };
-
-/*- do register_shared_variable('%s_data' % me.parent.name, dataport_symbol_name, perm if perm is not none else 'RWX', frames=frames) -*/
+/*- set num_frame_caps = len(frame_caps) -*/
 
 volatile /*? macros.dataport_type(me.interface.type) ?*/ * /*? me.interface.name ?*/ =
     (volatile /*? macros.dataport_type(me.interface.type) ?*/ *) & to_/*? index ?*/_/*? me.interface.name ?*/_data;
