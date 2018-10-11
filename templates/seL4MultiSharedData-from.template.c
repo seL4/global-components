@@ -29,6 +29,11 @@
 /*- set shmem_section = 'from_%s' % me.interface.name -*/
 /*- set shmem_symbol = 'from_%s_data' % me.interface.name -*/
 /*- set shmem_name = '%s%s' % (me.interface.name, suffix) -*/
+/*- set page_size = macros.get_page_size(shmem_size, options.architecture) -*/
+/*- if page_size == 0 -*/
+  /*? raise(TemplateError('Setting %s.%s_shmem_size does not meet minimum size and alignment requirements. %d must be at least %d and %d aligned' % (me.instance.name, me.interface.name, size, 4096, 4096))) ?*/
+/*- endif -*/
+/*- set page_size_bits = int(math.log(page_size, 2)) -*/
 
 #define SHM_ALIGN (1 << 12)
 struct {

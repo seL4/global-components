@@ -23,9 +23,16 @@
 #define SHM_ALIGN /*? macros.PAGE_SIZE ?*/
 
 /*- set dataport_symbol_name = "to_%d_%s_data" % (index, me.interface.name) -*/
+/*- set type_size = macros.dataport_size(me.interface.type) -*/
+/*- set dataport_size = configuration[me.instance.name].get('%s_size' % me.interface.name) -*/
+/*- set page_size = macros.get_page_size(dataport_size, options.architecture) -*/
+/*- if page_size == 0 -*/
+  /*? raise(TemplateError('Setting %s.%s_size does not meet minimum size requirements. %d must be at least %d and %d aligned' % (me.instance.name, me.interface.name, size, 4096, 4096))) ?*/
+/*- endif -*/
+/*- set page_size_bits = int(math.log(page_size, 2)) -*/
 
 struct {
-    char content[ROUND_UP_UNSAFE(/*? macros.dataport_size(me.interface.type) ?*/,
+    char content[ROUND_UP_UNSAFE(/*? type_size ?*/,
         PAGE_SIZE_4K)];
 } /*? dataport_symbol_name ?*/
         __attribute__((aligned(SHM_ALIGN)))
