@@ -21,7 +21,6 @@ endif()
 set(CAmkESCPP ON CACHE BOOL "" FORCE)
 
 DeclareCAmkESComponent(SerialServer SOURCES src/serial.c
-                                            src/plat/${KernelPlatform}/plat.c
-                                    INCLUDES src/plat.h)
+                                            src/plat/${KernelPlatform}/plat.c)
 
 CAmkESAddCPPInclude("${CMAKE_CURRENT_LIST_DIR}/include/plat/${KernelPlatform}/")

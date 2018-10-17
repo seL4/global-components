@@ -20,7 +20,6 @@ endif()
 set(CAmkESCPP ON CACHE BOOL "" FORCE)
 
 DeclareCAmkESComponent(TimeServer SOURCES src/time_server.c
-                                          src/plat/${KernelPlatform}/plat.c
-                                          INCLUDES src/plat.h src/time_server.h)
+                                          src/plat/${KernelPlatform}/plat.c)
 
 CAmkESAddCPPInclude("${CMAKE_CURRENT_LIST_DIR}/include/plat/${KernelPlatform}/")
