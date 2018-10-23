@@ -139,3 +139,21 @@ connector seL4SerialServer {
     from Procedures template "seL4SerialServer-from.template.c" with 0 threads;
     to Procedure template "seL4SerialServer-to.template.c";
 }
+
+/**
+* seL4VirtQueues
+*
+* This is an n-n global endpoint connector that makes use of an seL4
+* Notification endpoint capability and shared memory region to faciliate
+* the implementation of a virtqueue-based communication protocol.
+*
+* Multiple components can participate in a virtqueue connection where
+* participating components are in the 'from' end of the connection.
+* A virtqueue connection can have only 1 component in the 'to' end, which
+* is intended to be an empty/stub component.
+*/
+connector seL4VirtQueues {
+    from Procedures template "seL4VirtQueues-from.template.c";
+    to Procedure template "seL4VirtQueues-to.template.c";
+    attribute bool disable_interface_type_checking = true;
+}
