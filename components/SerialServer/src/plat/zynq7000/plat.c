@@ -27,6 +27,14 @@
 struct ps_chardevice serial_device;
 struct ps_chardevice* serial = NULL;
 
+ssize_t plat_serial_write(void *buf, size_t buf_size, chardev_callback_t cb, void *token) {
+    ZF_LOGF("%s is not implemented", __func__);
+}
+
+ssize_t plat_serial_read(void *buf, size_t buf_size, chardev_callback_t cb, void *token) {
+    ZF_LOGF("%s is not implemented", __func__);
+}
+
 void plat_serial_interrupt(handle_char_fn handle_char)
 {
     if (serial) {
