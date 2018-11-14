@@ -27,12 +27,14 @@
 struct ps_chardevice serial_device;
 struct ps_chardevice* serial = NULL;
 
-ssize_t plat_serial_write(void *buf, size_t buf_size, chardev_callback_t cb, void *token) {
+ssize_t plat_serial_write(void *buf, size_t buf_size, chardev_callback_t cb, void *token)
+{
     ssize_t res = ps_cdev_write(serial, buf, buf_size, cb, token);
     return res;
 }
 
-ssize_t plat_serial_read(void *buf, size_t buf_size, chardev_callback_t cb, void *token) {
+ssize_t plat_serial_read(void *buf, size_t buf_size, chardev_callback_t cb, void *token)
+{
     ssize_t res = ps_cdev_read(serial, buf, buf_size, cb, token);
     return res;
 }

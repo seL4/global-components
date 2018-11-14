@@ -65,63 +65,78 @@
 static int fifo_depth = 1;
 static int fifo_used = 0;
 
-static inline void write_ier(uint8_t val) {
+static inline void write_ier(uint8_t val)
+{
     serial_port_out8_offset(IER_ADDR, val);
 }
-static inline uint8_t read_ier() {
+static inline uint8_t read_ier()
+{
     return serial_port_in8_offset(IER_ADDR);
 }
 
-static inline void write_lcr(uint8_t val) {
+static inline void write_lcr(uint8_t val)
+{
     serial_port_out8_offset(LCR_ADDR, val);
 }
-static inline uint8_t read_lcr() {
+static inline uint8_t read_lcr()
+{
     return serial_port_in8_offset(LCR_ADDR);
 }
 
-static inline void write_fcr(uint8_t val) {
+static inline void write_fcr(uint8_t val)
+{
     serial_port_out8_offset(FCR_ADDR, val);
 }
 /* you cannot read the fcr */
 
-static inline void write_mcr(uint8_t val) {
+static inline void write_mcr(uint8_t val)
+{
     serial_port_out8_offset(MCR_ADDR, val);
 }
 
-static inline uint8_t read_lsr() {
+static inline uint8_t read_lsr()
+{
     return serial_port_in8_offset(LSR_ADDR);
 }
 
-static inline uint8_t read_rbr() {
+static inline uint8_t read_rbr()
+{
     return serial_port_in8_offset(RBR_ADDR);
 }
 
-static inline void write_thr(uint8_t val) {
+static inline void write_thr(uint8_t val)
+{
     serial_port_out8_offset(THR_ADDR, val);
 }
 
-static inline uint8_t read_iir() {
+static inline uint8_t read_iir()
+{
     return serial_port_in8_offset(IIR_ADDR);
 }
 
-static inline uint8_t read_msr() {
+static inline uint8_t read_msr()
+{
     return serial_port_in8_offset(MSR_ADDR);
 }
 
-static void wait_for_fifo() {
-    while(! (read_lsr() & (LSR_EMPTY_DHR | LSR_EMPTY_THR)));
+static void wait_for_fifo()
+{
+    while (! (read_lsr() & (LSR_EMPTY_DHR | LSR_EMPTY_THR)));
     fifo_used = 0;
 }
 
 /* assume DLAB == 1*/
-static inline void write_latch_high(uint8_t val) {
+static inline void write_latch_high(uint8_t val)
+{
     serial_port_out8_offset(LATCH_HIGH_ADDR, val);
 }
-static inline void write_latch_low(uint8_t val) {
+static inline void write_latch_low(uint8_t val)
+{
     serial_port_out8_offset(LATCH_LOW_ADDR, val);
 }
 
-static void set_dlab(int v) {
+static void set_dlab(int v)
+{
     if (v) {
         write_lcr(read_lcr() | LCR_DLAB);
     } else {
@@ -129,37 +144,43 @@ static void set_dlab(int v) {
     }
 }
 
-static inline void write_latch(uint16_t val) {
+static inline void write_latch(uint16_t val)
+{
     set_dlab(1);
     write_latch_high(val >> 8);
     write_latch_low(val & 0xff);
     set_dlab(0);
 }
 
-static void disable_interrupt() {
+static void disable_interrupt()
+{
     write_ier(0);
 }
 
-static void disable_fifo() {
+static void disable_fifo()
+{
     /* first attempt to use the clear fifo commands */
     write_fcr(FCR_CLEAR_TRANSMIT | FCR_CLEAR_RECEIVE);
     /* now disable with a 0 */
     write_fcr(0);
 }
 
-static void set_baud_rate(uint32_t baud) {
+static void set_baud_rate(uint32_t baud)
+{
     assert(baud != 0);
     assert(115200 % baud == 0);
     uint16_t divisor = 115200 / baud;
     write_latch(divisor);
 }
 
-static void reset_state() {
+static void reset_state()
+{
     /* clear internal global state here */
     fifo_used = 0;
 }
 
-static void enable_fifo() {
+static void enable_fifo()
+{
     /* check if there is a fifo and how deep it is */
     uint8_t info = read_iir();
     if ((info & IIR_FIFO_ENABLED) == IIR_FIFO_ENABLED) {
@@ -170,19 +191,22 @@ static void enable_fifo() {
     }
 }
 
-static void reset_lcr() {
+static void reset_lcr()
+{
     /* set 8-n-1 */
     write_lcr(3);
 }
 
-static void reset_mcr() {
+static void reset_mcr()
+{
     write_mcr(MCR_DTR | MCR_RTS | MCR_AO1 | MCR_AO2);
 }
 
-static void clear_iir(bool initialised, handle_char_fn handle_char) {
+static void clear_iir(bool initialised, handle_char_fn handle_char)
+{
     uint8_t iir;
     while (! ((iir = read_iir()) & IIR_PENDING)) {
-        switch(iir & IIR_REASON) {
+        switch (iir & IIR_REASON) {
         case IIR_MSR:
             read_msr();
             break;
@@ -201,23 +225,28 @@ static void clear_iir(bool initialised, handle_char_fn handle_char) {
     }
 }
 
-static void enable_interrupt() {
+static void enable_interrupt()
+{
     write_ier(1);
 }
 
-ssize_t plat_serial_write(void *buf, size_t buf_size, chardev_callback_t cb, void *token) {
+ssize_t plat_serial_write(void *buf, size_t buf_size, chardev_callback_t cb, void *token)
+{
     ZF_LOGF("%s is not implemented", __func__);
 }
 
-ssize_t plat_serial_read(void *buf, size_t buf_size, chardev_callback_t cb, void *token) {
+ssize_t plat_serial_read(void *buf, size_t buf_size, chardev_callback_t cb, void *token)
+{
     ZF_LOGF("%s is not implemented", __func__);
 }
 
-void plat_serial_interrupt(handle_char_fn handle_char) {
+void plat_serial_interrupt(handle_char_fn handle_char)
+{
     clear_iir(true, handle_char);
 }
 
-void plat_serial_putchar(int c) {
+void plat_serial_putchar(int c)
+{
     /* check how much fifo we've used and if we need to drain it */
     if (fifo_used == fifo_depth) {
         wait_for_fifo();
@@ -226,7 +255,8 @@ void plat_serial_putchar(int c) {
     fifo_used++;
 }
 
-void plat_pre_init(void) {
+void plat_pre_init(void)
+{
     set_dlab(0); // we always assume the dlab is 0 unless we explicitly change it
     disable_interrupt();
     disable_fifo();

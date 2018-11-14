@@ -93,7 +93,8 @@ const char *all_output_colours[MAX_CLIENTS * 2] = {
     ANSI_COLOR2(CYAN, WHITE, BOLD),
 };
 
-static void flush_buffer(int b) {
+static void flush_buffer(int b)
+{
     const char *col = all_output_colours[b];
     int i;
     if (output_buffers_used[b] == 0) {
@@ -115,7 +116,8 @@ static void flush_buffer(int b) {
 static int debug = 0;
 
 /* Try to flush up to the end of the line. */
-static bool flush_buffer_line(int b) {
+static bool flush_buffer_line(int b)
+{
     if (output_buffers_used[b] == 0) {
         return 0;
     }
@@ -148,7 +150,7 @@ static bool flush_buffer_line(int b) {
         printf("%c", output_buffers[b][i]);
     }
     for (i = length; i < output_buffers_used[b]; i++) {
-        output_buffers[b][i-length] = output_buffers[b][i];
+        output_buffers[b][i - length] = output_buffers[b][i];
     }
     output_buffers_used[b] -= length;
     if (output_buffers_used[b] == 0) {
@@ -157,7 +159,8 @@ static bool flush_buffer_line(int b) {
     return 1;
 }
 
-static int is_newline(const uint8_t *c) {
+static int is_newline(const uint8_t *c)
+{
     return (c[0] == '\r' && c[1] == '\n') || (c[0] == '\n' && c[1] == '\r');
 }
 
@@ -179,7 +182,8 @@ static int active_multiclients = 0;
  *
  * - Still "fails" due to some timing/buffering issues, but these
  *   failures are sufficiently rare that this is still useful. */
-static int try_coalesce_output() {
+static int try_coalesce_output()
+{
     size_t length = 0;
     size_t used[MAX_CLIENTS * 2] = { 0 };
     size_t n_used = 0;
@@ -219,7 +223,7 @@ static int try_coalesce_output() {
         for (int i = 0; i < n_used; i++) {
             output_buffers_used[used[i]] -= length;
             for (int j = 0; j < output_buffers_used[used[i]]; ++j) {
-                output_buffers[used[i]][j] = output_buffers[used[i]][j+length];
+                output_buffers[used[i]][j] = output_buffers[used[i]][j + length];
             }
             if (output_buffers_used[used[i]] == 0) {
                 output_buffer_bitmask &= ~BIT(used[i]);
@@ -233,7 +237,8 @@ static int try_coalesce_output() {
     return 1;                   /* buffering */
 }
 
-static void internal_putchar(int b, int c) {
+static void internal_putchar(int b, int c)
+{
     int UNUSED error;
     error = serial_lock();
     /* Add to buffer */
@@ -296,7 +301,8 @@ static void internal_putchar(int b, int c) {
     error = serial_unlock();
 }
 
-static void internal_raw_putchar(int id, int c) {
+static void internal_raw_putchar(int id, int c)
+{
     getchar_client_t *client = &getchar_clients[id];
     uint32_t next_tail = (client->buf->tail + 1) % sizeof(client->buf->buf);
     if ( next_tail == client->buf->head) {
@@ -316,18 +322,21 @@ static void internal_raw_putchar(int id, int c) {
 
 static int statemachine = 1;
 
-static void give_client_char(uint8_t c) {
+static void give_client_char(uint8_t c)
+{
     if (active_client >= 0) {
         internal_raw_putchar(active_client, c);
     } else if (active_client == -1) {
         for (int i = 0; i < MAX_CLIENTS * 2; i++) {
-            if ((active_multiclients & BIT(i)) == BIT(i))
+            if ((active_multiclients & BIT(i)) == BIT(i)) {
                 internal_raw_putchar(i, c);
+            }
         }
     }
 }
 
-static void handle_char(uint8_t c) {
+static void handle_char(uint8_t c)
+{
     /* If there are no getchar clients, then we return immediately */
     if (!getchar_num_badges) {
         return;
@@ -384,10 +393,10 @@ static void handle_char(uint8_t c) {
             statemachine = 1;
             break;
         default:
-            if (c >= '0' && c < '0' + (getchar_largest_badge()+1)) {
+            if (c >= '0' && c < '0' + (getchar_largest_badge() + 1)) {
                 last_out = -1;
                 int client = c - '0';
-                printf(COLOR_RESET "\r\nSwitching input to %d\r\n",client);
+                printf(COLOR_RESET "\r\nSwitching input to %d\r\n", client);
                 active_client = client;
                 statemachine = 1;
             } else {
@@ -398,8 +407,8 @@ static void handle_char(uint8_t c) {
         }
         break;
     case 3:
-        if (c >= '0' && c < '0' + (getchar_largest_badge()+1)) {
-            printf(COLOR_RESET "%s%d", (active_multiclients != 0 ? "," : "") ,(c - '0'));
+        if (c >= '0' && c < '0' + (getchar_largest_badge() + 1)) {
+            printf(COLOR_RESET "%s%d", (active_multiclients != 0 ? "," : ""), (c - '0'));
             active_multiclients |= BIT(c - '0');
             last_out = -1;
             fflush(stdout);
@@ -412,7 +421,8 @@ static void handle_char(uint8_t c) {
     }
 }
 
-static void timer_callback(void *data) {
+static void timer_callback(void *data)
+{
     int UNUSED error;
     error = serial_lock();
     if (done_output) {
@@ -442,16 +452,18 @@ static void timer_callback(void *data) {
 
 seL4_CPtr timeout_notification(void);
 
-int run(void) {
+int run(void)
+{
     seL4_CPtr notification = timeout_notification();
-    while(1) {
+    while (1) {
         seL4_Wait(notification, NULL);
         timer_callback(NULL);
     }
     return 0;
 }
 
-void serial_irq_handle() {
+void serial_irq_handle()
+{
     int UNUSED error;
     error = serial_lock();
     plat_serial_interrupt(handle_char);
@@ -460,11 +472,13 @@ void serial_irq_handle() {
 }
 
 
-void serial_putchar(int c) {
-   plat_serial_putchar(c);
+void serial_putchar(int c)
+{
+    plat_serial_putchar(c);
 }
 
-void pre_init(void) {
+void pre_init(void)
+{
     int UNUSED error;
     error = serial_lock();
     // Initialize the serial port
@@ -488,15 +502,17 @@ void pre_init(void) {
     error = serial_unlock();
 }
 
-void post_init(void) {
-   int res = virtqueue_init();
-   if (res) {
+void post_init(void)
+{
+    int res = virtqueue_init();
+    if (res) {
         ZF_LOGE("Serial server does not support read and write virtqueues");
-   }
+    }
 }
 
 seL4_Word processed_putchar_get_sender_id(void) WEAK;
-void processed_putchar_putchar(int c) {
+void processed_putchar_putchar(int c)
+{
     seL4_Word n = processed_putchar_get_sender_id();
     internal_putchar((int)n, c);
     if (c == '\n') {
@@ -505,13 +521,15 @@ void processed_putchar_putchar(int c) {
 }
 
 seL4_Word raw_putchar_get_sender_id(void) WEAK;
-void raw_putchar_putchar(int c) {
+void raw_putchar_putchar(int c)
+{
     seL4_Word n = raw_putchar_get_sender_id();
     internal_putchar((int)n + MAX_CLIENTS, c);
 }
 
 /* We had to define at least one function in the getchar RPC procedure
  * so now we need to implement it even though it is not used */
-void getchar_foo(void) {
+void getchar_foo(void)
+{
     assert(!"should not be reached");
 }

@@ -44,7 +44,8 @@ typedef struct {
 virtqueue_token_t *current_read_vq_token = NULL;
 virtqueue_token_t *current_write_vq_token = NULL;
 
-static void virtqueue_send(virtqueue_device_t *vq, volatile void * buf, size_t buf_size) {
+static void virtqueue_send(virtqueue_device_t *vq, volatile void * buf, size_t buf_size)
+{
     int enqueue_res = virtqueue_device_enqueue(vq, buf, buf_size);
     if (enqueue_res) {
         ZF_LOGE("Serial server virtqueue enqueue failed");
@@ -59,7 +60,7 @@ static void virtqueue_send(virtqueue_device_t *vq, volatile void * buf, size_t b
 }
 
 static void write_callback(ps_chardevice_t* device, enum chardev_status stat,
-        size_t bytes_transfered, void* token)
+                           size_t bytes_transfered, void* token)
 {
     virtqueue_token_t *vq_token = (virtqueue_token_t *)token;
 
@@ -76,7 +77,7 @@ static void write_callback(ps_chardevice_t* device, enum chardev_status stat,
 }
 
 static void read_callback(ps_chardevice_t* device, enum chardev_status stat,
-        size_t bytes_transfered, void* token)
+                          size_t bytes_transfered, void* token)
 {
     virtqueue_token_t *vq_token = (virtqueue_token_t *)token;
 
@@ -99,11 +100,11 @@ static void handle_virtqueue_message(virtqueue_device_t *vq, volatile void* buf,
 
     if (op == VQ_SERIAL_READ && current_read_vq_token) {
         return;
-    } else if (op == VQ_SERIAL_WRITE && current_write_vq_token ){
+    } else if (op == VQ_SERIAL_WRITE && current_write_vq_token ) {
         return;
     }
 
-    void *serial_buffer = calloc(buf_size,sizeof(char));
+    void *serial_buffer = calloc(buf_size, sizeof(char));
     if (serial_buffer == NULL) {
         ZF_LOGE("Unable to alloc serial buffer of size: %u", buf_size);
         virtqueue_send(vq, buf, buf_size);
@@ -182,7 +183,8 @@ void serial_wait_callback(void)
     error = serial_unlock();
 }
 
-int virtqueue_init(void) {
+int virtqueue_init(void)
+{
     /* Initialise read virtqueue */
     int error = camkes_virtqueue_device_init(&read_virtqueue, 0);
     if (error) {
