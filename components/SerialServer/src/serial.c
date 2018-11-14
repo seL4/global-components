@@ -20,8 +20,9 @@
 #include <utils/attribute.h>
 #include <utils/ansi.h>
 #include <camkes.h>
-
+#include <platsupport/chardev.h>
 #include "plat.h"
+#include "server_virtqueue.h"
 
 #define ESCAPE_CHAR '@'
 #define MAX_CLIENTS 12
@@ -485,6 +486,13 @@ void pre_init(void) {
     /* Start regular heartbeat of 500ms */
     timeout_periodic(0, 500000000);
     error = serial_unlock();
+}
+
+void post_init(void) {
+   int res = virtqueue_init();
+   if (res) {
+        ZF_LOGE("Serial server does not support read and write virtqueues");
+   }
 }
 
 seL4_Word processed_putchar_get_sender_id(void) WEAK;
