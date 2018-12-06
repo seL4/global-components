@@ -101,10 +101,10 @@ static seL4_CapRights_t /*? me.interface.name ?*/_get_rights(void) {
     /*- else -*/
         /*- set read = int("R" in perm) -*/
         /*- set write = int("W" in perm) -*/
-        /*# The 0 grant argument below is because the grant operation is meaningless on dataports.
+        /*# The 0 grant/grantreply argument below is because the grant operations are meaningless on dataports.
          *# The lack of execute permission is because cap rights don't capture the right to execute
          *# the contents of a mapped-in page. #*/
-        return seL4_CapRights_new(0, /*? read ?*/, /*? write ?*/);
+        return seL4_CapRights_new(0, 0, /*? read ?*/, /*? write ?*/);
     /*- endif -*/
 }
 
