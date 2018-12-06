@@ -13,16 +13,12 @@
 #include <stdint.h>
 
 #include <camkes.h>
+#include <camkes/io.h>
 #include <sel4/sel4.h>
 #include <utils/attribute.h>
 #include <utils/ansi.h>
 
-#include "../../plat.h"
-
-#include <sel4platsupport/serial.h>
-#include <platsupport/chardev.h>
-
-#define UART2_ADDR (unsigned int)serial_mem
+#include "plat.h"
 
 struct ps_chardevice serial_device;
 struct ps_chardevice* serial = NULL;
@@ -42,14 +38,13 @@ ssize_t plat_serial_read(void *buf, size_t buf_size, chardev_callback_t cb, void
 void plat_serial_interrupt(handle_char_fn handle_char)
 {
     if (serial) {
+        int data = 0;
         ps_cdev_handle_irq(serial, 0);
-        char data = ps_cdev_getchar(serial);
-        /*
-         * Filtering out spurious 255 (nbsp) characters as this
-         * impacts the serial server state machine
-         */
-        if (data != EOF && data != 255) {
-            handle_char(data);
+        while (data !=  EOF){
+            data = ps_cdev_getchar(serial);
+            if (data != EOF) {
+                handle_char((uint8_t)data);
+            }
         }
     }
 }
@@ -63,21 +58,17 @@ void plat_serial_putchar(int c)
 
 void plat_pre_init(void)
 {
-    struct ps_chardevice temp_device;
-
-    static_serial_params_t serial_params;
-    serial_params.vaddr = (void *)UART2_ADDR;
-    serial_params.clock_id = CLK_UART2;
-    serial_params.uart_mux_feature = MUX_UART2;
-
     ps_io_ops_t ops;
-    int error = ps_new_stdlib_malloc_ops(&ops.malloc_ops);
+    int error = camkes_io_ops(&ops);
     ZF_LOGF_IF(error, "Failed to get malloc ops");
 
-    if (ps_cdev_static_init(&ops, &temp_device, (void *)&serial_params)) {
-        serial_device = temp_device;
-        serial = &serial_device;
-    } else {
+#ifdef config_set(CONFIG_PLAT_EXYNOS5)
+    ops.clock_sys.priv = NULL;
+    ops.mux_sys.priv = NULL;
+#endif
+
+    serial = ps_cdev_init(PS_SERIAL_DEFAULT, &ops, &serial_device);
+    if (serial == NULL){
         ZF_LOGE("Failed to initialise character device");
     }
 }

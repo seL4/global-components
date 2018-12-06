@@ -21,7 +21,7 @@ endif()
 set(CAmkESCPP ON CACHE BOOL "" FORCE)
 
 DeclareCAmkESComponent(SerialServer SOURCES src/serial.c
-                                            src/plat/${KernelPlatform}/plat.c
+                                            src/plat.c
                                             src/server_virtqueue.c
                                     LIBS virtqueue vswitch)
 
