@@ -38,11 +38,8 @@ struct {
         ALIGN(/*? page_size ?*/)
         SECTION("align_/*? page_size_bits ?*/bit")
         USED;
-/*- set perm = configuration[me.instance.name].get('%s_access' % me.interface.name) -*/
-/*- if perm is not none and not re.match('^R?W?X?$', perm) -*/
-  /*? raise(TemplateError('invalid permissions attribute %s.%s_access' % (me.instance.name, me.interface.name), configuration)) ?*/
-/*- endif -*/
-/*? register_shared_variable('%s_data' % me.parent.name, dataport_symbol_name, dataport_size, frame_size=page_size, perm=perm if perm is not none else 'RWX') ?*/
+/*- set perm = macros.get_perm(configuration, me.instance.name, me.interface.name) -*/
+/*? register_shared_variable('%s_data' % me.parent.name, dataport_symbol_name, dataport_size, frame_size=page_size, perm=perm) ?*/
 
 /*- set frame_objs = get_shared_variable_backing_frames('%s_data' % me.parent.name, dataport_size) -*/
 /*- set frame_caps = [] -*/
