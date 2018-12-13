@@ -62,7 +62,7 @@ void plat_pre_init(void)
     int error = camkes_io_ops(&ops);
     ZF_LOGF_IF(error, "Failed to get malloc ops");
 
-#ifdef config_set(CONFIG_PLAT_EXYNOS5)
+#ifdef CONFIG_PLAT_EXYNOS5
     ops.clock_sys.priv = NULL;
     ops.mux_sys.priv = NULL;
 #endif
