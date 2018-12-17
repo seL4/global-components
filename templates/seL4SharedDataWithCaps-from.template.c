@@ -36,7 +36,7 @@ struct {
         SECTION("align_/*? page_size_bits ?*/bit")
         USED;
 /*- set perm = macros.get_perm(configuration, me.instance.name, me.interface.name) -*/
-/*? register_shared_variable('%s_data' % me.parent.name, dataport_symbol_name, size, frame_size=page_size, perm=perm)) ?*/
+/*? register_shared_variable('%s_data' % me.parent.name, dataport_symbol_name, size, frame_size=page_size, perm=perm) ?*/
 
 volatile /*? macros.dataport_type(me.interface.type) ?*/ * /*? me.interface.name ?*/ =
     (volatile /*? macros.dataport_type(me.interface.type) ?*/ *) & from_/*? index ?*/_/*? me.interface.name ?*/_data;
