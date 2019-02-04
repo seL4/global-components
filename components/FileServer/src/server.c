@@ -31,10 +31,12 @@ typedef struct cpio_file_data_wrap {
 } cpio_file_data_wrap_t;
 
 extern char _cpio_archive[];
+extern char _cpio_archive_end[];
 
 void pre_init() {
     /* install the _cpio_archive */
-    muslcsys_install_cpio_interface(_cpio_archive, cpio_get_file);
+    unsigned long cpio_size = _cpio_archive_end - _cpio_archive;
+    muslcsys_install_cpio_interface(_cpio_archive, cpio_size, cpio_get_file);
 }
 
 bool validate_client_fd(int fd, seL4_Word client) {
