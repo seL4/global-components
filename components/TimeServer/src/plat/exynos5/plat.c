@@ -24,8 +24,6 @@
 #include "../../plat.h"
 #include "../../time_server.h"
 
-#define PWM_ADDR (unsigned int)pwm_mem
-
 void pwm_irq_t0_handle() {
     time_server_irq_handle(pwm_irq_t0_acknowledge);
 }
@@ -45,11 +43,8 @@ void pwm_irq_t4_handle() {
     time_server_irq_handle(pwm_irq_t4_acknowledge);
 }
 
-void plat_post_init(ltimer_t *ltimer, ps_io_ops_t ops) {
+void plat_post_init() {
     int error;
-
-    error = ltimer_static_init(ltimer, ops, (void *)PWM_ADDR);
-    ZF_LOGF_IF(error, "Failed to get timer");
 
     error = pwm_irq_t0_acknowledge();
     ZF_LOGF_IF(error, "Failed to ack pwm irq t0 irq");

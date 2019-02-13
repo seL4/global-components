@@ -31,38 +31,6 @@ uint64_t the_timer_tsc_frequency() {
     return tsc_frequency;
 }
 
-static int pit_port_in(void *cookie, uint32_t port, int io_size, uint32_t *result) {
-    if (io_size != 1) {
-        return -1;
-    }
-    switch(port) {
-    case 0x43:
-        *result = pit_command_in8(port);
-        return 0;
-    case 0x40:
-        *result = pit_channel0_in8(port);
-        return 0;
-    default:
-        return -1;
-    }
-}
-
-static int pit_port_out(void *cookie, uint32_t port, int io_size, uint32_t val) {
-    if (io_size != 1) {
-        return -1;
-    }
-    switch(port) {
-    case 0x43:
-        pit_command_out8(port, val);
-        return 0;
-    case 0x40:
-        pit_channel0_out8(port, val);
-        return 0;
-    default:
-        return -1;
-    }
-}
-
 void irq_handle(void) {
     time_server_irq_handle(irq_acknowledge);
 }
@@ -72,14 +40,8 @@ void irq_handle(void) {
 // Having this as weak allows us to test for this at run time / link time
 void camkes_make_simple(simple_t *simple) __attribute__((weak));
 
-void plat_post_init(ltimer_t *ltimer, ps_io_ops_t ops) {
-    ops.io_port_ops.io_port_in_fn = pit_port_in;
-    ops.io_port_ops.io_port_out_fn = pit_port_out;
-
-    int error = ltimer_pit_init(ltimer, ops);
-    ZF_LOGF_IF(error, "Failed to get timer");
-
-    error = irq_acknowledge();
+void plat_post_init() {
+    int error = irq_acknowledge();
     ZF_LOGF_IF(error, "Failed to ack irq");
 
     // Attempt to detect the presence of a simple interface and try and get the

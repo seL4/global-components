@@ -24,6 +24,7 @@
 #include <utils/util.h>
 #include <sel4utils/sel4_zf_logif.h>
 #include <simple/simple.h>
+#include <camkes/io.h>
 
 #include "time_server.h"
 #include "plat.h"
@@ -206,13 +207,16 @@ void post_init() {
     ZF_LOGF_IF(error, "Failed to lock timer server");
 
     ps_io_ops_t ops;
-    error = ps_new_stdlib_malloc_ops(&ops.malloc_ops);
-    ZF_LOGF_IF(error, "Failed to get malloc ops");
+    error = camkes_io_ops(&ops);
+    ZF_LOGF_IF(error, "Failed to get camkes_io_ops");
 
     error = ps_calloc(&ops.malloc_ops, the_timer_largest_badge(), sizeof(*client_state), (void **) &client_state);
     ZF_LOGF_IF(error, "Failed to allocate client state")
 
-    plat_post_init(&ltimer, ops);
+    error = ltimer_default_init(&ltimer, ops);
+    ZF_LOGF_IF(error, "Failed to init timer");
+
+    plat_post_init();
 
     int num_timers = timers_per_client * the_timer_largest_badge();
     tm_init(&time_manager, &ltimer, &ops, num_timers);

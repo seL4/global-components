@@ -24,9 +24,6 @@
 #include "../../plat.h"
 #include "../../time_server.h"
 
-#define GPT_ADDR (unsigned int)gpt_mem
-#define EPIT2_ADDR (unsigned int)epit2_mem
-
 void epit2_irq_handle() {
     time_server_irq_handle(epit2_irq_acknowledge);
 }
@@ -35,15 +32,8 @@ void gpt_irq_handle() {
     time_server_irq_handle(gpt_irq_acknowledge);
 }
 
-void plat_post_init(ltimer_t *ltimer, ps_io_ops_t ops) {
+void plat_post_init() {
     int error;
-
-    static_timer_params_t timer_params;
-    timer_params.timestamp_vaddr = (void *)GPT_ADDR;
-    timer_params.timeout_vaddr = (void *)EPIT2_ADDR;
-
-    error = ltimer_static_init(ltimer, ops, (void *)&timer_params);
-    ZF_LOGF_IF(error, "Failed to get timer");
 
     error = gpt_irq_acknowledge();
     ZF_LOGF_IF(error, "Failed to ack gpt irq");
