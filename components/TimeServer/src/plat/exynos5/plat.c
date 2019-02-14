@@ -43,7 +43,7 @@ void pwm_irq_t4_handle() {
     time_server_irq_handle(pwm_irq_t4_acknowledge);
 }
 
-void plat_post_init() {
+void plat_post_init(ltimer_t *ltimer) {
     int error;
 
     error = pwm_irq_t0_acknowledge();

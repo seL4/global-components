@@ -32,7 +32,7 @@ void gpt_irq_handle() {
     time_server_irq_handle(gpt_irq_acknowledge);
 }
 
-void plat_post_init() {
+void plat_post_init(ltimer_t *ltimer) {
     int error;
 
     error = gpt_irq_acknowledge();

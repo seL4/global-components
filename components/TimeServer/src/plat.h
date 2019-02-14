@@ -14,4 +14,4 @@
 #include <platsupport/ltimer.h>
 #include <platsupport/io.h>
 
-void plat_post_init();
+void plat_post_init(ltimer_t *ltimer);

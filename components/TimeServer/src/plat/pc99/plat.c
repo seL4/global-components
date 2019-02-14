@@ -40,7 +40,7 @@ void irq_handle(void) {
 // Having this as weak allows us to test for this at run time / link time
 void camkes_make_simple(simple_t *simple) __attribute__((weak));
 
-void plat_post_init() {
+void plat_post_init(ltimer_t *ltimer) {
     int error = irq_acknowledge();
     ZF_LOGF_IF(error, "Failed to ack irq");
 
