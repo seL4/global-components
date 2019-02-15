@@ -182,16 +182,15 @@ connector seL4GlobalAsynchCallback {
     to Events template "seL4GlobalAsynchCallback-to.template.c";
 }
 
-// TODO add documentation for this connector template
+/* Custom connectors which use existing global connectors just with no threads configured. */
 connector seL4TimeServer {
-    from Procedures template "seL4TimeServer-from.template.c" with 0 threads;
-    to Procedure template "seL4TimeServer-to.template.c";
+    from Procedures template "seL4RPCCallSignal-from.template.c" with 0 threads;
+    to Procedure template "seL4RPCCallSignal-to.template.c";
 }
 
-// TODO add documentation for this connector template
 connector seL4SerialServer {
-    from Procedures template "seL4SerialServer-from.template.c" with 0 threads;
-    to Procedure template "seL4SerialServer-to.template.c";
+    from Procedures template "seL4RPCDataportSignal-from.template.c" with 0 threads;
+    to Procedure template "seL4RPCDataportSignal-to.template.c";
 }
 
 /**
