@@ -32,6 +32,36 @@
  */
 
 /**
+ * RPCCallSignal connector
+ *
+ * This connector is like the regular RPCCall connector, except that
+ * there is a Notification endpoint allocated and associated with the 
+ * connector. The Notification endpoint is a 1-to-n relationship in that
+ * a component connected to many other components on the same interface
+ * with this connector is able to signal the connected components individually.
+ *
+ * It requires an attribute to define a badge for it to use and to couple
+ * the RPC connector and the associated dataport. The badge can be any
+ * unique number.
+ * 	<from_component>.<from_interface>_attributes = "<badge>";
+ *
+ * The 'from' side of the connector can access the associated Notification
+ * endpoint via this exposed function:
+ *      seL4_CPtr <interface name>_notification(void);
+ *
+ * The 'to' side of the connector can signal the desired connected component
+ * by passing the component's badge into the following function:
+ *      void <interface_name>_emit(unsigned int badge);
+ * There is also a function to query the largest badge of all the connected
+ * components:
+ *      int <interface_name>_largest_badge(void);
+ */
+connector seL4RPCCallSignal {
+    from Procedures template "seL4RPCCallSignal-from.template.c";
+    to Procedure template "seL4RPCCallSignal-to.template.c";
+}
+
+/**
  * RPCCallDataport connector
  *
  * This connector is like the regular RPCCall connector, except that
@@ -74,6 +104,30 @@ connector seL4RPCCallDataport {
 connector seL4RPCDataport {
     from Procedures template "seL4RPCDataport-from.template.c";
     to Procedure template "seL4RPCDataport-to.template.c";
+}
+
+/**
+ * RPCDataportSignal connector
+ *
+ * This connector is similar to the seL4RPCCallSignal connector, except
+ * that this connector is built on top of the seL4RPCDataport connector.
+ *
+ * The features and requirements are similar to the seL4RPCDataport connector.
+ *
+ * Additionally, the 'from' side of the connector can access the associated Notification
+ * endpoint via this exposed function:
+ *      seL4_CPtr <interface name>_notification(void);
+ *
+ * The 'to' side of the connector can signal the desired connected component
+ * by passing the component's badge into the following function:
+ *      void <interface_name>_emit(unsigned int badge);
+ * There is also a function to query the largest badge of all the connected
+ * components:
+ *      int <interface_name>_largest_badge(void);
+ */
+connector seL4RPCDataportSignal {
+    from Procedures template "seL4RPCDataportSignal-from.template.c";
+    to Procedure template "seL4RPCDataportSignal-to.template.c";
 }
 
 /**
