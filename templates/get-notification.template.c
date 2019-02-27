@@ -16,6 +16,9 @@
 /*- include 'global-endpoint.template.c' -*/
 /*- set notification = pop('notification') -*/
 
+/*# This is only used for seL4GlobalAsynchCallback #*/
+/*- do stash('callback_notification', notification) -*/
+
 seL4_CPtr /*? me.interface.name ?*/_notification(void) {
     return /*? notification ?*/;
 }
