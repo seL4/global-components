@@ -11,4 +11,4 @@
   #*/
 /*- include 'seL4RPCDataport-from.template.c' -*/
 
-/*- include 'rpc-get-notification.template.c' -*/
+/*- include 'get-notification.template.c' -*/
