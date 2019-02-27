@@ -13,22 +13,16 @@
 
 /*? macros.show_includes(me.instance.type.includes) ?*/
 
-/*- set is_reader = True -*/
-/*- set instance = me.instance.name -*/
-/*- set interface = me.interface.name -*/
-/*- include 'global-endpoint.template.c' -*/
-/*- set notification = pop('notification') -*/
+/*- include 'get-notification.template.c' -*/
+
+/*- set callback_notification = pop('callback_notification') -*/
 
 void /*? me.interface.name ?*/_callback(seL4_Word badge);
 
 void /*? me.interface.name ?*/__run(void) {
     while(1) {
         seL4_Word badge;
-        seL4_Wait(/*? notification ?*/, &badge);
+        seL4_Wait(/*? callback_notification ?*/, &badge);
         /*? me.interface.name ?*/_callback(badge);
     }
-}
-
-seL4_CPtr /*? me.interface.name ?*/_notification(void) {
-    return /*? notification ?*/;
 }
