@@ -50,7 +50,7 @@ void ttc1_irq_t3_handle() {
     time_server_irq_handle(ttc1_irq_t3_acknowledge);
 }
 
-void plat_post_init(ltimer_t *ltimer, ps_io_ops_t ops) {
+void plat_post_init(ltimer_t *ltimer) {
     int error;
 
     static_timer_params_t timer_params;
