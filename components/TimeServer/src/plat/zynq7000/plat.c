@@ -24,9 +24,6 @@
 #include "../../plat.h"
 #include "../../time_server.h"
 
-#define TTC0_ADDR (unsigned int)ttc0_mem
-#define TTC1_ADDR (unsigned int)ttc1_mem
-
 void ttc0_irq_t1_handle() {
     time_server_irq_handle(ttc0_irq_t1_acknowledge);
 }
