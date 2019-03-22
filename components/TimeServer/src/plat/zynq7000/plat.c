@@ -53,13 +53,6 @@ void ttc1_irq_t3_handle() {
 void plat_post_init(ltimer_t *ltimer) {
     int error;
 
-    static_timer_params_t timer_params;
-    timer_params.timeout_vaddr = (void *)TTC0_ADDR;
-    timer_params.timestamp_vaddr = (void *)TTC1_ADDR;
-
-    error = ltimer_static_init(ltimer, ops, (void *)&timer_params);
-    ZF_LOGF_IF(error, "Failed to get timer");
-
     error = ttc0_irq_t1_acknowledge();
     ZF_LOGF_IF(error, "Failed to ack ttc0 irq t1 irq");
 
