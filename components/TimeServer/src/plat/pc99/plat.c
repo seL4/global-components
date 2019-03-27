@@ -32,7 +32,8 @@ uint64_t the_timer_tsc_frequency() {
 }
 
 void irq_handle(void) {
-    time_server_irq_handle(irq_acknowledge);
+    /* We don't need to call ltimer_handle_irq */
+    time_server_irq_handle(irq_acknowledge, NULL);
 }
 
 // We declare this with a weak attribute here as we would like this component to work

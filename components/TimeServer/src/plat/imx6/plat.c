@@ -17,6 +17,7 @@
 #include <sel4/arch/constants.h>
 #include <camkes.h>
 #include <platsupport/plat/timer.h>
+#include <platsupport/irq.h>
 #include <utils/util.h>
 #include <sel4utils/sel4_zf_logif.h>
 #include <simple/simple.h>
@@ -25,11 +26,13 @@
 #include "../../time_server.h"
 
 void epit2_irq_handle() {
-    time_server_irq_handle(epit2_irq_acknowledge);
+    ps_irq_t irq = { .type = PS_INTERRUPT, .irq = { .number = TIMEOUT_INTERRUPT }};
+    time_server_irq_handle(epit2_irq_acknowledge, &irq);
 }
 
 void gpt_irq_handle() {
-    time_server_irq_handle(gpt_irq_acknowledge);
+    ps_irq_t irq = { .type = PS_INTERRUPT, .irq = { .number = TIMESTAMP_INTERRUPT }};
+    time_server_irq_handle(gpt_irq_acknowledge, &irq);
 }
 
 void plat_post_init(ltimer_t *ltimer) {

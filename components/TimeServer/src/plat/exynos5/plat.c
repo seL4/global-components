@@ -17,6 +17,7 @@
 #include <sel4/arch/constants.h>
 #include <camkes.h>
 #include <platsupport/plat/timer.h>
+#include <platsupport/irq.h>
 #include <utils/util.h>
 #include <sel4utils/sel4_zf_logif.h>
 #include <simple/simple.h>
@@ -25,22 +26,27 @@
 #include "../../time_server.h"
 
 void pwm_irq_t0_handle() {
-    time_server_irq_handle(pwm_irq_t0_acknowledge);
+    ps_irq_t irq = { .type = PS_INTERRUPT, .irq = { .number = PWM_T0_INTERRUPT }};
+    time_server_irq_handle(pwm_irq_t0_acknowledge, &irq);
 }
 
 void pwm_irq_t1_handle() {
-    time_server_irq_handle(pwm_irq_t1_acknowledge);
+    /* We don't actually use this timer */
+    time_server_irq_handle(pwm_irq_t1_acknowledge, NULL);
 }
 void pwm_irq_t2_handle() {
-    time_server_irq_handle(pwm_irq_t2_acknowledge);
+    /* We don't actually use this timer */
+    time_server_irq_handle(pwm_irq_t2_acknowledge, NULL);
 }
 
 void pwm_irq_t3_handle() {
-    time_server_irq_handle(pwm_irq_t3_acknowledge);
+    /* We don't actually use this timer */
+    time_server_irq_handle(pwm_irq_t3_acknowledge, NULL);
 }
 
 void pwm_irq_t4_handle() {
-    time_server_irq_handle(pwm_irq_t4_acknowledge);
+    ps_irq_t irq = { .type = PS_INTERRUPT, .irq = { .number = PWM_T4_INTERRUPT }};
+    time_server_irq_handle(pwm_irq_t4_acknowledge, &irq);
 }
 
 void plat_post_init(ltimer_t *ltimer) {

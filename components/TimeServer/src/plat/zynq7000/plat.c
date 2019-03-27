@@ -17,6 +17,7 @@
 #include <sel4/arch/constants.h>
 #include <camkes.h>
 #include <platsupport/plat/timer.h>
+#include <platsupport/irq.h>
 #include <utils/util.h>
 #include <sel4utils/sel4_zf_logif.h>
 #include <simple/simple.h>
@@ -25,26 +26,32 @@
 #include "../../time_server.h"
 
 void ttc0_irq_t1_handle() {
-    time_server_irq_handle(ttc0_irq_t1_acknowledge);
+    ps_irq_t irq = { .type = PS_INTERRUPT, .irq = { .number = TTC0_TIMER1_IRQ }};
+    time_server_irq_handle(ttc0_irq_t1_acknowledge, &irq);
 }
 
 void ttc0_irq_t2_handle() {
-    time_server_irq_handle(ttc0_irq_t2_acknowledge);
+    /* We don't actually use this timer */
+    time_server_irq_handle(ttc0_irq_t2_acknowledge, NULL);
 }
 
 void ttc0_irq_t3_handle() {
-    time_server_irq_handle(ttc0_irq_t3_acknowledge);
+    /* We don't actually use this timer */
+    time_server_irq_handle(ttc0_irq_t3_acknowledge, NULL);
 }
 
 void ttc1_irq_t1_handle() {
-    time_server_irq_handle(ttc1_irq_t1_acknowledge);
+    ps_irq_t irq = { .type = PS_INTERRUPT, .irq = { .number = TTC1_TIMER1_IRQ }};
+    time_server_irq_handle(ttc1_irq_t1_acknowledge, &irq);
 }
 void ttc1_irq_t2_handle() {
-    time_server_irq_handle(ttc1_irq_t2_acknowledge);
+    /* We don't actually use this timer */
+    time_server_irq_handle(ttc1_irq_t2_acknowledge, NULL);
 }
 
 void ttc1_irq_t3_handle() {
-    time_server_irq_handle(ttc1_irq_t3_acknowledge);
+    /* We don't actually use this timer */
+    time_server_irq_handle(ttc1_irq_t3_acknowledge, NULL);
 }
 
 void plat_post_init(ltimer_t *ltimer) {
