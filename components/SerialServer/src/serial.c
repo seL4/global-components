@@ -21,6 +21,7 @@
 #include <utils/ansi.h>
 #include <camkes.h>
 #include <platsupport/chardev.h>
+#include "serial.h"
 #include "plat.h"
 #include "server_virtqueue.h"
 
@@ -462,15 +463,19 @@ int run(void)
     return 0;
 }
 
-void serial_irq_handle()
+void serial_server_irq_handle()
 {
-    int UNUSED error;
-    error = serial_lock();
-    plat_serial_interrupt(handle_char);
-    error = serial_irq_acknowledge();
-    error = serial_unlock();
-}
+    int error = serial_lock();
+    ZF_LOGF_IF(error, "Failed to lock serial server");
 
+    plat_serial_interrupt(handle_char);
+
+    error = plat_serial_interrupt_acknowledge();
+    ZF_LOGF_IF(error, "Failed to acknowledge IRQ");
+
+    error = serial_unlock();
+    ZF_LOGF_IF(error, "Failed to unlock serial server");
+}
 
 void serial_putchar(int c)
 {
@@ -496,7 +501,7 @@ void pre_init(void)
             getchar_clients[badge].last_head = -1;
         }
     }
-    error = serial_irq_acknowledge();
+    error = plat_serial_interrupt_acknowledge();
     /* Start regular heartbeat of 500ms */
     timeout_periodic(0, 500000000);
     error = serial_unlock();
