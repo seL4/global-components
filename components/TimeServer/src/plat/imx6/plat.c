@@ -1,5 +1,5 @@
 /*
- * Copyright 2018, Data61
+ * Copyright 2019, Data61
  * Commonwealth Scientific and Industrial Research Organisation (CSIRO)
  * ABN 41 687 119 230.
  *
@@ -25,22 +25,28 @@
 #include "../../plat.h"
 #include "../../time_server.h"
 
-void epit2_irq_handle() {
+/* These functions are from the seL4DTBHardware connector */
+void epit2_0_handle();
+void gpt_0_handle();
+int epit2_0_acknowledge();
+int gpt_0_acknowledge();
+
+void epit2_0_handle() {
     ps_irq_t irq = { .type = PS_INTERRUPT, .irq = { .number = TIMEOUT_INTERRUPT }};
-    time_server_irq_handle(epit2_irq_acknowledge, &irq);
+    time_server_irq_handle(epit2_0_acknowledge, &irq);
 }
 
-void gpt_irq_handle() {
+void gpt_0_handle() {
     ps_irq_t irq = { .type = PS_INTERRUPT, .irq = { .number = TIMESTAMP_INTERRUPT }};
-    time_server_irq_handle(gpt_irq_acknowledge, &irq);
+    time_server_irq_handle(gpt_0_acknowledge, &irq);
 }
 
 void plat_post_init(ltimer_t *ltimer) {
     int error;
 
-    error = gpt_irq_acknowledge();
+    error = gpt_0_acknowledge();
     ZF_LOGF_IF(error, "Failed to ack gpt irq");
 
-    error = epit2_irq_acknowledge();
+    error = epit2_0_acknowledge();
     ZF_LOGF_IF(error, "Failed to ack epit2 irq");
 }
