@@ -10,5 +10,7 @@
  * @TAG(DATA61_BSD)
  */
 
+#include <platsupport/irq.h>
+
 typedef int (*irq_ack_fn)(void);
-void time_server_irq_handle(irq_ack_fn irq_acknowledge);
+void time_server_irq_handle(irq_ack_fn irq_acknowledge, ps_irq_t *irq);
