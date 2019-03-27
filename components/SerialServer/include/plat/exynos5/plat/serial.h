@@ -1,5 +1,5 @@
 /*
- * Copyright 2018, Data61
+ * Copyright 2019, Data61
  * Commonwealth Scientific and Industrial Research Organisation (CSIRO)
  * ABN 41 687 119 230.
  *
@@ -12,20 +12,14 @@
 #pragma once
 
 #define HARDWARE_SERIAL_INTERFACES                              \
-    dataport Buf serial_mem;                                    \
-    consumes DataAvailable serial_irq;
+    emits Dummy dummy_source;                                   \
+    consumes Dummy serial_dev;
 
 #define HARDWARE_SERIAL_ATTRIBUTES
 
-#define HARDWARE_SERIAL_COMPOSITION                                                     \
-        component UART serial;                                                          \
-        connection seL4HardwareMMIO serial_mem(from serial_mem, to serial.mem);         \
-        connection seL4HardwareInterrupt serial_irq(from serial.irq, to serial_irq);
+#define HARDWARE_SERIAL_COMPOSITION                                                 \
+        connection seL4DTBHardware serial_conn(from dummy_source, to serial_dev);
 
 #define HARDWARE_SERIAL_CONFIG                                  \
-        serial.dtb = dtb({"path":"/soc/serial@12c20000"});      \
-        serial.mem_paddr <- serial.dtb["reg"][0];               \
-        serial.mem_size = 0x1000;                               \
-        serial.irq_irq_number <- serial.dtb["interrupts"][1];   \
-        serial.irq_spi_number <- serial.dtb["interrupts"][0];   \
-        serial.irq_export_irq = 1;
+        serial_dev.dtb = dtb({"path":"/soc/serial@12c20000"});  \
+        serial_dev.generate_interrupts = 1;
