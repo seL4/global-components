@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <errno.h>
 #include <sel4/sel4.h>
 #include <sel4/arch/constants.h>
 #include <camkes.h>
@@ -69,9 +70,18 @@ static int signal_client(uintptr_t token) {
     return 0;
 }
 
-void time_server_irq_handle(irq_ack_fn irq_acknowledge) {
+void time_server_irq_handle(irq_ack_fn irq_acknowledge, ps_irq_t *irq) {
     int error = time_server_lock();
     ZF_LOGF_IF(error, "Failed to lock time server");
+
+    if (irq) {
+        /*
+         * Some platforms do not require the IRQ be handled,
+         * e.g. ZYNQ7000's timer TTC0 timer 2 and 3
+         */
+        error = ltimer_handle_irq(&ltimer, irq);
+        ZF_LOGF_IF(error, "Failed to handle IRQ");
+    }
 
     error = irq_acknowledge();
     ZF_LOGF_IF(error, "irq acknowledge failed");
