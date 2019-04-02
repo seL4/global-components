@@ -22,6 +22,8 @@
 #include <sel4utils/iommu_dma.h>
 #include <sel4platsupport/arch/io.h>
 
+#include "../../ethdriver.h"
+
 seL4_CPtr(*original_vspace_get_cap)(vspace_t *, void *);
 
 /* Returns the cap to the frame mapped to vaddr, assuming
@@ -97,4 +99,8 @@ int pc99_eth_setup(vka_t *vka, simple_t *camkes_simple, vspace_t *vspace, ps_io_
     }
 
     return 0;
+}
+
+void irq_handle(void) {
+    eth_irq_handle(irq_acknowledge, NULL);
 }
