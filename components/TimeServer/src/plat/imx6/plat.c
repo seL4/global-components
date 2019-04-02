@@ -25,28 +25,22 @@
 #include "../../plat.h"
 #include "../../time_server.h"
 
-/* These functions are from the seL4DTBHardware connector */
-void epit2_0_handle();
-void gpt_0_handle();
-int epit2_0_acknowledge();
-int gpt_0_acknowledge();
-
-void epit2_0_handle() {
-    ps_irq_t irq = { .type = PS_INTERRUPT, .irq = { .number = TIMEOUT_INTERRUPT }};
-    time_server_irq_handle(epit2_0_acknowledge, &irq);
+void epit2_irq_handle(ps_irq_t *irq) {
+    time_server_irq_handle(epit2_irq_acknowledge, irq);
 }
 
-void gpt_0_handle() {
-    ps_irq_t irq = { .type = PS_INTERRUPT, .irq = { .number = TIMESTAMP_INTERRUPT }};
-    time_server_irq_handle(gpt_0_acknowledge, &irq);
+void gpt_irq_handle(ps_irq_t *irq) {
+    time_server_irq_handle(gpt_irq_acknowledge, irq);
 }
 
 void plat_post_init(ltimer_t *ltimer) {
     int error;
 
-    error = gpt_0_acknowledge();
+    ps_irq_t gpt_irq = { .type = PS_INTERRUPT, .irq = { .number = TIMESTAMP_INTERRUPT }};
+    error = gpt_irq_acknowledge(&gpt_irq);
     ZF_LOGF_IF(error, "Failed to ack gpt irq");
 
-    error = epit2_0_acknowledge();
+    ps_irq_t epit2_irq = { .type = PS_INTERRUPT, .irq = { .number = TIMEOUT_INTERRUPT }};
+    error = epit2_irq_acknowledge(&epit2_irq);
     ZF_LOGF_IF(error, "Failed to ack epit2 irq");
 }

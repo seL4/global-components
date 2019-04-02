@@ -25,70 +25,28 @@
 #include "../../plat.h"
 #include "../../time_server.h"
 
-/* These functions are from the seL4DTBHardware connector */
-void ttc0_0_handle(void);
-void ttc0_1_handle(void);
-void ttc0_2_handle(void);
-int ttc0_0_acknowledge(void);
-int ttc0_1_acknowledge(void);
-int ttc0_2_acknowledge(void);
-
-void ttc1_0_handle(void);
-void ttc1_1_handle(void);
-void ttc1_2_handle(void);
-int ttc1_0_acknowledge(void);
-int ttc1_1_acknowledge(void);
-int ttc1_2_acknowledge(void);
-
-void ttc0_0_handle() {
-    ps_irq_t UNUSED irq = { .type = PS_INTERRUPT, .irq = { .number = TTC0_TIMER1_IRQ }};
-    time_server_irq_handle(ttc0_0_acknowledge, &irq);
+void ttc0_irq_handle(ps_irq_t *irq) {
+    time_server_irq_handle(ttc0_irq_acknowledge, irq);
 }
 
-void ttc0_1_handle() {
-    /* We don't actually use this timer */
-    time_server_irq_handle(ttc0_1_acknowledge, NULL);
-}
-
-void ttc0_2_handle() {
-    /* We don't actually use this timer */
-    time_server_irq_handle(ttc0_2_acknowledge, NULL);
-}
-
-void ttc1_0_handle() {
-    ps_irq_t irq = { .type = PS_INTERRUPT, .irq = { .number = TTC1_TIMER1_IRQ }};
-    time_server_irq_handle(ttc1_0_acknowledge, &irq);
-}
-
-void ttc1_1_handle() {
-    /* We don't actually use this timer */
-    time_server_irq_handle(ttc1_1_acknowledge, NULL);
-}
-
-void ttc1_2_handle() {
-    /* We don't actually use this timer */
-    time_server_irq_handle(ttc1_2_acknowledge, NULL);
+void ttc1_irq_handle(ps_irq_t *irq) {
+    time_server_irq_handle(ttc1_irq_acknowledge, irq);
 }
 
 void plat_post_init(ltimer_t *ltimer) {
     int error;
 
-    error = ttc0_0_acknowledge();
-    ZF_LOGF_IF(error, "Failed to ack ttc0 irq t1 irq");
+    /* Acknowledge all the timers inside TTC0 */
+    for (int i = 0; i < 3; i++) {
+        ps_irq_t irq = { .type = PS_INTERRUPT, .irq = { .number = TTC0_TIMER1_IRQ + i }};
+        error = ttc0_irq_acknowledge(&irq);
+        ZF_LOGF_IF(error, "Failed to ack ttc0 irq t%d irq", i + 1);
+    }
 
-    error = ttc0_1_acknowledge();
-    ZF_LOGF_IF(error, "Failed to ack ttc0 irq t2 irq");
-
-    error = ttc0_2_acknowledge();
-    ZF_LOGF_IF(error, "Failed to ack ttc0 irq t3 irq");
-
-    error = ttc1_0_acknowledge();
-    ZF_LOGF_IF(error, "Failed to ack ttc1 irq t1 irq");
-
-    error = ttc1_1_acknowledge();
-    ZF_LOGF_IF(error, "Failed to ack ttc1 irq t2 irq");
-
-    error = ttc1_2_acknowledge();
-    ZF_LOGF_IF(error, "Failed to ack ttc1 irq t3 irq");
-
+    /* Acknowledge all the timers inside TTC1 */
+    for (int i = 0; i < 3; i++) {
+        ps_irq_t irq = { .type = PS_INTERRUPT, .irq = { .number = TTC1_TIMER1_IRQ + i }};
+        error = ttc1_irq_acknowledge(&irq);
+        ZF_LOGF_IF(error, "Failed to ack ttc1 irq t%d irq", i + 1);
+    }
 }
