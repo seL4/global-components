@@ -77,13 +77,13 @@ void time_server_irq_handle(irq_ack_fn irq_acknowledge, ps_irq_t *irq) {
     if (irq) {
         /*
          * Some platforms do not require the IRQ be handled,
-         * e.g. ZYNQ7000's timer TTC0 timer 2 and 3
+         * e.g. x86 PIT timers
          */
         error = ltimer_handle_irq(&ltimer, irq);
         ZF_LOGF_IF(error, "Failed to handle IRQ");
     }
 
-    error = irq_acknowledge();
+    error = irq_acknowledge(irq);
     ZF_LOGF_IF(error, "irq acknowledge failed");
 
     error = tm_update(&time_manager);
