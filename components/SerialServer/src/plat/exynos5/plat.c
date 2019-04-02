@@ -14,19 +14,20 @@
 #include <sel4/sel4.h>
 #include <camkes.h>
 #include <utils/util.h>
+#include <platsupport/irq.h>
 #include <sel4utils/sel4_zf_logif.h>
 
 #include "../../plat.h"
 #include "../../serial.h"
 
-/* This function is from the seL4DTBHardware connector */
-int serial_dev_0_acknowledge();
-
-int plat_serial_interrupt_acknowledge() {
-    return serial_dev_0_acknowledge();
+void serial_dev_irq_handle(ps_irq_t *irq)
+{
+    serial_server_irq_handle(serial_dev_irq_acknowledge, irq);
 }
 
-void serial_dev_0_handle()
+void plat_post_init(void)
 {
-    serial_server_irq_handle();
+    ps_irq_t irq = { .type = PS_INTERRUPT, .irq = { .number = DEFAULT_SERIAL_INTERRUPT }};
+    int error = serial_dev_irq_acknowledge(&irq);
+    ZF_LOGF_IFERR(error, "Failed to acknowledge irq for serial");
 }
