@@ -463,14 +463,14 @@ int run(void)
     return 0;
 }
 
-void serial_server_irq_handle()
+void serial_server_irq_handle(irq_ack_fn irq_acknowledge, ps_irq_t *irq)
 {
     int error = serial_lock();
     ZF_LOGF_IF(error, "Failed to lock serial server");
 
     plat_serial_interrupt(handle_char);
 
-    error = plat_serial_interrupt_acknowledge();
+    error = irq_acknowledge(irq);
     ZF_LOGF_IF(error, "Failed to acknowledge IRQ");
 
     error = serial_unlock();
@@ -501,7 +501,7 @@ void pre_init(void)
             getchar_clients[badge].last_head = -1;
         }
     }
-    error = plat_serial_interrupt_acknowledge();
+    plat_post_init();
     /* Start regular heartbeat of 500ms */
     timeout_periodic(0, 500000000);
     error = serial_unlock();
