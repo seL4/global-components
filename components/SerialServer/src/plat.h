@@ -16,9 +16,9 @@
 typedef void (*handle_char_fn)(uint8_t);
 
 void plat_pre_init(void);
+/* Definition located at plat/${KernelPlatform}/plat.c */
+void plat_post_init(void);
 void plat_serial_interrupt(handle_char_fn handle_char);
 void plat_serial_putchar(int c);
 ssize_t plat_serial_read(void *buf, size_t buf_size, chardev_callback_t cb, void *token);
 ssize_t plat_serial_write(void *buf, size_t buf_size, chardev_callback_t cb, void *token);
-/* Definition located at plat/${KernelPlatform}/plat.c */
-int plat_serial_interrupt_acknowledge(void);
