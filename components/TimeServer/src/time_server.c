@@ -221,7 +221,7 @@ void post_init() {
     ZF_LOGF_IF(error, "Failed to get camkes_io_ops");
 
     error = ps_calloc(&ops.malloc_ops, the_timer_largest_badge(), sizeof(*client_state), (void **) &client_state);
-    ZF_LOGF_IF(error, "Failed to allocate client state")
+    ZF_LOGF_IF(error, "Failed to allocate client state");
 
     error = ltimer_default_init(&ltimer, ops);
     ZF_LOGF_IF(error, "Failed to init timer");
