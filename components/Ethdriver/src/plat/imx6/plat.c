@@ -54,6 +54,7 @@ int ethif_init(struct eth_driver *eth_driver, ps_io_ops_t *io_ops)
     return EthDriver_irq_acknowledge(&irq);
 }
 
-void EthDriver_irq_handle(ps_irq_t *irq) {
+void EthDriver_irq_handle(ps_irq_t *irq)
+{
     eth_irq_handle(EthDriver_irq_acknowledge, irq);
 }

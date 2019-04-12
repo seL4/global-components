@@ -407,21 +407,22 @@ void client_mac(uint8_t *b1, uint8_t *b2, uint8_t *b3, uint8_t *b4, uint8_t *b5,
     error = ethdriver_unlock();
 }
 
-void eth_irq_handle(irq_ack_fn irq_acknowledge, ps_irq_t *irq) {
+void eth_irq_handle(irq_ack_fn irq_acknowledge, ps_irq_t *irq)
+{
     int error;
 
     error = ethdriver_lock();
     ZF_LOGF_IF(error, "Failed to obtain lock for Ethdriver");
 
     if (irq && irq->type == PS_INTERRUPT) {
-        /* 
-         * Sabre, ZYNQ doesn't care about the number being passed in, 
+        /*
+         * Sabre, ZYNQ doesn't care about the number being passed in,
          * however Beaglebone does
          */
         eth_driver.i_fn.raw_handleIRQ(&eth_driver, irq->irq.number);
     } else {
-        /* 
-         * Other platforms which use different interrupt types 
+        /*
+         * Other platforms which use different interrupt types
          * do not care about the interrupt number at the moment
          */
         eth_driver.i_fn.raw_handleIRQ(&eth_driver, 0);
@@ -434,7 +435,8 @@ void eth_irq_handle(irq_ack_fn irq_acknowledge, ps_irq_t *irq) {
     ZF_LOGF_IF(error, "Failed to release lock for Ethdriver");
 }
 
-void post_init(void) {
+void post_init(void)
+{
     int error = 0;
     error = ethdriver_lock();
     /* initialize seL4 allocators and give us a half sane environment */

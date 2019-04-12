@@ -101,6 +101,7 @@ int pc99_eth_setup(vka_t *vka, simple_t *camkes_simple, vspace_t *vspace, ps_io_
     return 0;
 }
 
-void irq_handle(void) {
+void irq_handle(void)
+{
     eth_irq_handle(irq_acknowledge, NULL);
 }
