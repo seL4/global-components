@@ -25,11 +25,13 @@
 #include "../../plat.h"
 #include "../../time_server.h"
 
-void pwm_irq_handle(ps_irq_t *irq) {
+void pwm_irq_handle(ps_irq_t *irq)
+{
     time_server_irq_handle(pwm_irq_acknowledge, irq);
 }
 
-void plat_post_init(ltimer_t *ltimer) {
+void plat_post_init(ltimer_t *ltimer)
+{
     int error;
 
     /* Acknowledge all the timers inside the PWM timer */

@@ -45,7 +45,8 @@ seL4_Word the_timer_get_sender_id();
 void the_timer_emit(unsigned int);
 int the_timer_largest_badge(void);
 
-static inline uint64_t current_time_ns() {
+static inline uint64_t current_time_ns()
+{
     uint64_t time;
     int error = ltimer_get_time(&ltimer, &time);
     ZF_LOGF_IF(error, "Failed to get time");
@@ -57,7 +58,8 @@ static inline unsigned int get_time_token(int cid, int tid)
     return (unsigned int) cid * timers_per_client + tid;
 }
 
-static int signal_client(uintptr_t token) {
+static int signal_client(uintptr_t token)
+{
 
     int cid = ((int) token) / timers_per_client;
     int tid = ((int) token) % timers_per_client;
@@ -70,7 +72,8 @@ static int signal_client(uintptr_t token) {
     return 0;
 }
 
-void time_server_irq_handle(irq_ack_fn irq_acknowledge, ps_irq_t *irq) {
+void time_server_irq_handle(irq_ack_fn irq_acknowledge, ps_irq_t *irq)
+{
     int error = time_server_lock();
     ZF_LOGF_IF(error, "Failed to lock time server");
 
@@ -93,7 +96,8 @@ void time_server_irq_handle(irq_ack_fn irq_acknowledge, ps_irq_t *irq) {
     ZF_LOGF_IF(error, "Failed to unlock time server");
 }
 
-static int _oneshot_relative(int cid, int tid, uint64_t ns) {
+static int _oneshot_relative(int cid, int tid, uint64_t ns)
+{
     if (tid >= timers_per_client || tid < 0) {
         ZF_LOGE("invalid tid, 0 >= %d >= %d\n", tid, timers_per_client);
         return -1;
@@ -111,7 +115,8 @@ static int _oneshot_relative(int cid, int tid, uint64_t ns) {
     return 0;
 }
 
-static int _oneshot_absolute(int cid, int tid, uint64_t ns) {
+static int _oneshot_absolute(int cid, int tid, uint64_t ns)
+{
     if (tid >= timers_per_client || tid < 0) {
         ZF_LOGE("invalid tid, 0 >= %d >= %d\n", tid, timers_per_client);
         return -1;
@@ -134,7 +139,8 @@ static int _oneshot_absolute(int cid, int tid, uint64_t ns) {
     return 0;
 }
 
-static int _periodic(int cid, int tid, uint64_t ns) {
+static int _periodic(int cid, int tid, uint64_t ns)
+{
     if (tid >= timers_per_client || tid < 0) {
         ZF_LOGE("invalid tid, 0 >= %d >= %d\n", tid, timers_per_client);
         return -1;
@@ -152,7 +158,8 @@ static int _periodic(int cid, int tid, uint64_t ns) {
     return 0;
 }
 
-static int _stop(int cid, int tid) {
+static int _stop(int cid, int tid)
+{
     if (tid >= timers_per_client || tid < 0) {
         ZF_LOGE("invalid tid, 0 >= %d >= %d\n", tid, timers_per_client);
         return -1;
@@ -168,7 +175,8 @@ static int _stop(int cid, int tid) {
     return 0;
 }
 
-static unsigned int _completed(int cid) {
+static unsigned int _completed(int cid)
+{
     int error = time_server_lock();
     ZF_LOGF_IF(error, "Failed to lock time server");
 
@@ -182,37 +190,45 @@ static unsigned int _completed(int cid) {
     return ret;
 }
 
-static uint64_t _time(int cid) {
+static uint64_t _time(int cid)
+{
     return current_time_ns();
 }
 
 /* substract 1 from the badge as we started counting badges at 1
  * to avoid using the 0 badge */
-int the_timer_oneshot_relative(int id, uint64_t ns) {
+int the_timer_oneshot_relative(int id, uint64_t ns)
+{
     return _oneshot_relative(the_timer_get_sender_id() - 1, id, ns);
 }
 
-int the_timer_oneshot_absolute(int id, uint64_t ns) {
+int the_timer_oneshot_absolute(int id, uint64_t ns)
+{
     return _oneshot_absolute(the_timer_get_sender_id() - 1, id, ns);
 }
 
-int the_timer_periodic(int id, uint64_t ns) {
+int the_timer_periodic(int id, uint64_t ns)
+{
     return _periodic(the_timer_get_sender_id() - 1, id, ns);
 }
 
-int the_timer_stop(int id) {
+int the_timer_stop(int id)
+{
     return _stop(the_timer_get_sender_id() - 1, id);
 }
 
-unsigned int the_timer_completed() {
+unsigned int the_timer_completed()
+{
     return _completed(the_timer_get_sender_id() - 1);
 }
 
-uint64_t the_timer_time() {
+uint64_t the_timer_time()
+{
     return _time(the_timer_get_sender_id() - 1);
 }
 
-void post_init() {
+void post_init()
+{
     int error = time_server_lock();
     ZF_LOGF_IF(error, "Failed to lock timer server");
 

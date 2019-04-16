@@ -25,15 +25,18 @@
 #include "../../plat.h"
 #include "../../time_server.h"
 
-void ttc0_irq_handle(ps_irq_t *irq) {
+void ttc0_irq_handle(ps_irq_t *irq)
+{
     time_server_irq_handle(ttc0_irq_acknowledge, irq);
 }
 
-void ttc1_irq_handle(ps_irq_t *irq) {
+void ttc1_irq_handle(ps_irq_t *irq)
+{
     time_server_irq_handle(ttc1_irq_acknowledge, irq);
 }
 
-void plat_post_init(ltimer_t *ltimer) {
+void plat_post_init(ltimer_t *ltimer)
+{
     int error;
 
     /* Acknowledge all the timers inside TTC0 */

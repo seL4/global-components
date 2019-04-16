@@ -27,11 +27,13 @@
 
 static uint64_t tsc_frequency = 0;
 
-uint64_t the_timer_tsc_frequency() {
+uint64_t the_timer_tsc_frequency()
+{
     return tsc_frequency;
 }
 
-void irq_handle(void) {
+void irq_handle(void)
+{
     /* We don't need to call ltimer_handle_irq */
     time_server_irq_handle(irq_acknowledge, NULL);
 }
@@ -41,7 +43,8 @@ void irq_handle(void) {
 // Having this as weak allows us to test for this at run time / link time
 void camkes_make_simple(simple_t *simple) __attribute__((weak));
 
-void plat_post_init(ltimer_t *ltimer) {
+void plat_post_init(ltimer_t *ltimer)
+{
     int error = irq_acknowledge();
     ZF_LOGF_IF(error, "Failed to ack irq");
 

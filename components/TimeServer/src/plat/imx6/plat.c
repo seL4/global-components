@@ -25,15 +25,18 @@
 #include "../../plat.h"
 #include "../../time_server.h"
 
-void epit2_irq_handle(ps_irq_t *irq) {
+void epit2_irq_handle(ps_irq_t *irq)
+{
     time_server_irq_handle(epit2_irq_acknowledge, irq);
 }
 
-void gpt_irq_handle(ps_irq_t *irq) {
+void gpt_irq_handle(ps_irq_t *irq)
+{
     time_server_irq_handle(gpt_irq_acknowledge, irq);
 }
 
-void plat_post_init(ltimer_t *ltimer) {
+void plat_post_init(ltimer_t *ltimer)
+{
     int error;
 
     ps_irq_t gpt_irq = { .type = PS_INTERRUPT, .irq = { .number = TIMESTAMP_INTERRUPT }};
