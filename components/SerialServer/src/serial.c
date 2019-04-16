@@ -122,7 +122,7 @@ static bool flush_buffer_line(int b)
     if (output_buffers_used[b] == 0) {
         return 0;
     }
-    uint8_t* nlptr = memchr(output_buffers[b], '\r', output_buffers_used[b]);
+    uint8_t *nlptr = memchr(output_buffers[b], '\r', output_buffers_used[b]);
     if (nlptr == NULL) {
         nlptr = memchr(output_buffers[b], '\n', output_buffers_used[b]);
     }
@@ -306,7 +306,7 @@ static void internal_raw_putchar(int id, int c)
 {
     getchar_client_t *client = &getchar_clients[id];
     uint32_t next_tail = (client->buf->tail + 1) % sizeof(client->buf->buf);
-    if ( next_tail == client->buf->head) {
+    if (next_tail == client->buf->head) {
         /* full */
         return;
     }

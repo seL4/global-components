@@ -15,15 +15,21 @@ cmake_minimum_required(VERSION 3.8.2)
 project(SerialServer C)
 
 if(KernelArchARM)
-set(CAmkESDTS ON CACHE BOOL "" FORCE)
+    set(CAmkESDTS ON CACHE BOOL "" FORCE)
 endif()
 
 set(CAmkESCPP ON CACHE BOOL "" FORCE)
 
-DeclareCAmkESComponent(SerialServer SOURCES src/serial.c
-                                            src/plat.c
-                                            src/server_virtqueue.c
-                                            src/plat/${KernelPlatform}/plat.c
-                                    LIBS virtqueue vswitch)
+DeclareCAmkESComponent(
+    SerialServer
+    SOURCES
+    src/serial.c
+    src/plat.c
+    src/server_virtqueue.c
+    src/plat/${KernelPlatform}/plat.c
+    LIBS
+    virtqueue
+    vswitch
+)
 
 CAmkESAddCPPInclude("${CMAKE_CURRENT_LIST_DIR}/include/plat/${KernelPlatform}/")

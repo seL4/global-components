@@ -21,7 +21,7 @@
 #include "plat.h"
 
 struct ps_chardevice serial_device;
-struct ps_chardevice* serial = NULL;
+struct ps_chardevice *serial = NULL;
 
 ssize_t plat_serial_write(void *buf, size_t buf_size, chardev_callback_t cb, void *token)
 {
@@ -40,7 +40,7 @@ void plat_serial_interrupt(handle_char_fn handle_char)
     if (serial) {
         int data = 0;
         ps_cdev_handle_irq(serial, 0);
-        while (data !=  EOF){
+        while (data !=  EOF) {
             data = ps_cdev_getchar(serial);
             if (data != EOF) {
                 handle_char((uint8_t)data);
@@ -68,7 +68,7 @@ void plat_pre_init(void)
 #endif
 
     serial = ps_cdev_init(PS_SERIAL_DEFAULT, &ops, &serial_device);
-    if (serial == NULL){
+    if (serial == NULL) {
         ZF_LOGE("Failed to initialise character device");
     }
 }
