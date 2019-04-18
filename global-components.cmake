@@ -16,10 +16,11 @@ CAmkESAddImportPath(components)
 CAmkESAddImportPath(interfaces)
 CAmkESAddTemplatesPath(templates)
 
-
 include(${CMAKE_CURRENT_LIST_DIR}/components/PCIConfigIO/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/components/RTC/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/components/SerialServer/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/components/TimeServer/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/components/FileServer/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/components/VirtQueue/CMakeLists.txt)
+include(${CMAKE_CURRENT_LIST_DIR}/components/Ethdriver/CMakeLists.txt)
+include(${CMAKE_CURRENT_LIST_DIR}/components/PicoServer/CMakeLists.txt)
