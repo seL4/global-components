@@ -193,6 +193,30 @@ connector seL4SerialServer {
     to Procedure template "seL4RPCDataportSignal-to.template.c";
 }
 
+connector seL4PicoServerSignal {
+    from Procedures template "seL4RPCCallSignal-from.template.c" with 0 threads;
+    to Procedure template "seL4RPCCallSignal-to.template.c";
+}
+
+connector seL4PicoServer {
+    from Procedures template "seL4RPCDataport-from.template.c" with 0 threads;
+    to Procedure template "seL4RPCDataport-to.template.c";
+}
+
+/**
+ * seL4Ethdriver
+ * 
+ * This connector is intended to be used with the Ethdriver component.
+ *
+ * The connector itself is very similar to the seL4RPCDataportSignal connector
+ * except that it contains an additional function to query a client's assigned MAC
+ * address.
+ */ 
+connector seL4Ethdriver {
+    from Procedures template "seL4Ethdriver-from.template.c" with 0 threads;
+    to Procedure template "seL4Ethdriver-to.template.c";
+}
+
 /**
 * seL4VirtQueues
 *
