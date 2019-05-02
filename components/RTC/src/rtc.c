@@ -15,7 +15,8 @@
 #include <camkes/io.h>
 #include <utils/util.h>
 
-rtc_time_date_t rtc_time_date(void) {
+rtc_time_date_t rtc_time_date(void)
+{
     rtc_time_date_t time_date;
     int error UNUSED;
     ps_io_port_ops_t ops = {0};
@@ -26,6 +27,7 @@ rtc_time_date_t rtc_time_date(void) {
     return time_date;
 }
 
-void pre_init(void) {
+void pre_init(void)
+{
     set_putchar(putchar_putchar);
 }
