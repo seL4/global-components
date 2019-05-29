@@ -15,7 +15,6 @@
 #include <camkes.h>
 #include <camkes/virtqueue_template.h>
 #include <virtqueue.h>
-#include <vswitch.h>
 
 /*- set suffix = "_buf" -*/
 /*- include 'seL4MultiSharedData-from.template.c' -*/
