@@ -1,5 +1,5 @@
 /*
- * Copyright 2018, Data61
+ * Copyright 2019, Data61
  * Commonwealth Scientific and Industrial Research Organisation (CSIRO)
  * ABN 41 687 119 230.
  *
@@ -12,5 +12,4 @@
 
 #include <platsupport/irq.h>
 
-typedef int (*irq_ack_fn)(ps_irq_t *irq);
-void time_server_irq_handle(irq_ack_fn irq_acknowledge, ps_irq_t *irq);
+void time_server_irq_handle(void *data, ps_irq_acknowledge_fn_t acknowledge_fn, void *ack_data);

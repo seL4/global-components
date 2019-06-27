@@ -20,8 +20,10 @@
 #include <sel4/sel4.h>
 #include <sel4/arch/constants.h>
 #include <camkes.h>
+#include <camkes/irq.h>
 #include <platsupport/time_manager.h>
 #include <platsupport/local_time_manager.h>
+#include <platsupport/irq.h>
 #include <utils/util.h>
 #include <sel4utils/sel4_zf_logif.h>
 #include <simple/simple.h>
@@ -44,6 +46,8 @@ uint32_t *client_state = NULL;
 seL4_Word the_timer_get_sender_id();
 void the_timer_emit(unsigned int);
 int the_timer_largest_badge(void);
+
+static ps_irq_ops_t irq_ops;
 
 static inline uint64_t current_time_ns()
 {
@@ -72,10 +76,15 @@ static int signal_client(uintptr_t token)
     return 0;
 }
 
-void time_server_irq_handle(irq_ack_fn irq_acknowledge, ps_irq_t *irq)
+void time_server_irq_handle(void *data, ps_irq_acknowledge_fn_t acknowledge_fn, void *ack_data)
 {
     int error = time_server_lock();
     ZF_LOGF_IF(error, "Failed to lock time server");
+
+    ps_irq_t *irq = NULL;
+    if (data) {
+        irq = data;
+    }
 
     if (irq) {
         /*
@@ -86,7 +95,7 @@ void time_server_irq_handle(irq_ack_fn irq_acknowledge, ps_irq_t *irq)
         ZF_LOGF_IF(error, "Failed to handle IRQ");
     }
 
-    error = irq_acknowledge(irq);
+    error = acknowledge_fn(ack_data);
     ZF_LOGF_IF(error, "irq acknowledge failed");
 
     error = tm_update(&time_manager);
@@ -242,7 +251,10 @@ void post_init()
     error = ltimer_default_init(&ltimer, ops);
     ZF_LOGF_IF(error, "Failed to init timer");
 
-    plat_post_init(&ltimer);
+    error = camkes_irq_ops(&irq_ops);
+    ZF_LOGF_IF(error, "Failed to get camkes_irq_ops");
+
+    plat_post_init(&ltimer, &irq_ops);
 
     int num_timers = timers_per_client * the_timer_largest_badge();
     tm_init(&time_manager, &ltimer, &ops, num_timers);
