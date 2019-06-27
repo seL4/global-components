@@ -20,13 +20,9 @@
 #include "../../plat.h"
 #include "../../serial.h"
 
-void serial_irq_handle(void)
+void plat_post_init(ps_irq_ops_t *irq_ops)
 {
-    serial_server_irq_handle(serial_irq_acknowledge, NULL);
-}
-
-void plat_post_init(void)
-{
-    int error = serial_irq_acknowledge();
-    ZF_LOGF_IFERR(error, "Failed to acknowledge irq for serial");
+    ps_irq_t irq_info = { .type = PS_IOAPIC, .ioapic = { .ioapic = 0, .pin = 4, .level = 0, .polarity = 0, .vector = 4 }};
+    irq_id_t serial_irq_id = ps_irq_register(irq_ops, irq_info, serial_server_irq_handle, NULL);
+    ZF_LOGF_IFERR(serial_irq_id < 0, "Failed to register irq for serial");
 }

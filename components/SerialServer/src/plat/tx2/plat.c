@@ -20,14 +20,9 @@
 #include "../../plat.h"
 #include "../../serial.h"
 
-void serial_dev_irq_handle(ps_irq_t *irq)
+void plat_post_init(ps_irq_ops_t *irq_ops)
 {
-    serial_server_irq_handle(serial_dev_irq_acknowledge, irq);
-}
-
-void plat_post_init(void)
-{
-    ps_irq_t irq = { .type = PS_INTERRUPT, .irq = { .number = DEFAULT_SERIAL_INTERRUPT }};
-    int error = serial_dev_irq_acknowledge(&irq);
-    ZF_LOGF_IFERR(error, "Failed to acknowledge irq for serial");
+    ps_irq_t irq_info = { .type = PS_INTERRUPT, .irq = { .number = DEFAULT_SERIAL_INTERRUPT }};
+    irq_id_t serial_irq_id = ps_irq_register(irq_ops, irq_info, serial_server_irq_handle, NULL);
+    ZF_LOGF_IFERR(serial_irq_id < 0, "Failed to register irq for serial");
 }
