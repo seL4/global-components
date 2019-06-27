@@ -23,7 +23,6 @@
 #include <allocman/vka.h>
 #include <sel4utils/vspace.h>
 
-extern void *EthDriver_0;
 
 int ethif_preinit(vka_t *vka, simple_t *camkes_simple, vspace_t *vspace,
                   ps_io_ops_t *io_ops)
