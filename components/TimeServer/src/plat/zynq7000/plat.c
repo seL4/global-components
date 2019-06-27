@@ -25,31 +25,21 @@
 #include "../../plat.h"
 #include "../../time_server.h"
 
-void ttc0_irq_handle(ps_irq_t *irq)
+static ps_irq_t timeout_info = {0};
+static ps_irq_t timestamp_info = {0};
+
+void plat_post_init(ltimer_t *ltimer, ps_irq_ops_t *irq_ops)
 {
-    time_server_irq_handle(ttc0_irq_acknowledge, irq);
-}
+    /* Register the interrupt callbacks */
+    timestamp_info = (ps_irq_t) {
+        .type = PS_INTERRUPT, .irq = { .number = TTC1_TIMER1_IRQ }
+    };
+    irq_id_t timestamp_irq_id = ps_irq_register(irq_ops, timestamp_info, time_server_irq_handle, &timestamp_info);
+    ZF_LOGF_IF(timestamp_irq_id < 0, "Failed to register IRQ for timestamp");
 
-void ttc1_irq_handle(ps_irq_t *irq)
-{
-    time_server_irq_handle(ttc1_irq_acknowledge, irq);
-}
-
-void plat_post_init(ltimer_t *ltimer)
-{
-    int error;
-
-    /* Acknowledge all the timers inside TTC0 */
-    for (int i = 0; i < 3; i++) {
-        ps_irq_t irq = { .type = PS_INTERRUPT, .irq = { .number = TTC0_TIMER1_IRQ + i }};
-        error = ttc0_irq_acknowledge(&irq);
-        ZF_LOGF_IF(error, "Failed to ack ttc0 irq t%d irq", i + 1);
-    }
-
-    /* Acknowledge all the timers inside TTC1 */
-    for (int i = 0; i < 3; i++) {
-        ps_irq_t irq = { .type = PS_INTERRUPT, .irq = { .number = TTC1_TIMER1_IRQ + i }};
-        error = ttc1_irq_acknowledge(&irq);
-        ZF_LOGF_IF(error, "Failed to ack ttc1 irq t%d irq", i + 1);
-    }
+    timeout_info = (ps_irq_t) {
+        .type = PS_INTERRUPT, .irq = { .number = TTC0_TIMER1_IRQ }
+    };
+    irq_id_t timeout_irq_id = ps_irq_register(irq_ops, timeout_info, time_server_irq_handle, &timeout_info);
+    ZF_LOGF_IF(timeout_irq_id < 0, "Failed to register IRQ for timeout");
 }

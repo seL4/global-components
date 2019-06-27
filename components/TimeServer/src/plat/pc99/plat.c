@@ -32,21 +32,16 @@ uint64_t the_timer_tsc_frequency()
     return tsc_frequency;
 }
 
-void irq_handle(void)
-{
-    /* We don't need to call ltimer_handle_irq */
-    time_server_irq_handle(irq_acknowledge, NULL);
-}
-
 // We declare this with a weak attribute here as we would like this component to work
 // regardless of whether the assembly declared this to have a simple template or not.
 // Having this as weak allows us to test for this at run time / link time
 void camkes_make_simple(simple_t *simple) __attribute__((weak));
 
-void plat_post_init(ltimer_t *ltimer)
+void plat_post_init(ltimer_t *ltimer, ps_irq_ops_t *irq_ops)
 {
-    int error = irq_acknowledge();
-    ZF_LOGF_IF(error, "Failed to ack irq");
+    ps_irq_t irq_info = { .type = PS_IOAPIC, .ioapic = { .ioapic = 0, .pin = 2, .level = 0, .polarity = 0, .vector = 2}};
+    irq_id_t irq_id = ps_irq_register(irq_ops, irq_info, time_server_irq_handle, NULL);
+    ZF_LOGF_IF(irq_id < 0, "Failed to register IRQ");
 
     // Attempt to detect the presence of a simple interface and try and get the
     // tsc frequency from it

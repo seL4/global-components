@@ -18,23 +18,16 @@
 #include "../../plat.h"
 #include "../../time_server.h"
 
-#define NUM_TIMERS 6
+static ps_irq_t timer_info = {0};
 
-void nv_timer_irq_handle(ps_irq_t *irq)
+void plat_post_init(ltimer_t *ltimer, ps_irq_ops_t *irq_ops)
 {
-    time_server_irq_handle(nv_timer_irq_acknowledge, irq);
-}
+    /* Register the interrupt callbacks,
+     * TX2 uses only one timer for both timeout and timestamp */
+    timer_info = (ps_irq_t) {
+        .type = PS_INTERRUPT, .irq = { .number = INT_NV_TMR1 }
+    };
+    irq_id_t timer_irq_id = ps_irq_register(irq_ops, timer_info, time_server_irq_handle, &timer_info);
+    ZF_LOGF_IF(timer_irq_id < 0, "Failed to register IRQ for timer");
 
-void plat_post_init(ltimer_t *ltimer)
-{
-    int error;
-
-    /* Acknowledge all the timers */
-    for (int i = 0; i < NUM_TIMERS; i++) {
-        ps_irq_t nv_timer_irq = (ps_irq_t) {
-            .type = PS_INTERRUPT, .irq = { .number = INT_NV_TMR0 + i }
-        };
-        error = nv_timer_irq_acknowledge(&nv_timer_irq);
-        ZF_LOGF_IF(error, "Failed to ack timer %d's irq", i);
-    }
 }

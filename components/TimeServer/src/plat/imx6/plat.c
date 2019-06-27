@@ -25,25 +25,21 @@
 #include "../../plat.h"
 #include "../../time_server.h"
 
-void epit2_irq_handle(ps_irq_t *irq)
+static ps_irq_t timeout_info = {0};
+static ps_irq_t timestamp_info = {0};
+
+void plat_post_init(ltimer_t *ltimer, ps_irq_ops_t *irq_ops)
 {
-    time_server_irq_handle(epit2_irq_acknowledge, irq);
-}
+    /* Register the interrupt callbacks */
+    timestamp_info = (ps_irq_t) {
+        .type = PS_INTERRUPT, .irq = { .number = GPT1_INTERRUPT }
+    };
+    irq_id_t timestamp_irq_id = ps_irq_register(irq_ops, timestamp_info, time_server_irq_handle, &timestamp_info);
+    ZF_LOGF_IF(timestamp_irq_id < 0, "Failed to register IRQ for timestamp");
 
-void gpt_irq_handle(ps_irq_t *irq)
-{
-    time_server_irq_handle(gpt_irq_acknowledge, irq);
-}
-
-void plat_post_init(ltimer_t *ltimer)
-{
-    int error;
-
-    ps_irq_t gpt_irq = { .type = PS_INTERRUPT, .irq = { .number = TIMESTAMP_INTERRUPT }};
-    error = gpt_irq_acknowledge(&gpt_irq);
-    ZF_LOGF_IF(error, "Failed to ack gpt irq");
-
-    ps_irq_t epit2_irq = { .type = PS_INTERRUPT, .irq = { .number = TIMEOUT_INTERRUPT }};
-    error = epit2_irq_acknowledge(&epit2_irq);
-    ZF_LOGF_IF(error, "Failed to ack epit2 irq");
+    timeout_info = (ps_irq_t) {
+        .type = PS_INTERRUPT, .irq = { .number = EPIT2_INTERRUPT }
+    };
+    irq_id_t timeout_irq_id = ps_irq_register(irq_ops, timeout_info, time_server_irq_handle, &timeout_info);
+    ZF_LOGF_IF(timeout_irq_id < 0, "Failed to register IRQ for timeout");
 }

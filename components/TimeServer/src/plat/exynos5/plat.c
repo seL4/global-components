@@ -25,19 +25,20 @@
 #include "../../plat.h"
 #include "../../time_server.h"
 
-void pwm_irq_handle(ps_irq_t *irq)
-{
-    time_server_irq_handle(pwm_irq_acknowledge, irq);
-}
+static ps_irq_t timeout_info = {0};
+static ps_irq_t timestamp_info = {0};
 
-void plat_post_init(ltimer_t *ltimer)
+void plat_post_init(ltimer_t *ltimer, ps_irq_ops_t *irq_ops)
 {
-    int error;
+    timestamp_info = (ps_irq_t) {
+        .type = PS_INTERRUPT, .irq = { .number = PWM_T0_INTERRUPT }
+    };
+    irq_id_t timestamp_irq_id = ps_irq_register(irq_ops, timestamp_info, time_server_irq_handle, &timestamp_info);
+    ZF_LOGF_IF(timestamp_irq_id < 0, "Failed to register IRQ for timestamp");
 
-    /* Acknowledge all the timers inside the PWM timer */
-    for (int i = 0; i < 5; i++) {
-        ps_irq_t irq = { .type = PS_INTERRUPT, .irq = { .number = PWM_T0_INTERRUPT + i }};
-        error = pwm_irq_acknowledge(&irq);
-        ZF_LOGF_IF(error, "Failed to ack pwm t%d irq", i + 1);
-    }
+    timeout_info = (ps_irq_t) {
+        .type = PS_INTERRUPT, .irq = { .number = PWM_T4_INTERRUPT }
+    };
+    irq_id_t timeout_irq_id = ps_irq_register(irq_ops, timeout_info, time_server_irq_handle, &timeout_info);
+    ZF_LOGF_IF(timeout_irq_id < 0, "Failed to register IRQ for timeout");
 }

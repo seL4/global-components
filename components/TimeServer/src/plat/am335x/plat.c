@@ -25,25 +25,20 @@
 #include "../../plat.h"
 #include "../../time_server.h"
 
-void dmtimer2_irq_handle(void)
+static ps_irq_t timeout_info = {0};
+static ps_irq_t timestamp_info = {0};
+
+void plat_post_init(ltimer_t *ltimer, ps_irq_ops_t *irq_ops)
 {
-    ps_irq_t irq = { .type = PS_INTERRUPT, .irq = { .number = DMTIMER2_INTERRUPT }};
-    time_server_irq_handle(dmtimer2_irq_acknowledge, &irq);
-}
+    timestamp_info = (ps_irq_t) {
+        .type = PS_INTERRUPT, .irq = { .number = DMTIMER2_INTERRUPT }
+    };
+    irq_id_t timestamp_irq_id = ps_irq_register(irq_ops, timestamp_info, time_server_irq_handle, &timestamp_info);
+    ZF_LOGF_IF(timestamp_irq_id < 0, "Failed to register IRQ for timestamp");
 
-void dmtimer3_irq_handle(void)
-{
-    ps_irq_t irq = { .type = PS_INTERRUPT, .irq = { .number = DMTIMER3_INTERRUPT }};
-    time_server_irq_handle(dmtimer3_irq_acknowledge, &irq);
-}
-
-void plat_post_init(ltimer_t *ltimer)
-{
-    int error;
-
-    error = dmtimer2_irq_acknowledge();
-    ZF_LOGF_IF(error, "Failed to ack DMTIMER2 irq");
-
-    error = dmtimer3_irq_acknowledge();
-    ZF_LOGF_IF(error, "Failed to ack DMTIMER3 irq");
+    timeout_info = (ps_irq_t) {
+        .type = PS_INTERRUPT, .irq = { .number = DMTIMER3_INTERRUPT }
+    };
+    irq_id_t timeout_irq_id = ps_irq_register(irq_ops, timeout_info, time_server_irq_handle, &timeout_info);
+    ZF_LOGF_IF(timeout_irq_id < 0, "Failed to register IRQ for timeout");
 }
