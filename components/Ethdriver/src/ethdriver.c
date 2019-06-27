@@ -14,8 +14,11 @@
 
 #include <camkes.h>
 #include <camkes/dma.h>
+#include <camkes/io.h>
+#include <camkes/irq.h>
 
 #include <platsupport/io.h>
+#include <platsupport/irq.h>
 #include <vka/vka.h>
 #include <simple/simple.h>
 #include <simple/simple_helpers.h>
@@ -50,6 +53,8 @@ static vka_t vka;
 static vspace_t vspace;
 static sel4utils_alloc_data_t vspace_data;
 static struct eth_driver eth_driver;
+
+static ps_irq_ops_t irq_ops;
 
 void camkes_make_simple(simple_t *simple);
 
@@ -407,12 +412,14 @@ void client_mac(uint8_t *b1, uint8_t *b2, uint8_t *b3, uint8_t *b4, uint8_t *b5,
     error = ethdriver_unlock();
 }
 
-void eth_irq_handle(irq_ack_fn irq_acknowledge, ps_irq_t *irq)
+void eth_irq_handle(void *data, ps_irq_acknowledge_fn_t acknowledge_fn, void *ack_data)
 {
     int error;
 
     error = ethdriver_lock();
     ZF_LOGF_IF(error, "Failed to obtain lock for Ethdriver");
+
+    ps_irq_t *irq = data;
 
     if (irq && irq->type == PS_INTERRUPT) {
         /*
@@ -428,7 +435,7 @@ void eth_irq_handle(irq_ack_fn irq_acknowledge, ps_irq_t *irq)
         eth_driver.i_fn.raw_handleIRQ(&eth_driver, 0);
     }
 
-    error = irq_acknowledge(irq);
+    error = acknowledge_fn(irq);
     ZF_LOGF_IF(error, "Failed to acknowledge IRQ");
 
     error = ethdriver_unlock();
@@ -443,6 +450,9 @@ void post_init(void)
     init_system();
 
     ps_io_ops_t io_ops = {0};
+
+    error = camkes_irq_ops(&irq_ops);
+    ZF_LOGF_IF(error, "Failed to initialise IRQ ops");
 
     eth_driver.cb_cookie = NULL;
     eth_driver.i_cb = ethdriver_callbacks;
@@ -487,7 +497,7 @@ void post_init(void)
         }
     }
 
-    error = ethif_init(&eth_driver, &io_ops);
+    error = ethif_init(&eth_driver, &io_ops, &irq_ops);
     ZF_LOGF_IF(error, "Failed to initialise the ethernet device");
 
     done_init = 1;

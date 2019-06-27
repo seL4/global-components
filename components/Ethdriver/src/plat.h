@@ -10,7 +10,13 @@
  * @TAG(DATA61_GPL)
  */
 
+#include <platsupport/io.h>
+#include <platsupport/irq.h>
+#include <simple/simple.h>
+#include <vka/vka.h>
+#include <vspace/vspace.h>
+
 int ethif_preinit(vka_t *vka, simple_t *camkes_simple, vspace_t *vspace,
                   ps_io_ops_t *io_ops);
 
-int ethif_init(struct eth_driver *eth_driver, ps_io_ops_t *io_ops);
+int ethif_init(struct eth_driver *eth_driver, ps_io_ops_t *io_ops, ps_irq_ops_t *irq_ops);
