@@ -20,7 +20,9 @@
 #include <utils/attribute.h>
 #include <utils/ansi.h>
 #include <camkes.h>
+#include <camkes/irq.h>
 #include <platsupport/chardev.h>
+#include <platsupport/irq.h>
 #include "serial.h"
 #include "plat.h"
 #include "server_virtqueue.h"
@@ -49,6 +51,8 @@ typedef struct getchar_client {
     volatile getchar_buffer_t *buf;
     uint32_t last_head;
 } getchar_client_t;
+
+static ps_irq_ops_t irq_ops;
 
 static int last_out = -1;
 
@@ -463,14 +467,14 @@ int run(void)
     return 0;
 }
 
-void serial_server_irq_handle(irq_ack_fn irq_acknowledge, ps_irq_t *irq)
+void serial_server_irq_handle(void *data, ps_irq_acknowledge_fn_t acknowledge_fn, void *ack_data)
 {
     int error = serial_lock();
     ZF_LOGF_IF(error, "Failed to lock serial server");
 
     plat_serial_interrupt(handle_char);
 
-    error = irq_acknowledge(irq);
+    error = acknowledge_fn(ack_data);
     ZF_LOGF_IF(error, "Failed to acknowledge IRQ");
 
     error = serial_unlock();
@@ -484,8 +488,12 @@ void serial_putchar(int c)
 
 void pre_init(void)
 {
-    int UNUSED error;
+    int error;
     error = serial_lock();
+
+    error = camkes_irq_ops(&irq_ops);
+    ZF_LOGF_IF(error, "Failed to initialise IRQ ops");
+
     // Initialize the serial port
     plat_pre_init();
     set_putchar(serial_putchar);
@@ -501,7 +509,7 @@ void pre_init(void)
             getchar_clients[badge].last_head = -1;
         }
     }
-    plat_post_init();
+    plat_post_init(&irq_ops);
     /* Start regular heartbeat of 500ms */
     timeout_periodic(0, 500000000);
     error = serial_unlock();

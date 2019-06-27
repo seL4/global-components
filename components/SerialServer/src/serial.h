@@ -12,5 +12,4 @@
 
 #include <platsupport/irq.h>
 
-typedef int (*irq_ack_fn)(ps_irq_t *irq);
-void serial_server_irq_handle(irq_ack_fn irq_acknowledge, ps_irq_t *irq);
+void serial_server_irq_handle(void *data, ps_irq_acknowledge_fn_t acknowledge_fn, void *ack_data);
