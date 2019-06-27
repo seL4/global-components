@@ -14,6 +14,7 @@
 #include <camkes.h>
 #include <camkes/dma.h>
 #include <platsupport/io.h>
+#include <platsupport/irq.h>
 #include <vka/vka.h>
 #include <simple/simple.h>
 #include <simple/simple_helpers.h>
@@ -103,5 +104,5 @@ int pc99_eth_setup(vka_t *vka, simple_t *camkes_simple, vspace_t *vspace, ps_io_
 
 void irq_handle(void)
 {
-    eth_irq_handle(irq_acknowledge, NULL);
+    eth_irq_handle(NULL, irq_acknowledge, NULL);
 }

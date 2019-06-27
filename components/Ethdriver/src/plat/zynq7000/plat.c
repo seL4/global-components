@@ -23,6 +23,9 @@
 #include <allocman/vka.h>
 #include <sel4utils/vspace.h>
 
+#include "../../ethdriver.h"
+
+static ps_irq_t irq_info;
 
 int ethif_preinit(vka_t *vka, simple_t *camkes_simple, vspace_t *vspace,
                   ps_io_ops_t *io_ops)
@@ -37,7 +40,7 @@ int ethif_preinit(vka_t *vka, simple_t *camkes_simple, vspace_t *vspace,
     return clock_sys_init(io_ops, &io_ops->clock_sys);
 }
 
-int ethif_init(struct eth_driver *eth_driver, ps_io_ops_t *io_ops)
+int ethif_init(struct eth_driver *eth_driver, ps_io_ops_t *io_ops, ps_irq_ops_t *irq_ops)
 {
     struct arm_eth_plat_config eth_config = (struct arm_eth_plat_config) {
         .buffer_addr = (void *) EthDriver_0,
@@ -55,11 +58,13 @@ int ethif_init(struct eth_driver *eth_driver, ps_io_ops_t *io_ops)
         return error;
     }
 
-    ps_irq_t irq = { .type = PS_INTERRUPT, .irq = { .number = ZYNQ7000_INTERRUPT_ETH0 }};
-    return EthDriver_irq_acknowledge(&irq);
-}
+    irq_info = (ps_irq_t) {
+        .type = PS_INTERRUPT, .irq = { .number = ZYNQ7000_INTERRUPT_ETH0 }
+    };
+    irq_id_t irq_id = ps_irq_register(irq_ops, irq_info, eth_irq_handle, &irq_info);
+    if (irq_id < 0) {
+        return -1;
+    }
 
-void EthDriver_irq_handle(ps_irq_t *irq)
-{
-    eth_irq_handle(EthDriver_irq_acknowledge, irq);
+    return 0;
 }

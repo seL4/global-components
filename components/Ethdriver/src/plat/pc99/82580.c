@@ -14,6 +14,7 @@
 #include <ethdrivers/raw.h>
 #include <ethdrivers/intel.h>
 #include <platsupport/io.h>
+#include <platsupport/irq.h>
 #include <vka/vka.h>
 #include <simple/simple.h>
 #include <allocman/vka.h>
@@ -32,7 +33,7 @@ int ethif_preinit(vka_t *vka, simple_t *camkes_simple, vspace_t *vspace,
     return 0;
 }
 
-int ethif_init(struct eth_driver *eth_driver, ps_io_ops_t *io_ops)
+int ethif_init(struct eth_driver *eth_driver, ps_io_ops_t *io_ops, ps_irq_ops_t *irq_ops UNUSED)
 {
     ethif_intel_config_t eth_config = (ethif_intel_config_t) {
         /* Ethdriver component dataport */
