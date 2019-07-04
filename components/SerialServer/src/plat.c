@@ -56,18 +56,16 @@ void plat_serial_putchar(int c)
     }
 }
 
-void plat_pre_init(void)
+void plat_pre_init(ps_io_ops_t *io_ops)
 {
-    ps_io_ops_t ops;
-    int error = camkes_io_ops(&ops);
-    ZF_LOGF_IF(error, "Failed to get malloc ops");
+    ZF_LOGF_IF(io_ops == NULL, "Was passed an empty IO ops struct");
 
 #ifdef CONFIG_PLAT_EXYNOS5
-    ops.clock_sys.priv = NULL;
-    ops.mux_sys.priv = NULL;
+    io_ops.clock_sys.priv = NULL;
+    io_ops.mux_sys.priv = NULL;
 #endif
 
-    serial = ps_cdev_init(PS_SERIAL_DEFAULT, &ops, &serial_device);
+    serial = ps_cdev_init(PS_SERIAL_DEFAULT, io_ops, &serial_device);
     if (serial == NULL) {
         ZF_LOGE("Failed to initialise character device");
     }

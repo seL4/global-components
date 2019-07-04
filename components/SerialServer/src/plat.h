@@ -12,10 +12,11 @@
 #pragma once
 
 #include <platsupport/chardev.h>
+#include <platsupport/io.h>
 
 typedef void (*handle_char_fn)(uint8_t);
 
-void plat_pre_init(void);
+void plat_pre_init(ps_io_ops_t *io_ops);
 /* Definition located at plat/${KernelPlatform}/plat.c */
 void plat_post_init(ps_irq_ops_t *irq_ops);
 void plat_serial_interrupt(handle_char_fn handle_char);
