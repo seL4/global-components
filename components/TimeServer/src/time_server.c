@@ -47,7 +47,7 @@ seL4_Word the_timer_get_sender_id();
 void the_timer_emit(unsigned int);
 int the_timer_largest_badge(void);
 
-static ps_irq_ops_t irq_ops;
+static ps_io_ops_t io_ops;
 
 static inline uint64_t current_time_ns()
 {
@@ -241,23 +241,19 @@ void post_init()
     int error = time_server_lock();
     ZF_LOGF_IF(error, "Failed to lock timer server");
 
-    ps_io_ops_t ops;
-    error = camkes_io_ops(&ops);
+    error = camkes_io_ops(&io_ops);
     ZF_LOGF_IF(error, "Failed to get camkes_io_ops");
 
-    error = ps_calloc(&ops.malloc_ops, the_timer_largest_badge(), sizeof(*client_state), (void **) &client_state);
+    error = ps_calloc(&(io_ops.malloc_ops), the_timer_largest_badge(), sizeof(*client_state), (void **) &client_state);
     ZF_LOGF_IF(error, "Failed to allocate client state");
 
-    error = ltimer_default_init(&ltimer, ops);
+    error = ltimer_default_init(&ltimer, io_ops);
     ZF_LOGF_IF(error, "Failed to init timer");
 
-    error = camkes_irq_ops(&irq_ops);
-    ZF_LOGF_IF(error, "Failed to get camkes_irq_ops");
-
-    plat_post_init(&ltimer, &irq_ops);
+    plat_post_init(&ltimer, &(io_ops.irq_ops));
 
     int num_timers = timers_per_client * the_timer_largest_badge();
-    tm_init(&time_manager, &ltimer, &ops, num_timers);
+    tm_init(&time_manager, &ltimer, &io_ops, num_timers);
     for (unsigned int i = 0; i < num_timers; i++) {
         error = tm_alloc_id_at(&time_manager, i);
         ZF_LOGF_IF(error, "Failed to alloc id at %u\n", i);
