@@ -20,6 +20,7 @@
 #include <utils/attribute.h>
 #include <utils/ansi.h>
 #include <camkes.h>
+#include <camkes/io.h>
 #include <camkes/irq.h>
 #include <platsupport/chardev.h>
 #include <platsupport/irq.h>
@@ -52,7 +53,7 @@ typedef struct getchar_client {
     uint32_t last_head;
 } getchar_client_t;
 
-static ps_irq_ops_t irq_ops;
+static ps_io_ops_t io_ops;
 
 static int last_out = -1;
 
@@ -491,11 +492,11 @@ void pre_init(void)
     int error;
     error = serial_lock();
 
-    error = camkes_irq_ops(&irq_ops);
-    ZF_LOGF_IF(error, "Failed to initialise IRQ ops");
+    error = camkes_io_ops(&io_ops);
+    ZF_LOGF_IF(error, "Failed to initialise IO ops");
 
     // Initialize the serial port
-    plat_pre_init();
+    plat_pre_init(&io_ops);
     set_putchar(serial_putchar);
     /* query what getchar clients exist */
     if (getchar_num_badges) {
@@ -509,7 +510,7 @@ void pre_init(void)
             getchar_clients[badge].last_head = -1;
         }
     }
-    plat_post_init(&irq_ops);
+    plat_post_init(&(io_ops.irq_ops));
     /* Start regular heartbeat of 500ms */
     timeout_periodic(0, 500000000);
     error = serial_unlock();
