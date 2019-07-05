@@ -61,8 +61,8 @@ void plat_pre_init(ps_io_ops_t *io_ops)
     ZF_LOGF_IF(io_ops == NULL, "Was passed an empty IO ops struct");
 
 #ifdef CONFIG_PLAT_EXYNOS5
-    io_ops.clock_sys.priv = NULL;
-    io_ops.mux_sys.priv = NULL;
+    io_ops->clock_sys.priv = NULL;
+    io_ops->mux_sys.priv = NULL;
 #endif
 
     serial = ps_cdev_init(PS_SERIAL_DEFAULT, io_ops, &serial_device);
