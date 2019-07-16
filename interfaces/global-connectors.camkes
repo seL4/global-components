@@ -104,6 +104,16 @@ connector seL4RPCCallDataport {
 connector seL4RPCDataport {
     from Procedures template "seL4RPCDataport-from.template.c" with 0 threads;
     to Procedure template "seL4RPCDataport-to.template.c";
+
+    attribute string isabelle_connector_spec = "\<lparr>
+        connector_type = NativeConnector,
+        connector_interface = RPCInterface,
+        connector_access = \<lparr>
+            access_from_to   = {DeleteDerived},
+            access_to_from   = {Reply},
+            access_from_conn = {Reset, SyncSend, Call, Read, Write},
+            access_to_conn   = {Reset, Receive, Read, Write}
+        \<rparr> \<rparr>";
 }
 
 /**
@@ -154,6 +164,16 @@ connector seL4RPCDataportSignal {
 connector seL4GlobalAsynch {
     from Event template "seL4GlobalAsynch-from.template.c";
     to Events template "seL4GlobalAsynch-to.template.c";
+
+    attribute string isabelle_connector_spec = "\<lparr>
+        connector_type = NativeConnector,
+        connector_interface = EventInterface,
+        connector_access = \<lparr>
+            access_from_to   = {},
+            access_to_from   = {},
+            access_from_conn = {Reset, Receive, Notify},
+            access_to_conn   = {Reset, Receive, Notify}
+        \<rparr> \<rparr>";
 }
 
 /**
@@ -180,17 +200,51 @@ connector seL4GlobalAsynch {
 connector seL4GlobalAsynchCallback {
     from Event template "seL4GlobalAsynchCallback-from.template.c";
     to Events template "seL4GlobalAsynchCallback-to.template.c";
+
+    attribute string isabelle_connector_spec = "\<lparr>
+        connector_type = NativeConnector,
+        connector_interface = EventInterface,
+        connector_access = \<lparr>
+            access_from_to   = {},
+            access_to_from   = {},
+            access_from_conn = {Reset, Receive, Notify},
+            access_to_conn   = {Reset, Receive, Notify}
+        \<rparr> \<rparr>";
 }
 
 /* Custom connectors which use existing global connectors just with no threads configured. */
 connector seL4TimeServer {
     from Procedures template "seL4RPCCallSignal-from.template.c" with 0 threads;
     to Procedure template "seL4RPCCallSignal-to.template.c";
+
+    /* TODO: double check this */
+    attribute string isabelle_connector_spec = "\<lparr>
+        connector_type = NativeConnector,
+        connector_interface = RPCInterface,
+        connector_access = \<lparr>
+            access_from_to   = {DeleteDerived},
+            access_to_from   = {Reply, Notify, Reply},
+            access_from_conn = {Reset, Call, SyncSend, Notify, Receive},
+            access_to_conn   = {Reset, Notify, Receive}
+        \<rparr> \<rparr>";
 }
 
 connector seL4SerialServer {
     from Procedures template "seL4RPCDataportSignal-from.template.c" with 0 threads;
     to Procedure template "seL4RPCDataportSignal-to.template.c";
+
+    /* TODO: double check this */
+    attribute string isabelle_connector_spec = "\<lparr>
+        connector_type = NativeConnector,
+        connector_interface = RPCInterface,
+        connector_access = \<lparr>
+            access_from_to   = {DeleteDerived},
+            access_to_from   = {Reply,
+                                \<comment> \<open>FIXME: vm_serial_server seems to need these, but why?\<close>
+                                Reset, Notify},
+            access_from_conn = {Reset, Call, SyncSend, Read, Write},
+            access_to_conn   = {Reset, Receive, Read, Write}
+        \<rparr> \<rparr>";
 }
 
 connector seL4PicoServerSignal {
@@ -233,4 +287,14 @@ connector seL4VirtQueues {
     from Procedures template "seL4VirtQueues-from.template.c";
     to Procedure template "seL4VirtQueues-to.template.c";
     attribute bool disable_interface_type_checking = true;
+
+    attribute string isabelle_connector_spec = "\<lparr>
+        connector_type = NativeConnector,
+        connector_interface = RPCInterface,
+        connector_access = \<lparr>
+            access_from_to   = {},
+            access_to_from   = {},
+            access_from_conn = {Reset, Receive, Notify, Read, Write},
+            access_to_conn   = {Reset, Receive, Notify, Read, Write}
+        \<rparr> \<rparr>";
 }
