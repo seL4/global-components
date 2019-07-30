@@ -102,7 +102,7 @@ connector seL4RPCCallDataport {
  * <from_interface>_num_badges()
  */
 connector seL4RPCDataport {
-    from Procedures template "seL4RPCDataport-from.template.c";
+    from Procedures template "seL4RPCDataport-from.template.c" with 0 threads;
     to Procedure template "seL4RPCDataport-to.template.c";
 }
 
