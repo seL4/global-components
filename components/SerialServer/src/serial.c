@@ -387,12 +387,23 @@ static void handle_char(uint8_t c)
             last_out = -1;
             statemachine = 1;
             break;
+        case 's':
+            printf("%s\r\n", COLOR_RESET);
+#ifdef CONFIG_DEBUG_BUILD
+            seL4_DebugDumpScheduler();
+#else
+            printf("\r\nScheduler dump works on debug builds only\r\n");
+#endif
+            last_out = -1;
+            statemachine = 1;
+            break;
         case '?':
             last_out = -1;
             printf(COLOR_RESET "\r\n --- SerialServer help ---"
                    "\r\n Escape char: %c"
                    "\r\n 0 - %-2d switches input to that client"
                    "\r\n ?      shows this help"
+                   "\r\n s      dump seL4 scheduler (depends on CONFIG_DEBUG_BUILD)"
                    "\r\n m      simultaneous multi-client input"
                    "\r\n d      switch between debugging modes"
                    "\r\n          0: no debugging"
