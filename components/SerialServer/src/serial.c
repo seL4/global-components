@@ -69,39 +69,45 @@ static int num_getchar_clients = 0;
 static getchar_client_t *getchar_clients = NULL;
 
 /* We predefine output colours for clients */
-const char *all_output_colours[MAX_CLIENTS * 2] = {
-    /* Processed streams */
-    ANSI_COLOR(RED),
-    ANSI_COLOR(GREEN),
-    ANSI_COLOR(BLUE),
-    ANSI_COLOR(MAGENTA),
-    ANSI_COLOR(YELLOW),
-    ANSI_COLOR(CYAN),
-    ANSI_COLOR(RED, BOLD)
-    ANSI_COLOR(GREEN, BOLD),
-    ANSI_COLOR(BLUE, BOLD),
-    ANSI_COLOR(MAGENTA, BOLD),
-    ANSI_COLOR(YELLOW, BOLD),
-    ANSI_COLOR(CYAN, BOLD),
-
-    /* Raw streams */
-    ANSI_COLOR2(RED, WHITE),
-    ANSI_COLOR2(GREEN, WHITE),
-    ANSI_COLOR2(BLUE, WHITE),
-    ANSI_COLOR2(MAGENTA, WHITE),
-    ANSI_COLOR2(YELLOW, WHITE),
-    ANSI_COLOR2(CYAN, WHITE),
-    ANSI_COLOR2(RED, WHITE, BOLD)
-    ANSI_COLOR2(GREEN, WHITE, BOLD),
-    ANSI_COLOR2(BLUE, WHITE, BOLD),
-    ANSI_COLOR2(MAGENTA, WHITE, BOLD),
-    ANSI_COLOR2(YELLOW, WHITE, BOLD),
-    ANSI_COLOR2(CYAN, WHITE, BOLD),
+const char *all_output_colours[2][MAX_CLIENTS] = {
+    {
+        /* Processed streams */
+        ANSI_COLOR(RED),
+        ANSI_COLOR(GREEN),
+        ANSI_COLOR(BLUE),
+        ANSI_COLOR(MAGENTA),
+        ANSI_COLOR(YELLOW),
+        ANSI_COLOR(CYAN),
+        ANSI_COLOR(RED, BOLD)
+        ANSI_COLOR(GREEN, BOLD),
+        ANSI_COLOR(BLUE, BOLD),
+        ANSI_COLOR(MAGENTA, BOLD),
+        ANSI_COLOR(YELLOW, BOLD),
+        ANSI_COLOR(CYAN, BOLD),
+    },
+    {
+        /* Raw streams */
+        ANSI_COLOR2(RED, WHITE),
+        ANSI_COLOR2(GREEN, WHITE),
+        ANSI_COLOR2(BLUE, WHITE),
+        ANSI_COLOR2(MAGENTA, WHITE),
+        ANSI_COLOR2(YELLOW, WHITE),
+        ANSI_COLOR2(CYAN, WHITE),
+        ANSI_COLOR2(RED, WHITE, BOLD)
+        ANSI_COLOR2(GREEN, WHITE, BOLD),
+        ANSI_COLOR2(BLUE, WHITE, BOLD),
+        ANSI_COLOR2(MAGENTA, WHITE, BOLD),
+        ANSI_COLOR2(YELLOW, WHITE, BOLD),
+        ANSI_COLOR2(CYAN, WHITE, BOLD),
+    },
 };
+
+#define COLOUR_INDEX_TO_STYLE(x) ((x) / (MAX_CLIENTS - 1))
+#define COLOUR_INDEX_TO_SLOT(x)  ((x) % MAX_CLIENTS)
 
 static void flush_buffer(int b)
 {
-    const char *col = all_output_colours[b];
+    const char *col = all_output_colours[COLOUR_INDEX_TO_STYLE(b)][COLOUR_INDEX_TO_SLOT(b)];
     int i;
     if (output_buffers_used[b] == 0) {
         return;
@@ -148,7 +154,7 @@ static bool flush_buffer_line(int b)
         return 0;
     }
     if (b != last_out) {
-        printf("%s%s", COLOR_RESET, all_output_colours[b]);
+        printf("%s%s", COLOR_RESET, all_output_colours[COLOUR_INDEX_TO_STYLE(b)][COLOUR_INDEX_TO_SLOT(b)]);
         last_out = b;
     }
     int i;
@@ -288,7 +294,7 @@ static void internal_putchar(int b, int c)
          * it's probably going to overflow again, so let's avoid
          * that. */
         if (last_out != b) {
-            printf("%s%s", COLOR_RESET, all_output_colours[b]);
+            printf("%s%s", COLOR_RESET, all_output_colours[COLOUR_INDEX_TO_STYLE(b)][COLOUR_INDEX_TO_SLOT(b)]);
             last_out = b;
         }
     } else if ((index >= 1 && is_newline(buffer + index - 1) && coalesce_status == -1)
