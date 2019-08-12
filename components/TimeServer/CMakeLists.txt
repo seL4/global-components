@@ -19,6 +19,10 @@ if(KernelArchARM)
 endif()
 set(CAmkESCPP ON CACHE BOOL "" FORCE)
 
-DeclareCAmkESComponent(TimeServer SOURCES src/time_server.c src/plat/${KernelPlatform}/plat.c)
+if("${KernelPlatform}" STREQUAL "pc99")
+    list(APPEND TimeServerPlatSources src/plat/pc99/plat.c)
+endif()
+
+DeclareCAmkESComponent(TimeServer SOURCES src/time_server.c ${TimeServerPlatSources})
 
 CAmkESAddCPPInclude("${CMAKE_CURRENT_LIST_DIR}/include/plat/${KernelPlatform}/")

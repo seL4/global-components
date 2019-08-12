@@ -1,5 +1,5 @@
 /*
- * Copyright 2018, Data61
+ * Copyright 2019, Data61
  * Commonwealth Scientific and Industrial Research Organisation (CSIRO)
  * ABN 41 687 119 230.
  *
@@ -13,5 +13,6 @@
 
 #include <platsupport/ltimer.h>
 #include <platsupport/io.h>
+#include <utils/util.h>
 
-void plat_post_init(ltimer_t *ltimer, ps_irq_ops_t *irq_ops);
+void plat_post_init(ltimer_t *ltimer) WEAK;

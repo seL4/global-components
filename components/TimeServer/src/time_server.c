@@ -233,7 +233,9 @@ void post_init()
     error = ltimer_default_init(&ltimer, io_ops, time_server_ltimer_handle, NULL);
     ZF_LOGF_IF(error, "Failed to init timer");
 
-    plat_post_init(&ltimer, &(io_ops.irq_ops));
+    if (plat_post_init) {
+        plat_post_init(&ltimer);
+    }
 
     int num_timers = timers_per_client * the_timer_largest_badge();
     tm_init(&time_manager, &ltimer, &io_ops, num_timers);
