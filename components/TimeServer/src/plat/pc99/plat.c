@@ -22,7 +22,6 @@
 #include <simple/simple.h>
 #include <sel4utils/arch/tsc.h>
 
-#include "../../time_server.h"
 #include "../../plat.h"
 
 static uint64_t tsc_frequency = 0;

@@ -29,7 +29,6 @@
 #include <simple/simple.h>
 #include <camkes/io.h>
 
-#include "time_server.h"
 #include "plat.h"
 
 /* ltimer for accessing timer devices */
