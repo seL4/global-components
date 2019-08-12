@@ -76,27 +76,10 @@ static int signal_client(uintptr_t token)
     return 0;
 }
 
-void time_server_irq_handle(void *data, ps_irq_acknowledge_fn_t acknowledge_fn, void *ack_data)
+void time_server_ltimer_handle(UNUSED void *empty_token, ltimer_event_t ltimer_event)
 {
     int error = time_server_lock();
     ZF_LOGF_IF(error, "Failed to lock time server");
-
-    ps_irq_t *irq = NULL;
-    if (data) {
-        irq = data;
-    }
-
-    if (irq) {
-        /*
-         * Some platforms do not require the IRQ be handled,
-         * e.g. x86 PIT timers
-         */
-        error = ltimer_handle_irq(&ltimer, irq);
-        ZF_LOGF_IF(error, "Failed to handle IRQ");
-    }
-
-    error = acknowledge_fn(ack_data);
-    ZF_LOGF_IF(error, "irq acknowledge failed");
 
     error = tm_update(&time_manager);
     ZF_LOGF_IF(error, "Failed to update time manager");
@@ -247,7 +230,7 @@ void post_init()
     error = ps_calloc(&(io_ops.malloc_ops), the_timer_largest_badge(), sizeof(*client_state), (void **) &client_state);
     ZF_LOGF_IF(error, "Failed to allocate client state");
 
-    error = ltimer_default_init(&ltimer, io_ops);
+    error = ltimer_default_init(&ltimer, io_ops, time_server_ltimer_handle, NULL);
     ZF_LOGF_IF(error, "Failed to init timer");
 
     plat_post_init(&ltimer, &(io_ops.irq_ops));
