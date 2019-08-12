@@ -59,6 +59,11 @@ static ps_irq_ops_t irq_ops;
 
 void camkes_make_simple(simple_t *simple);
 
+/*
+ *Struct eth_buf contains a virtual address (buf) to use for memory operations
+ *at the picoserver level and a physical address to be passed down to the
+ *driver.
+ */
 typedef struct eth_buf {
     void *buf;
     uintptr_t phys;
@@ -381,15 +386,20 @@ int client_tx(int len)
     if (client->num_tx != 0) {
         client->num_tx --;
         tx_frame_t *tx_buf = client->pending_tx[client->num_tx];
+
         /* copy the packet over */
         memcpy(tx_buf->buf.buf, packet, len);
-        // TODO Find out why ARM memcpy faults on unaligned addresses
-        //memcpy(tx_buf->buf.buf + 6, client->mac, 6);
+
+        /* On ARM memory mapped as uncached does not support unaligned access, copy it in manually.
+         * For more information read compiler flags -munaligned-access -mno-unaligned-access.
+         */
         for (int i = 0; i < 6; i++) {
             ((char *)(tx_buf->buf.buf + 6))[i] = ((char *)client->mac)[i];
         }
+
         /* queue up transmit */
-        err = eth_driver.i_fn.raw_tx(&eth_driver, 1, (uintptr_t *) & (tx_buf->buf.phys), (unsigned int *)&len, tx_buf);
+        err = eth_driver.i_fn.raw_tx(&eth_driver, 1, (uintptr_t *) & (tx_buf->buf.phys),
+                                     (unsigned int *)&len, tx_buf);
         if (err != ETHIF_TX_ENQUEUED) {
             /* Free the internal tx buffer in case tx fails. Up to the client to retry the trasmission */
             client->num_tx++;
