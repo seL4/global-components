@@ -111,6 +111,8 @@ connector seL4RPCDataport {
         connector_access = \<lparr>
             access_from_to   = {DeleteDerived},
             access_to_from   = {Reply},
+            access_from_from = {},
+            access_to_to     = {},
             access_from_conn = {Reset, SyncSend, Call, Read, Write},
             access_to_conn   = {Reset, Receive, Read, Write}
         \<rparr> \<rparr>";
@@ -171,6 +173,8 @@ connector seL4GlobalAsynch {
         connector_access = \<lparr>
             access_from_to   = {},
             access_to_from   = {},
+            access_from_from = {},
+            access_to_to     = {},
             access_from_conn = {Reset, Receive, Notify},
             access_to_conn   = {Reset, Receive, Notify}
         \<rparr> \<rparr>";
@@ -207,6 +211,8 @@ connector seL4GlobalAsynchCallback {
         connector_access = \<lparr>
             access_from_to   = {},
             access_to_from   = {},
+            access_from_from = {},
+            access_to_to     = {},
             access_from_conn = {Reset, Receive, Notify},
             access_to_conn   = {Reset, Receive, Notify}
         \<rparr> \<rparr>";
@@ -223,7 +229,9 @@ connector seL4TimeServer {
         connector_interface = RPCInterface,
         connector_access = \<lparr>
             access_from_to   = {DeleteDerived},
-            access_to_from   = {Reply, Notify, Reply},
+            access_to_from   = {Reset, Notify, Reply},
+            access_from_from = {Reply}, \<comment> \<open>Fictitious but required by Access (Jira VER-1108)\<close>
+            access_to_to     = {},
             access_from_conn = {Reset, Call, SyncSend, Notify, Receive},
             access_to_conn   = {Reset, Notify, Receive}
         \<rparr> \<rparr>";
@@ -242,6 +250,8 @@ connector seL4SerialServer {
             access_to_from   = {Reply,
                                 \<comment> \<open>FIXME: vm_serial_server seems to need these, but why?\<close>
                                 Reset, Notify},
+            access_from_from = {},
+            access_to_to     = {},
             access_from_conn = {Reset, Call, SyncSend, Read, Write},
             access_to_conn   = {Reset, Receive, Read, Write}
         \<rparr> \<rparr>";
@@ -294,6 +304,8 @@ connector seL4VirtQueues {
         connector_access = \<lparr>
             access_from_to   = {},
             access_to_from   = {},
+            access_from_from = {Notify, Reset}, \<comment> \<open>global-endpoint ntfns are owned by clients\<close>
+            access_to_to     = {},
             access_from_conn = {Reset, Receive, Notify, Read, Write},
             access_to_conn   = {Reset, Receive, Notify, Read, Write}
         \<rparr> \<rparr>";
