@@ -33,13 +33,34 @@
 
 /*# Create the endpoint if we need to #*/
 /*- if maybe_notification is none -*/
-    /*- set notification_object = alloc_obj(name, seL4_NotificationObject) -*/
+    /*# If a component uses one endpoint for several connections, the
+     *# endpoint's integrity label should normally be the component
+     *# itself. The current convention for such systems is to name the
+     *# endpoint after the component. We detect this convention here and
+     *# automatically adjust the endpoint's label. #*/
+    /*- if name in map(lambda('c: c.name'), composition.instances) -*/
+        /*- set notification_owner = name -*/
+        /*- set notification_object = alloc_obj(name, seL4_NotificationObject, label=notification_owner) -*/
+    /*- else -*/
+        /*- set notification_owner = None -*//*# just go with the default #*/
+        /*- set notification_object = alloc_obj(name, seL4_NotificationObject) -*/
+    /*- endif -*/
 /*- else -*/
-    /*- set notification_object = maybe_notification -*/
+    /*- set notification_object, notification_owner = maybe_notification -*/
+/*- endif -*/
+
+/*# If the endpoint's owner is a component that is not a party to this
+ *# connection, we will need extra access rights in the seL4 integrity
+ *# model. #*/
+/*- if (notification_owner is not none and
+        notification_owner in map(lambda('c: c.name'), composition.instances) and
+        notification_owner not in map(lambda('e: e.instance.name'), me.parent.from_ends + me.parent.to_ends)) -*/
+    /*- do add_policy_extra(instance, 'auth.Notify', notification_owner) -*/
+    /*- do add_policy_extra(instance, 'auth.Reset', notification_owner) -*/
 /*- endif -*/
 
 /*# Put it back into the stash #*/
-/*- do _stash(stash_name, notification_object) -*/
+/*- do _stash(stash_name, (notification_object, notification_owner)) -*/
 
 /*# Create the badged endpoint #*/
 /*- set notification = alloc_cap('%s_%s_notification_object_cap' % (name, badge), notification_object, read=is_reader, write=True) -*/
