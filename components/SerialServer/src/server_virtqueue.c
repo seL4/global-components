@@ -26,8 +26,11 @@
 #include "plat.h"
 #include "server_virtqueue.h"
 
-virtqueue_device_t * read_virtqueue;
-virtqueue_device_t * write_virtqueue;
+virtqueue_device_t read_virtqueue;
+virtqueue_device_t write_virtqueue;
+
+int write_in_progress;
+int read_in_progress;
 
 enum virtqueue_op {
     VQ_SERIAL_READ,
@@ -36,111 +39,91 @@ enum virtqueue_op {
 
 typedef struct {
     virtqueue_device_t *vq;
-    volatile void *virtqueue_buf;
+    virtqueue_ring_object_t virtqueue_handle;
     void *serial_buf;
     size_t buf_size;
 } virtqueue_token_t;
 
-virtqueue_token_t *current_read_vq_token = NULL;
-virtqueue_token_t *current_write_vq_token = NULL;
-
-static void virtqueue_send(virtqueue_device_t *vq, volatile void * buf, size_t buf_size)
-{
-    int enqueue_res = virtqueue_device_enqueue(vq, buf, buf_size);
-    if (enqueue_res) {
-        ZF_LOGE("Serial server virtqueue enqueue failed");
-        return;
-    }
-
-    int err = virtqueue_device_signal(vq);
-    if (err != 0) {
-        ZF_LOGE("Serial server signal failed");
-        return;
-    }
-}
+virtqueue_token_t current_read_vq_token;
+virtqueue_token_t current_write_vq_token;
 
 static void write_callback(ps_chardevice_t* device, enum chardev_status stat,
                            size_t bytes_transfered, void* token)
 {
-    virtqueue_token_t *vq_token = (virtqueue_token_t *)token;
-
-    volatile void *vq_buf = vq_token->virtqueue_buf;
+    virtqueue_token_t *vq_token = token;
     void *serial_buf = vq_token->serial_buf;
     size_t buf_size = vq_token->buf_size;
+
+    if (!serial_buf) {
+        return;
+    }
     virtqueue_device_t *vq = vq_token->vq;
-
+    vq->notify();
     free(serial_buf);
-    free(current_write_vq_token);
-    current_write_vq_token = NULL;
-
-    virtqueue_send(vq, vq_buf, buf_size);
+    vq_token->serial_buf = NULL;
+    write_in_progress = 0;
 }
 
 static void read_callback(ps_chardevice_t* device, enum chardev_status stat,
                           size_t bytes_transfered, void* token)
 {
-    virtqueue_token_t *vq_token = (virtqueue_token_t *)token;
-
-    volatile void *vq_buf = vq_token->virtqueue_buf;
+    virtqueue_token_t *vq_token = token;
     void *serial_buf = vq_token->serial_buf;
     size_t buf_size = vq_token->buf_size;
+
+    if (!serial_buf) {
+        return;
+    }
+
     virtqueue_device_t *vq = vq_token->vq;
+    virtqueue_ring_object_t handle = vq_token->virtqueue_handle;
 
-    memcpy(vq_buf, serial_buf, bytes_transfered);
-    virtqueue_send(vq, vq_buf, buf_size);
+    if (camkes_virtqueue_device_scatter_copy_buffer(vq, &handle, serial_buf, buf_size) < 0) {
+        ZF_LOGE("Unable to copy read data to virtqueue");
+    }
 
+    vq->notify();
     free(serial_buf);
-    free(current_read_vq_token);
-    current_read_vq_token = NULL;
+    vq_token->serial_buf = NULL;
+
+    read_in_progress = 0;
 }
 
-static void handle_virtqueue_message(virtqueue_device_t *vq, volatile void* buf, size_t buf_size, enum virtqueue_op op)
+static void handle_virtqueue_message(virtqueue_device_t *vq, virtqueue_ring_object_t *handle, enum virtqueue_op op)
 {
     int res;
+    void *serial_buffer;
+    size_t buf_size;
 
-    if (op == VQ_SERIAL_READ && current_read_vq_token) {
-        return;
-    } else if (op == VQ_SERIAL_WRITE && current_write_vq_token ) {
-        return;
-    }
-
-    void *serial_buffer = calloc(buf_size, sizeof(char));
-    if (serial_buffer == NULL) {
+    buf_size = virtqueue_scattered_available_size(vq, handle);
+    if (!(serial_buffer = calloc(buf_size, sizeof(char)))) {
         ZF_LOGE("Unable to alloc serial buffer of size: %u", buf_size);
-        virtqueue_send(vq, buf, buf_size);
+        virtqueue_add_used_buf(vq, handle, 0);
         return;
     }
-    virtqueue_token_t *vq_token = (virtqueue_token_t *)malloc(sizeof(virtqueue_token_t));
-    if (vq_token == NULL) {
-        ZF_LOGE("Unable to alloc vq token");
-        free(serial_buffer);
-        virtqueue_send(vq, buf, buf_size);
-        return;
-    }
-    vq_token->vq = vq;
-    vq_token->virtqueue_buf = buf;
-    vq_token->serial_buf = serial_buffer;
-    vq_token->buf_size = buf_size;
 
     if (op == VQ_SERIAL_READ) {
-        res = plat_serial_read(serial_buffer, buf_size, read_callback, (void *)vq_token);
-        if (res == -1) {
+        current_read_vq_token.vq = vq;
+        current_read_vq_token.virtqueue_handle = *handle;
+        current_read_vq_token.serial_buf = serial_buffer;
+        current_read_vq_token.buf_size = buf_size;
+        if (plat_serial_read(serial_buffer, buf_size, read_callback, &current_read_vq_token) < 0) {
             ZF_LOGE("Unable to serial read buffer");
+            free(serial_buffer);
+            virtqueue_add_used_buf(vq, handle, 0);
         }
-        current_read_vq_token = vq_token;
     } else {
-        memcpy(serial_buffer, buf, buf_size);
-        res = plat_serial_write(serial_buffer, buf_size, write_callback, (void *)vq_token);
-        if (res == -1) {
-            ZF_LOGE("Unable to serial write buffer");
+        int err;
+        current_write_vq_token.vq = vq;
+        current_write_vq_token.virtqueue_handle = *handle;
+        current_write_vq_token.serial_buf = serial_buffer;
+        current_write_vq_token.buf_size = buf_size;
+        camkes_virtqueue_device_gather_copy_buffer(vq, handle, serial_buffer, buf_size);
+        if ((err = plat_serial_write(serial_buffer, buf_size, write_callback, &current_write_vq_token)) < 0) {
+            ZF_LOGE("Unable to serial write buffer: %d", err);
+            free(serial_buffer);
+            virtqueue_add_used_buf(vq, handle, 0);
         }
-        current_write_vq_token = vq_token;
-    }
-
-    if (res == -1) {
-        free(vq_token);
-        free(serial_buffer);
-        virtqueue_send(vq, buf, buf_size);
     }
     return;
 }
@@ -148,37 +131,35 @@ static void handle_virtqueue_message(virtqueue_device_t *vq, volatile void* buf,
 static void handle_virtqueue_callback(virtqueue_device_t* vq, enum virtqueue_op op)
 {
     volatile void* available_buf = NULL;
-    size_t buf_size = 0;
-    int dequeue_res = virtqueue_device_dequeue(vq,
-                                               &available_buf,
-                                               &buf_size);
-    if (dequeue_res) {
+    virtqueue_ring_object_t handle;
+
+    if (!virtqueue_get_available_buf(vq, &handle)) {
         ZF_LOGE("Serial server virtqueue dequeue failed");
         return;
     }
 
     /* Process the incoming virtqueue message */
-    handle_virtqueue_message(vq, available_buf, buf_size, op);
+    handle_virtqueue_message(vq, &handle, op);
 }
 
-void serial_wait_callback(void)
+void serial_read_wait_callback(void)
 {
     int error;
     error = serial_lock();
-    int write_poll_res = virtqueue_device_poll(write_virtqueue);
-    if (write_poll_res) {
-        handle_virtqueue_callback(write_virtqueue, VQ_SERIAL_WRITE);
+    if (VQ_DEV_POLL(&read_virtqueue)) {
+        read_in_progress = 1;
+        handle_virtqueue_callback(&read_virtqueue, VQ_SERIAL_READ);
     }
-    if (write_poll_res == -1) {
-        ZF_LOGE("Serial server write poll failed");
-    }
+    error = serial_unlock();
+}
 
-    int read_poll_res = virtqueue_device_poll(read_virtqueue);
-    if (read_poll_res) {
-        handle_virtqueue_callback(read_virtqueue, VQ_SERIAL_READ);
-    }
-    if (read_poll_res == -1) {
-        ZF_LOGE("Serial server read poll failed");
+void serial_write_wait_callback(void)
+{
+    int error;
+    error = serial_lock();
+    if (VQ_DEV_POLL(&write_virtqueue)) {
+        write_in_progress = 1;
+        handle_virtqueue_callback(&write_virtqueue, VQ_SERIAL_WRITE);
     }
     error = serial_unlock();
 }
@@ -195,6 +176,6 @@ int virtqueue_init(void)
     if (error) {
         ZF_LOGE("Unable to initialise serial server write virtqueue");
     }
+
     return error;
 }
-
