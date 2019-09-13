@@ -47,8 +47,8 @@ typedef struct {
 virtqueue_token_t current_read_vq_token;
 virtqueue_token_t current_write_vq_token;
 
-static void write_callback(ps_chardevice_t* device, enum chardev_status stat,
-                           size_t bytes_transfered, void* token)
+static void write_callback(ps_chardevice_t *device, enum chardev_status stat,
+                           size_t bytes_transfered, void *token)
 {
     virtqueue_token_t *vq_token = token;
     void *serial_buf = vq_token->serial_buf;
@@ -64,8 +64,8 @@ static void write_callback(ps_chardevice_t* device, enum chardev_status stat,
     write_in_progress = 0;
 }
 
-static void read_callback(ps_chardevice_t* device, enum chardev_status stat,
-                          size_t bytes_transfered, void* token)
+static void read_callback(ps_chardevice_t *device, enum chardev_status stat,
+                          size_t bytes_transfered, void *token)
 {
     virtqueue_token_t *vq_token = token;
     void *serial_buf = vq_token->serial_buf;
@@ -128,9 +128,9 @@ static void handle_virtqueue_message(virtqueue_device_t *vq, virtqueue_ring_obje
     return;
 }
 
-static void handle_virtqueue_callback(virtqueue_device_t* vq, enum virtqueue_op op)
+static void handle_virtqueue_callback(virtqueue_device_t *vq, enum virtqueue_op op)
 {
-    volatile void* available_buf = NULL;
+    volatile void *available_buf = NULL;
     virtqueue_ring_object_t handle;
 
     if (!virtqueue_get_available_buf(vq, &handle)) {
