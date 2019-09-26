@@ -415,16 +415,16 @@ static void handle_char(uint8_t c)
             statemachine = 1;
             break;
         default:
+            last_out = -1;
+            statemachine = 1;
             if (c >= '0' && c < '0' + num_getchar_clients) {
-                last_out = -1;
                 int client = c - '0';
                 printf(COLOR_RESET "\r\nSwitching input to %d\r\n", client);
                 active_client = client;
-                statemachine = 1;
             } else {
-                statemachine = 0;
-                give_client_char(ESCAPE_CHAR);
-                give_client_char(c);
+                printf(COLOR_RESET "\r\nInvalid SerialServer command: %c"
+                       "\r\nType %c? for help"
+                       "\r\n", (char)c, ESCAPE_CHAR);
             }
         }
         break;
