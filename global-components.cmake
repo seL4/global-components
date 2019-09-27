@@ -37,6 +37,7 @@ foreach(
     seL4GlobalAsynchCallback
     seL4Ethdriver
     seL4VirtQueues
+    seL4MessageQueue
 )
     DeclareCAmkESConnector(
         ${connector}

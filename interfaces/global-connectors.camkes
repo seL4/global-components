@@ -310,3 +310,41 @@ connector seL4VirtQueues {
             access_to_conn   = {Reset, Receive, Notify, Read, Write}
         \<rparr> \<rparr>";
 }
+
+/** seL4MessageQueue
+ * 
+ * This connector allows the passing of small messages from a sender to a
+ * receiver. The passing of messages is non-blocking and a number of these
+ * messages can be queued for the receiver.
+ *
+ * The block size of the messages is determined by the type associated with the
+ * dataport.
+ *
+ * The sender should be located on the 'from' side of the connection and the
+ * receivers on the 'to' side.
+ *
+ * The size of the queue can be set by the following attribute:
+ *  <connection_name>.size = "<size>";
+ * which is similar to seL4SharedDataport.
+ *
+ * Similarly, the length of the queue can be set by the following attribute:
+ *  <connection_name>.length = "<length>";
+ *
+ * To differentiate between the individual seL4MessageQueue connections in a
+ * component, an unique ID needs to be set for each connection. This can be
+ * done by setting the following attribute:
+ *  <component_name>.<interface_name>_id = "<unique id>";
+ *
+ * To interact with the message queue, use the message queue APIs in
+ * libsel4camkes. The library provides two functions to obtain a handle to use
+ * the APIs with:
+ *  int camkes_msgqueue_sender_init(int msgqueue_id, camkes_msgqueue_sender_t *sender);
+ *  int camkes_msgqueue_receiver_init(int msgqueue_id, camkes_msgqueue_receiver_t *receiver);
+ * which initialises either a sender or receiver msgqueue channel. The
+ * 'msgqueue_id' corresponds to the IDs that were assigned to a component's
+ * seL4MessageQueue connections.
+ */
+connector seL4MessageQueue {
+    from Dataports;
+    to Dataports;
+}
