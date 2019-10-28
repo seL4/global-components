@@ -360,7 +360,9 @@ static void handle_char(uint8_t c)
         give_client_char(c);
         break;
     case 1:
-        if (c == ESCAPE_CHAR) {
+        if (c == '\r' || c == '\n') {
+            give_client_char(c);
+        } else if (c == ESCAPE_CHAR) {
             statemachine = 2;
         } else {
             statemachine = 0;
