@@ -9,6 +9,7 @@
  *
  * @TAG(DATA61_BSD)
  */
+
 #pragma once
 
 #define HARDWARE_SERIAL_INTERFACES                              \
@@ -20,6 +21,6 @@
 #define HARDWARE_SERIAL_COMPOSITION                                                 \
         connection seL4DTBHardware serial_conn(from dummy_source, to serial_dev);
 
-#define HARDWARE_SERIAL_CONFIG                                  \
-        serial_dev.dtb = dtb({"path":"/serial@30860000"});  \
+#define HARDWARE_SERIAL_CONFIG                              \
+        serial_dev.dtb = dtb({"chosen":"stdout-path"});  \
         serial_dev.generate_interrupts = 1;

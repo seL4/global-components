@@ -20,16 +20,23 @@ endif()
 
 set(CAmkESCPP ON CACHE BOOL "" FORCE)
 
+# The imx8 serial devices are pretty similar and can share some code
+if("${KernelPlatform}" MATCHES "imx8.*")
+    set(PlatPrefix "imx8")
+else()
+    set(PlatPrefix "${KernelPlatform}")
+endif()
+
 DeclareCAmkESComponent(
     SerialServer
     SOURCES
     src/serial.c
     src/plat.c
     src/server_virtqueue.c
-    src/plat/${KernelPlatform}/plat.c
+    src/plat/${PlatPrefix}/plat.c
     LIBS
     virtqueue
     vswitch
 )
 
-CAmkESAddCPPInclude("${CMAKE_CURRENT_LIST_DIR}/include/plat/${KernelPlatform}/")
+CAmkESAddCPPInclude("${CMAKE_CURRENT_LIST_DIR}/include/plat/${PlatPrefix}/")
