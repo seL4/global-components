@@ -281,6 +281,11 @@ connector seL4Ethdriver {
     to Procedure;
 }
 
+connector seL4SharedDataWithCaps {
+    from Dataport;
+    to Dataport;
+}
+
 /**
 * seL4VirtQueues
 *

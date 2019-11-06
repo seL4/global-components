@@ -40,6 +40,7 @@ foreach(
     seL4Ethdriver
     seL4VirtQueues
     seL4MessageQueue
+    seL4SharedDataWithCaps
 )
     DeclareCAmkESConnector(
         ${connector}
