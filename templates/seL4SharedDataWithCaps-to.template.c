@@ -41,11 +41,20 @@ struct {
 /*- set perm = macros.get_perm(configuration, me.instance.name, me.interface.name) -*/
 /*? register_shared_variable('%s_data' % me.parent.name, dataport_symbol_name, dataport_size, frame_size=page_size, perm=perm) ?*/
 
+/*- set read_perm = False -*/
+/*- set write_perm = False -*/
+/*- if 'R' in perm -*/
+    /*- set read_perm = True -*/
+/*- endif -*/
+/*- if 'W' in perm -*/
+    /*- set write_perm = True -*/
+/*- endif -*/
+
 /*- set frame_objs = get_shared_variable_backing_frames('%s_data' % me.parent.name, dataport_size) -*/
 /*- set frame_caps = [] -*/
 static seL4_CPtr frame_caps[] = {
 /*- for (i, frame) in enumerate(frame_objs) -*/
-    /*- set frame_cap = alloc_cap('%s_%d' % ('%s_data' % me.parent.name, i), frame) -*/
+    /*- set frame_cap = alloc_cap('%s_%d' % ('%s_data' % me.parent.name, i), frame, read=read_perm, write=write_perm) -*/
     /*- do frame_caps.append(frame_cap) -*/
     /*? frame_cap ?*/,
 /*- endfor -*/
