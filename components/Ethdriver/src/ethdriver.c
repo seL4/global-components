@@ -227,7 +227,11 @@ static int is_multicast(void *buf, unsigned int len)
     }
     // read out a copy of the IP address so that it is correctly aligned
     uint32_t addr;
-    memcpy(&addr, ((uintptr_t)buf) + eth_header_len + ip_hdr_dest_offset, 4);
+    // TODO Find out why ARM memcpy faults on unaligned addresses
+    //memcpy(&addr, ((uintptr_t)buf) + eth_header_len + ip_hdr_dest_offset, 4);
+    for (int i = 0; i < 4; i++) {
+        ((char *)&addr)[i] = ((char *)(buf + eth_header_len + ip_hdr_dest_offset))[i];
+    }
     // multicast addresses start with bit pattern 1110, which after accounting for
     // network byte ordering is 0xe0
     if ((addr & 0xf0) == 0xe0) {
@@ -377,7 +381,11 @@ int client_tx(int len)
         tx_frame_t *tx_buf = client->pending_tx[client->num_tx];
         /* copy the packet over */
         memcpy(tx_buf->buf.buf, packet, len);
-        memcpy(tx_buf->buf.buf + 6, client->mac, 6);
+        // TODO Find out why ARM memcpy faults on unaligned addresses
+        //memcpy(tx_buf->buf.buf + 6, client->mac, 6);
+        for (int i = 0; i < 6; i++) {
+            ((char *)(tx_buf->buf.buf + 6))[i] = ((char *)client->mac)[i];
+        }
         /* queue up transmit */
         err = eth_driver.i_fn.raw_tx(&eth_driver, 1, (uintptr_t *) & (tx_buf->buf.phys), (unsigned int *)&len, tx_buf);
         if (err != ETHIF_TX_ENQUEUED) {
