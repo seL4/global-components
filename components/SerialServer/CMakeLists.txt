@@ -20,9 +20,10 @@ endif()
 
 set(CAmkESCPP ON CACHE BOOL "" FORCE)
 
-# The imx8 serial devices are pretty similar and can share some code
-if("${KernelPlatform}" MATCHES "imx8.*")
-    set(PlatPrefix "imx8")
+# ARM platforms have similar serial configurations in their DTSes and can share
+# similar headers and code
+if(KernelArchARM)
+    set(PlatPrefix "arm_common")
 else()
     set(PlatPrefix "${KernelPlatform}")
 endif()
