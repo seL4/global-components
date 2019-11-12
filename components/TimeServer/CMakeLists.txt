@@ -27,7 +27,7 @@ endif()
 if("${KernelPlatform}" MATCHES "imx8.*")
     set(PlatPrefix "imx8")
 else()
-    set(PlatPrefix"${KernelPlatform}")
+    set(PlatPrefix "${KernelPlatform}")
 endif()
 
 DeclareCAmkESComponent(TimeServer SOURCES src/time_server.c ${TimeServerPlatSources})
