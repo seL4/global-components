@@ -102,7 +102,13 @@ int pc99_eth_setup(vka_t *vka, simple_t *camkes_simple, vspace_t *vspace, ps_io_
     return 0;
 }
 
+static int irq_acknowledge_cb(UNUSED void *cookie)
+{
+    return irq_acknowledge();
+}
+
+
 void irq_handle(void)
 {
-    eth_irq_handle(NULL, irq_acknowledge, NULL);
+    eth_irq_handle(NULL, irq_acknowledge_cb, NULL);
 }
