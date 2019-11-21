@@ -22,6 +22,7 @@
 #include <camkes.h>
 #include <camkes/io.h>
 #include <camkes/irq.h>
+#include <camkes/virtqueue.h>
 #include <platsupport/chardev.h>
 #include <platsupport/irq.h>
 #include "serial.h"
@@ -524,9 +525,11 @@ void pre_init(void)
 
 void post_init(void)
 {
-    int res = virtqueue_init();
-    if (res) {
-        ZF_LOGE("Serial server does not support read and write virtqueues");
+    if (num_registered_virtqueue_channels > 0) {
+        int res = virtqueue_init();
+        if (res) {
+            ZF_LOGE("Serial server does not support read and write virtqueues");
+        }
     }
 }
 
