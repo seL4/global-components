@@ -20,11 +20,6 @@
 
 /*- set notification = pop('notification') -*/
 
-int /*? me.interface.name ?*/__run(void) {
-    /* Nothing required. */
-    return 0;
-}
-
 void /*? me.interface.name ?*/_emit_underlying(void) {
     seL4_Signal(/*? notification ?*/);
 }

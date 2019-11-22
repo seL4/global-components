@@ -164,8 +164,8 @@ connector seL4RPCDataportSignal {
  * attributes match are coupled.
  */
 connector seL4GlobalAsynch {
-    from Event template "seL4GlobalAsynch-from.template.c";
-    to Events template "seL4GlobalAsynch-to.template.c";
+    from Event template "seL4GlobalAsynch-from.template.c" with 0 threads;
+    to Events template "seL4GlobalAsynch-to.template.c" with 0 threads;
 
     attribute string isabelle_connector_spec = "\<lparr>
         connector_type = NativeConnector,
