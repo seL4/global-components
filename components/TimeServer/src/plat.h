@@ -15,4 +15,5 @@
 #include <platsupport/io.h>
 #include <utils/util.h>
 
+void plat_pre_init(void) WEAK;
 void plat_post_init(ltimer_t *ltimer) WEAK;

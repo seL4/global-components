@@ -229,6 +229,10 @@ void post_init()
     error = ps_calloc(&(io_ops.malloc_ops), the_timer_largest_badge(), sizeof(*client_state), (void **) &client_state);
     ZF_LOGF_IF(error, "Failed to allocate client state");
 
+    if (plat_pre_init) {
+        plat_pre_init();
+    }
+
     error = ltimer_default_init(&ltimer, io_ops, time_server_ltimer_handle, NULL);
     ZF_LOGF_IF(error, "Failed to init timer");
 
