@@ -25,7 +25,7 @@
     void /*? me.interface.name ?*/_emit_/*? badge ?*/(void) {
         seL4_Signal(/*? notification ?*/);
     }
-    /*- do badges.append(badge) -*/
+    /*- do badges.append(int(badge)) -*/
 /*- endfor -*/
 
 /*- do badges.sort() -*/
