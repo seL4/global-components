@@ -35,8 +35,8 @@ uint64_t the_timer_tsc_frequency()
 // regardless of whether the assembly declared this to have a simple template or not.
 // Having this as weak allows us to test for this at run time / link time
 void camkes_make_simple(simple_t *simple) __attribute__((weak));
-
-void plat_post_init(ltimer_t *ltimer)
+extern uint64_t tsc_freq_hint;
+void plat_pre_init(void)
 {
     // Attempt to detect the presence of a simple interface and try and get the
     // tsc frequency from it
@@ -46,7 +46,12 @@ void plat_post_init(ltimer_t *ltimer)
         camkes_make_simple(&simple);
         tsc_frequency = x86_get_tsc_freq_from_simple(&simple);
     }
+    tsc_freq_hint = tsc_frequency;
 
+}
+
+void plat_post_init(ltimer_t *ltimer)
+{
     if (tsc_frequency == 0) {
         // failed to detect from bootinfo for whatever reason, rely on the pit calibration
         tsc_frequency = ltimer_pit_get_tsc_freq(ltimer);
