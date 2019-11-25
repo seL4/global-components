@@ -24,3 +24,53 @@ include(${CMAKE_CURRENT_LIST_DIR}/components/FileServer/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/components/VirtQueue/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/components/Ethdriver/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/components/PicoServer/CMakeLists.txt)
+
+foreach(
+    connector
+    IN
+    ITEMS
+    seL4RPCCallSignal
+    seL4RPCCallDataport
+    seL4RPCDataport
+    seL4RPCDataportSignal
+    seL4GlobalAsynch
+    seL4GlobalAsynchCallback
+    seL4Ethdriver
+    seL4VirtQueues
+)
+    DeclareCAmkESConnector(
+        ${connector}
+        FROM
+        ${connector}-from.template.c
+        TO
+        ${connector}-to.template.c
+    )
+endforeach()
+DeclareCAmkESConnector(
+    seL4TimeServer
+    FROM
+    seL4RPCCallSignal-from.template.c
+    TO
+    seL4RPCCallSignal-to.template.c
+)
+DeclareCAmkESConnector(
+    seL4SerialServer
+    FROM
+    seL4RPCDataportSignal-from.template.c
+    TO
+    seL4RPCDataportSignal-to.template.c
+)
+DeclareCAmkESConnector(
+    seL4PicoServerSignal
+    FROM
+    seL4RPCCallSignal-from.template.c
+    TO
+    seL4RPCCallSignal-to.template.c
+)
+DeclareCAmkESConnector(
+    seL4PicoServer
+    FROM
+    seL4RPCDataport-from.template.c
+    TO
+    seL4RPCDataport-to.template.c
+)

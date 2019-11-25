@@ -57,8 +57,8 @@
  *      int <interface_name>_largest_badge(void);
  */
 connector seL4RPCCallSignal {
-    from Procedures template "seL4RPCCallSignal-from.template.c";
-    to Procedure template "seL4RPCCallSignal-to.template.c";
+    from Procedures;
+    to Procedure;
 }
 
 /**
@@ -74,8 +74,8 @@ connector seL4RPCCallSignal {
  * 	<from_component>.<from_interface>_attributes = "<badge>";
  */
 connector seL4RPCCallDataport {
-    from Procedures template "seL4RPCCallDataport-from.template.c";
-    to Procedure template "seL4RPCCallDataport-to.template.c";
+    from Procedures;
+    to Procedure;
 }
 
 /**
@@ -102,8 +102,8 @@ connector seL4RPCCallDataport {
  * <from_interface>_num_badges()
  */
 connector seL4RPCDataport {
-    from Procedures template "seL4RPCDataport-from.template.c" with 0 threads;
-    to Procedure template "seL4RPCDataport-to.template.c";
+    from Procedures with 0 threads;
+    to Procedure;
 
     attribute string isabelle_connector_spec = "\<lparr>
         connector_type = NativeConnector,
@@ -138,8 +138,8 @@ connector seL4RPCDataport {
  *      int <interface_name>_largest_badge(void);
  */
 connector seL4RPCDataportSignal {
-    from Procedures template "seL4RPCDataportSignal-from.template.c";
-    to Procedure template "seL4RPCDataportSignal-to.template.c";
+    from Procedures;
+    to Procedure;
 }
 
 /**
@@ -164,8 +164,8 @@ connector seL4RPCDataportSignal {
  * attributes match are coupled.
  */
 connector seL4GlobalAsynch {
-    from Event template "seL4GlobalAsynch-from.template.c" with 0 threads;
-    to Events template "seL4GlobalAsynch-to.template.c" with 0 threads;
+    from Event with 0 threads;
+    to Events with 0 threads;
 
     attribute string isabelle_connector_spec = "\<lparr>
         connector_type = NativeConnector,
@@ -202,8 +202,8 @@ connector seL4GlobalAsynch {
  * attributes match are coupled.
  */
 connector seL4GlobalAsynchCallback {
-    from Event template "seL4GlobalAsynchCallback-from.template.c";
-    to Events template "seL4GlobalAsynchCallback-to.template.c";
+    from Event;
+    to Events;
 
     attribute string isabelle_connector_spec = "\<lparr>
         connector_type = NativeConnector,
@@ -220,8 +220,8 @@ connector seL4GlobalAsynchCallback {
 
 /* Custom connectors which use existing global connectors just with no threads configured. */
 connector seL4TimeServer {
-    from Procedures template "seL4RPCCallSignal-from.template.c" with 0 threads;
-    to Procedure template "seL4RPCCallSignal-to.template.c";
+    from Procedures with 0 threads;
+    to Procedure;
 
     /* TODO: double check this */
     attribute string isabelle_connector_spec = "\<lparr>
@@ -238,8 +238,8 @@ connector seL4TimeServer {
 }
 
 connector seL4SerialServer {
-    from Procedures template "seL4RPCDataportSignal-from.template.c" with 0 threads;
-    to Procedure template "seL4RPCDataportSignal-to.template.c";
+    from Procedures with 0 threads;
+    to Procedure;
 
     /* TODO: double check this */
     attribute string isabelle_connector_spec = "\<lparr>
@@ -258,13 +258,13 @@ connector seL4SerialServer {
 }
 
 connector seL4PicoServerSignal {
-    from Procedures template "seL4RPCCallSignal-from.template.c" with 0 threads;
-    to Procedure template "seL4RPCCallSignal-to.template.c";
+    from Procedures with 0 threads;
+    to Procedure;
 }
 
 connector seL4PicoServer {
-    from Procedures template "seL4RPCDataport-from.template.c" with 0 threads;
-    to Procedure template "seL4RPCDataport-to.template.c";
+    from Procedures with 0 threads;
+    to Procedure;
 }
 
 /**
@@ -277,8 +277,8 @@ connector seL4PicoServer {
  * address.
  */ 
 connector seL4Ethdriver {
-    from Procedures template "seL4Ethdriver-from.template.c" with 0 threads;
-    to Procedure template "seL4Ethdriver-to.template.c";
+    from Procedures with 0 threads;
+    to Procedure;
 }
 
 /**
@@ -294,8 +294,8 @@ connector seL4Ethdriver {
 * is intended to be an empty/stub component.
 */
 connector seL4VirtQueues {
-    from Procedures template "seL4VirtQueues-from.template.c";
-    to Procedure template "seL4VirtQueues-to.template.c";
+    from Procedures;
+    to Procedure;
     attribute bool disable_interface_type_checking = true;
 
     attribute string isabelle_connector_spec = "\<lparr>
