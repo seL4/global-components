@@ -298,6 +298,22 @@ int client_rx(int *len)
     return ret;
 }
 
+int client_has_rx(void)
+{
+    if (!done_init) {
+        return -1;
+    }
+
+    client_t *client = eth_get_client();
+    assert(client);
+
+    if ((client->pending_rx_head != client->pending_rx_tail) &&
+        (0 == client->should_notify)) {
+        return 1;
+    }
+    return 0;
+}
+
 int client_tx(int len)
 {
     if (!done_init) {
