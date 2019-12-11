@@ -14,10 +14,6 @@ cmake_minimum_required(VERSION 3.8.2)
 
 project(ClockServer C)
 
-if(NOT KernelArchARM)
-    message(FATAL_ERROR "The ClockServer component can only be used on ARM platforms!")
-endif()
-
 set(CAmkESDTS ON CACHE BOOL "" FORCE)
 set(CAmkESCPP ON CACHE BOOL "" FORCE)
 
