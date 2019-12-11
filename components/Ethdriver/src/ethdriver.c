@@ -114,6 +114,18 @@ bool client_has_mac(unsigned int client_id);
 void client_get_mac(unsigned int client_id, uint8_t *mac);
 
 
+static client_t *eth_get_client(void)
+{
+    int id = client_get_sender_id();
+    client_t *client = NULL;
+    for (int i = 0; i < num_clients; i++) {
+        if (clients[i].client_id == id) {
+            client = &clients[i];
+        }
+    }
+    return client;
+}
+
 static void eth_tx_complete(void *iface, void *cookie)
 {
     tx_frame_t *buf = (tx_frame_t *)cookie;
@@ -264,13 +276,7 @@ int client_rx(int *len)
         return -1;
     }
     int ret;
-    int id = client_get_sender_id();
-    client_t *client = NULL;
-    for (int i = 0; i < num_clients; i++) {
-        if (clients[i].client_id == id) {
-            client = &clients[i];
-        }
-    }
+    client_t *client = eth_get_client();
     assert(client);
     void *packet = client->dataport;
     if (client->pending_rx_head == client->pending_rx_tail) {
@@ -304,13 +310,7 @@ int client_tx(int len)
         return -1;
     }
     int err = ETHIF_TX_COMPLETE;
-    int id = client_get_sender_id();
-    client_t *client = NULL;
-    for (int i = 0; i < num_clients; i++) {
-        if (clients[i].client_id == id) {
-            client = &clients[i];
-        }
-    }
+    client_t *client = eth_get_client();
     assert(client);
     void *packet = client->dataport;
     /* silently drop packets */
@@ -342,13 +342,7 @@ int client_tx(int len)
 
 void client_mac(uint8_t *b1, uint8_t *b2, uint8_t *b3, uint8_t *b4, uint8_t *b5, uint8_t *b6)
 {
-    int id = client_get_sender_id();
-    client_t *client = NULL;
-    for (int i = 0; i < num_clients; i++) {
-        if (clients[i].client_id == id) {
-            client = &clients[i];
-        }
-    }
+    client_t *client = eth_get_client();
     assert(client);
     assert(done_init);
     *b1 = client->mac[0];
