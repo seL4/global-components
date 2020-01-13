@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include <utils/util.h>
 #include <sel4/sel4.h>
-#include <dataport_caps.h>
+#include <camkes/dataport_caps.h>
 
 /*? macros.show_includes(me.instance.type.includes) ?*/
 
