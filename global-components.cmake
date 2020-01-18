@@ -32,7 +32,6 @@ foreach(
     IN
     ITEMS
     seL4RPCCallSignal
-    seL4RPCCallDataport
     seL4RPCDataport
     seL4RPCDataportSignal
     seL4GlobalAsynch
