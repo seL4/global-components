@@ -10,6 +10,8 @@
  * @TAG(DATA61_BSD)
  */
 
+#include <stdbool.h>
+
 /*- include 'seL4RPCDataport-to.template.c' -*/
 
 /*# Look through the composition and find all '-to' connectors that would be
@@ -50,10 +52,30 @@ void /*? me.interface.name ?*/_emit(unsigned int badge) {
     lookup[badge]();
 }
 
+bool /*? me.interface.name ?*/_has_mac(unsigned int badge) {
+    /*- if len(macs) > 0 -*/
+        switch (badge) {
+            /*- for badge,mac in macs -*/
+            case /*? badge ?*/: {
+                /*- if mac != None -*/
+                    return true;
+                /*- else -*/
+                    return false;
+                /*- endif -*/
+            }
+            /*- endfor -*/
+        }
+    /*- endif -*/
+    assert(0);
+}
+
 void /*? me.interface.name ?*/_get_mac(unsigned int badge, uint8_t *mac) {
     /*- if len(macs) > 0 -*/
         switch (badge) {
             /*- for badge,mac in macs -*/
+                /*- if mac == None -*/
+                    /*- continue -*/
+                /*- endif -*/
             case /*? badge ?*/: {
                 uint8_t temp[] = {
                     /*- for num in mac -*/
@@ -64,6 +86,8 @@ void /*? me.interface.name ?*/_get_mac(unsigned int badge, uint8_t *mac) {
                 break;
             }
             /*- endfor -*/
+            default:
+                break;
         }
     /*- endif -*/
 }

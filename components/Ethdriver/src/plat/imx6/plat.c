@@ -39,12 +39,6 @@ int ethif_init(struct eth_driver *eth_driver, ps_io_ops_t *io_ops, ps_irq_ops_t 
         .prom_mode = (uint8_t) promiscuous_mode
     };
 
-    if (!eth_config.prom_mode) {
-        for (int i = 0; i < 6; i++) {
-            eth_config.mac_addr[i] = (uint8_t) mac[i];
-        }
-    }
-
     int error = ethif_imx6_init(eth_driver, *io_ops, (void *) &eth_config);
     if (error) {
         return error;

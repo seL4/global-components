@@ -11,6 +11,7 @@
  */
 
 #include <autoconf.h>
+#include <stdbool.h>
 
 #include <camkes.h>
 #include <camkes/dma.h>
@@ -133,6 +134,7 @@ unsigned int client_get_sender_id(void);
 unsigned int client_num_badges(void);
 unsigned int client_enumerate_badge(unsigned int i);
 void *client_buf(unsigned int client_id);
+bool client_has_mac(unsigned int client_id);
 void client_get_mac(unsigned int client_id, uint8_t *mac);
 
 static void init_system(void)
@@ -487,7 +489,6 @@ void post_init(void)
         clients[client].should_notify = 1;
         clients[client].client_id = client_enumerate_badge(client);
         clients[client].dataport = client_buf(clients[client].client_id);
-        client_get_mac(clients[client].client_id, clients[client].mac);
         for (int i = 0; i < CLIENT_TX_BUFS; i++) {
             void *buf = ps_dma_alloc(&io_ops.dma_manager, BUF_SIZE, 4, 1, PS_MEM_NORMAL);
             assert(buf);
@@ -507,6 +508,20 @@ void post_init(void)
 
     error = ethif_init(&eth_driver, &io_ops, &irq_ops);
     ZF_LOGF_IF(error, "Failed to initialise the ethernet device");
+
+    uint8_t hw_mac[6];
+    eth_driver.i_fn.get_mac(&eth_driver, hw_mac);
+
+    int num_defaults = 0;
+    for (int client = 0; client < num_clients; client++) {
+        if (client_has_mac(clients[client].client_id)) {
+            client_get_mac(clients[client].client_id, clients[client].mac);
+        } else {
+            ++num_defaults;
+            memcpy(clients[client].mac, hw_mac, 6);
+            ZF_LOGF_IF((num_defaults > 1), "Sould not have 2 clients with the same MAC address");
+        }
+    }
 
     done_init = 1;
 

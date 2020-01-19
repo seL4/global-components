@@ -62,10 +62,8 @@ component EthdriverARMPlat {
     provides Ethdriver client;
 
     /* 
-     * These two attributes are set according to whatever configuration you want.
-     * The MAC address should match the board's Ethernet device's MAC address.
+     * This attribute is set according to whatever configuration you want.
      */
-    attribute int mac[];
     attribute int promiscuous_mode;
 
     HARDWARE_ETHERNET_INTERFACES
