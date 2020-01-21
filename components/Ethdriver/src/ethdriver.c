@@ -519,7 +519,7 @@ void post_init(void)
         } else {
             ++num_defaults;
             memcpy(clients[client].mac, hw_mac, 6);
-            ZF_LOGF_IF((num_defaults > 1), "Sould not have 2 clients with the same MAC address");
+            ZF_LOGF_IF((num_defaults > 1), "Should not have 2 clients with the same MAC address");
         }
     }
 
