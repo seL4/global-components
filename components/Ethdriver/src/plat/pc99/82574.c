@@ -38,7 +38,8 @@ int ethif_init(struct eth_driver *eth_driver, ps_io_ops_t *io_ops, ps_irq_ops_t 
 {
     ethif_intel_config_t eth_config = (ethif_intel_config_t) {
         /* Ethdriver component dataport */
-        .bar0 = (void *)EthDriver
+        .bar0 = (void *)EthDriver,
+        .prom_mode = (uint8_t) promiscuous_mode
     };
 
     int error = ethif_e82574_init(eth_driver, *io_ops, &eth_config);

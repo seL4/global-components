@@ -19,6 +19,11 @@ component Ethdriver82574 {
 
     provides Ethdriver client;
 
+    /* 
+     * This attribute is set according to whatever configuration you want.
+     */
+     attribute int promiscuous_mode;
+
     consumes IRQ irq;
     dataport Buf(0x20000) EthDriver;
 
@@ -31,6 +36,11 @@ component Ethdriver82580 {
     has mutex ethdriver;
 
     provides Ethdriver client;
+
+    /* 
+     * This attribute is set according to whatever configuration you want.
+     */
+     attribute int promiscuous_mode;
 
     consumes IRQ irq;
     dataport Buf(0x80000) EthDriver;
