@@ -14,12 +14,11 @@
 
 /*? macros.show_includes(me.instance.type.includes) ?*/
 
-
-/*- set client_id = configuration[me.instance.name].get("%s_attributes" % me.interface.name) -*/
-/*- if client_id is none or re.match('\\d+$', client_id) is none -*/
-  /*? raise(Exception('%s.%s_attributes must be set to a number' % (me.instance.name, me.interface.name))) ?*/
-/*- endif -*/
-/*- set client_id = client_id.strip('"') -*/
+/*# Assign client ids and badges #*/
+/*- from 'rpc-connector.c' import allocate_badges with context -*/
+/*- set client_ids = namespace() -*/
+/*- do allocate_badges(client_ids) -*/
+/*- set client_id = client_ids.badges[me.parent.from_ends.index(me)] -*/
 
 /*- if suffix is not defined -*/
   /*- set suffix = '' -*/

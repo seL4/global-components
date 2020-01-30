@@ -10,22 +10,22 @@
  *#@TAG(DATA61_BSD)
   #*/
 
-/*- set badges = [] -*/
+/*# Assign client ids and badges #*/
+/*- from 'rpc-connector.c' import allocate_badges with context -*/
+/*- set client_ids = namespace() -*/
+/*- do allocate_badges(client_ids) -*/
+
+/*- set badges = client_ids.badges -*/
+
 /*- for c in me.parent.from_ends -*/
     /*- set is_reader = False -*/
     /*- set instance = c.instance.name -*/
     /*- set interface = c.interface.name -*/
     /*- include 'global-endpoint.template.c' -*/
     /*- set notification = pop('notification') -*/
-    /*# 
-     *# The 'str' wrapper is just there for backwards compatibility reasons.
-     *# Some projects had ints assigned, some had strings assigned to the attributes field.
-    #*/
-    /*- set badge = str(configuration[c.instance.name].get("%s_attributes" % c.interface.name)).strip('"') -*/
-    void /*? me.interface.name ?*/_emit_/*? badge ?*/(void) {
+    void /*? me.interface.name ?*/_emit_/*? badges[loop.index0] ?*/(void) {
         seL4_Signal(/*? notification ?*/);
     }
-    /*- do badges.append(int(badge)) -*/
 /*- endfor -*/
 
 /*- do badges.sort() -*/

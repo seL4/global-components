@@ -14,10 +14,12 @@
 
 /*- include 'seL4RPCDataport-to.template.c' -*/
 
-/*# Look through the composition and find all '-to' connectors that would be
- *# duplicates of this one
- #*/
-/*- set badges = [] -*/
+/*# Assign client ids and badges #*/
+/*- from 'rpc-connector.c' import allocate_badges with context -*/
+/*- set client_ids = namespace() -*/
+/*- do allocate_badges(client_ids) -*/
+/*- set badges = client_ids.badges -*/
+
 /*- set macs = [] -*/
 
 /*- for c in me.parent.from_ends -*/
@@ -26,18 +28,13 @@
     /*- set interface = c.interface.name -*/
     /*- include 'global-endpoint.template.c' -*/
     /*- set notification = pop('notification') -*/
-    /*- set badge = configuration[c.instance.name].get("%s_attributes" % c.interface.name).strip('"') -*/
+    /*- set badge = badges[loop.index0] -*/
     /*- set mac = configuration[c.instance.name].get("%s_mac" % c.interface.name) -*/
     void /*? me.interface.name ?*/_emit_/*? badge ?*/(void) {
         seL4_Signal(/*? notification ?*/);
     }
-    /*- do badges.append(int(badge)) -*/
     /*- do macs.append( (badge, mac) ) -*/
 /*- endfor -*/
-
-
-
-/*- do badges.sort() -*/
 
 void /*? me.interface.name ?*/_emit(unsigned int badge) {
     /*# create a lookup table under the assumption that the
