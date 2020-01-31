@@ -63,7 +63,8 @@
 /*- do _stash(stash_name, (notification_object, notification_owner)) -*/
 
 /*# Create the badged endpoint #*/
-/*- set notification = alloc_cap('%s_%s_notification_object_cap' % (name, badge), notification_object, read=is_reader, write=True) -*/
-/*- do cap_space.cnode[notification].set_badge(int(badge, 10)) -*/
-
+/*- set notification = alloc_cap('%s_%s_%d_notification_object_cap' % (name, badge, is_reader), notification_object, read=is_reader, write=True) -*/
+/*- if not is_reader -*/
+  /*- do cap_space.cnode[notification].set_badge(int(badge, 10)) -*/
+/*- endif -*/
 /*- do stash('notification', notification) -*/
