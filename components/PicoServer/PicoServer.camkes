@@ -24,7 +24,7 @@ component PicoServer {
     consumes Notification timer_complete;
 
     uses Ethdriver ethdriver;
-    attribute string ip_addr;
+    attribute string ip_addr = "";
     attribute string multicast_addr;
     attribute int num_clients;
 

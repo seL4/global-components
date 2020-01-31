@@ -26,6 +26,8 @@
 #include <picoserver_event.h>
 #include <picoserver_peer.h>
 
+#include "pico_common.h"
+
 #define PICO_TICK_MS 10
 
 /*
@@ -360,6 +362,15 @@ picoserver_event_t pico_control_event_poll(void)
     return event;
 }
 
+uint32_t pico_control_get_ipv4(void)
+{
+    picotcp_lock();
+    uint32_t ret = get_ipv4();
+    picotcp_unlock();
+
+    return ret;
+}
+
 int pico_send_write(int socket_fd, int len, int buffer_offset)
 {
     seL4_Word client_id = client_check();
@@ -531,10 +542,14 @@ int clk_get_time(void)
 /* Callback that gets called when the timer fires. */
 void timer_complete_callback(void)
 {
-    picotcp_lock();
+    if (!dhcp_negotiating) {
+        picotcp_lock();
+    }
     pico_ms_tick += PICO_TICK_MS;
     ethif_pico_handle_irq(&_picotcp_driver, 0);
-    picotcp_unlock();
+    if (!dhcp_negotiating) {
+        picotcp_unlock();
+    }
 }
 
 void pre_init(void)

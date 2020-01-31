@@ -26,4 +26,5 @@ procedure PicoControl {
     int shutdown(in int socket_fd, in int mode);
     int close(in int socket_fd);
     picoserver_event_t event_poll(void);
+    uint32_t get_ipv4(void);
 };
