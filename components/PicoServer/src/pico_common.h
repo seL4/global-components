@@ -25,3 +25,4 @@
 extern bool dhcp_negotiating;
 
 uint32_t get_ipv4(void);
+void eth_init(pico_device_eth *picotcp_driver);

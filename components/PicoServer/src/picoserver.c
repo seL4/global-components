@@ -528,8 +528,6 @@ int pico_recv_recvfrom(int socket_fd, int len, int buffer_offset, uint32_t *src_
 
 static pico_device_eth _picotcp_driver;
 
-void eth_init(pico_device_eth *picotcp_driver);
-
 /*
  * Required for the camkes_sys_clock_gettime() in sys_clock.c of libsel4camkes.
  */
