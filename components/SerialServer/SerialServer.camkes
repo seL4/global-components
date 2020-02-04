@@ -39,10 +39,6 @@ component SerialServer {
 
     /* Size of the driver's heap */
     attribute int heap_size = 16 * 1024;
-    /* Unique endpoint for incoming timer notifications to serial driver */
-    attribute string timeout_global_endpoint = "serial_server";
-    /* Badge number for timer notifications coming into the serial driver */
-    attribute string timeout_badge = "1";
 
     HARDWARE_SERIAL_INTERFACES
     HARDWARE_SERIAL_ATTRIBUTES

@@ -402,11 +402,11 @@ static void handle_char(uint8_t c)
                    "\r\n          0: no debugging"
                    "\r\n          1: debug multi-input mode output coalescing"
                    "\r\n          2: debug flush_buffer_line"
-                   "\r\n", ESCAPE_CHAR, getchar_largest_badge());
+                   "\r\n", ESCAPE_CHAR, num_getchar_clients - 1);
             statemachine = 1;
             break;
         default:
-            if (c >= '0' && c < '0' + (getchar_largest_badge() + 1)) {
+            if (c >= '0' && c < '0' + num_getchar_clients) {
                 last_out = -1;
                 int client = c - '0';
                 printf(COLOR_RESET "\r\nSwitching input to %d\r\n", client);
@@ -420,7 +420,7 @@ static void handle_char(uint8_t c)
         }
         break;
     case 3:
-        if (c >= '0' && c < '0' + (getchar_largest_badge() + 1)) {
+        if (c >= '0' && c < '0' + num_getchar_clients) {
             printf(COLOR_RESET "%s%d", (active_multiclients != 0 ? "," : ""), (c - '0'));
             active_multiclients |= BIT(c - '0');
             last_out = -1;
@@ -512,9 +512,9 @@ void pre_init(void)
         for (int i = 0; i < num_getchar_clients; i++) {
             unsigned int badge = getchar_enumerate_badge(i);
             assert(badge <= num_getchar_clients);
-            getchar_clients[badge].client_id = badge;
-            getchar_clients[badge].buf = getchar_buf(badge);
-            getchar_clients[badge].last_head = -1;
+            getchar_clients[i].client_id = badge;
+            getchar_clients[i].buf = getchar_buf(badge);
+            getchar_clients[i].last_head = -1;
         }
     }
     plat_post_init(&(io_ops.irq_ops));
