@@ -63,6 +63,26 @@ static void /*? me.interface.name ?*/_notify(void) {
     seL4_Signal(/*? notification ?*/);
 }
 
+/*- for c in me.parent.from_ends -*/
+    /*- if str(c) == other_interface_name -*/
+        /*# We need to get the badge that they will signal us on #*/
+        /*- set is_reader = True -*/
+        /*- set instance = c.instance.name -*/
+        /*- set interface = c.interface.name -*/
+        /*- include 'global-endpoint.template.c' -*/
+        /*- set notification = pop('notification') -*/
+        /*- set badge = pop('badge') -*/
+
+        static seL4_CPtr /*? me.interface.name ?*/_notification(void) {
+            return /*? notification ?*/;
+        }
+
+        seL4_Word /*? me.interface.name ?*/_notification_badge(void) {
+            return /*? badge ?*/;
+        }
+    /*- endif -*/
+/*- endfor -*/
+
 /*- set interface_name =  me.interface.type.name -*/
 
 /*- set queue_id = configuration[me.instance.name].get("%s_id" % me.interface.name) -*/
@@ -73,8 +93,8 @@ static void /*? me.interface.name ?*/_notify(void) {
 //This is called by camkes runtime during init.
 void /*? me.interface.name ?*/__init() {
 /*- if interface_name == "VirtQueueDrv" -*/
-    camkes_virtqueue_channel_register(/*? queue_id ?*/, /*? me.interface.name ?*/_get_size(), /*? me.interface.name ?*/_buf,  /*? me.interface.name ?*/_notify, VIRTQUEUE_DRIVER);
+    camkes_virtqueue_channel_register(/*? queue_id ?*/, /*? me.interface.name ?*/_get_size(), /*? me.interface.name ?*/_buf,  /*? me.interface.name ?*/_notify, /*? me.interface.name ?*/_notification(), /*? me.interface.name ?*/_notification_badge(), VIRTQUEUE_DRIVER);
 /*- else -*/
-    camkes_virtqueue_channel_register(/*? queue_id ?*/, /*? me.interface.name ?*/_get_size(), /*? me.interface.name ?*/_buf,  /*? me.interface.name ?*/_notify, VIRTQUEUE_DEVICE);
+    camkes_virtqueue_channel_register(/*? queue_id ?*/, /*? me.interface.name ?*/_get_size(), /*? me.interface.name ?*/_buf,  /*? me.interface.name ?*/_notify, /*? me.interface.name ?*/_notification(), /*? me.interface.name ?*/_notification_badge(), VIRTQUEUE_DEVICE);
 /*- endif -*/
 }
