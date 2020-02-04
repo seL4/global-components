@@ -58,11 +58,8 @@
 /*- set interface = me.interface.name -*/
 /*- include 'global-endpoint.template.c' -*/
 /*- set notification = pop('notification') -*/
-seL4_CPtr /*? me.interface.name ?*/_notification(void) {
-    return /*? notification ?*/;
-}
 
-void /*? me.interface.name ?*/_notify(void) {
+static void /*? me.interface.name ?*/_notify(void) {
     seL4_Signal(/*? notification ?*/);
 }
 
