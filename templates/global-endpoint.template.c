@@ -68,3 +68,4 @@
   /*- do cap_space.cnode[notification].set_badge(int(badge, 10)) -*/
 /*- endif -*/
 /*- do stash('notification', notification) -*/
+/*- do stash('badge', int(badge, 10)) -*/
