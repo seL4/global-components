@@ -16,6 +16,7 @@
 
 /*# Assign client ids and badges #*/
 /*- from 'rpc-connector.c' import allocate_badges with context -*/
+/*- from 'global-endpoint.template.c' import allocate_cap with context -*/
 /*- set client_ids = namespace() -*/
 /*- do allocate_badges(client_ids) -*/
 /*- set badges = client_ids.badges -*/
@@ -23,10 +24,7 @@
 /*- set macs = [] -*/
 
 /*- for c in me.parent.from_ends -*/
-    /*- set is_reader = False -*/
-    /*- set instance = c.instance.name -*/
-    /*- set interface = c.interface.name -*/
-    /*- include 'global-endpoint.template.c' -*/
+    /*- do allocate_cap(c, is_reader=False) -*/
     /*- set notification = pop('notification') -*/
     /*- set badge = badges[loop.index0] -*/
     /*- set mac = configuration[c.instance.name].get("%s_mac" % c.interface.name) -*/

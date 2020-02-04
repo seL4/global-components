@@ -9,63 +9,51 @@
  *#
  *#@TAG(DATA61_BSD)
   #*/
-/*? assert(isinstance(instance, six.string_types)) ?*/
-/*? assert(isinstance(interface, six.string_types)) ?*/
-/*? assert(isinstance(is_reader, bool)) ?*/
 
-/*- set name = configuration[instance].get('%s_global_endpoint' % interface) -*/
-/*- if name is none -*/
-  /*? raise(Exception('%s.%s_global_endpoint not set' % (instance, interface))) ?*/
-/*- else -*/
-  /*- set name = name.strip('"') -*/
-/*- endif -*/
+/*- macro allocate_cap(interface_end, is_reader) -*/
+  /*? assert(isinstance(is_reader, bool)) ?*/
 
-/*- set badge_maybestring = configuration[instance].get('%s_badge' % interface, '"0"') -*/
-/*- if isinstance(badge_maybestring, six.string_types) -*/
-    /*- set badge = badge_maybestring.strip('"') -*/
-/*- else -*/
-    /*- set badge = str(badge_maybestring) -*/
-/*- endif -*/
-/*- set stash_name = "%s_global_notification" % (name) -*/
+  /*- set instance = interface_end.instance -*/
+  /*- if interface_end in interface_end.parent.from_ends -*/
+    /*- set from_end = True -*/
+    /*- set end = "from" -*/
+  /*- else -*/
+    /*- set from_end = False -*/
+    /*- set end = "to" -*/
+  /*- endif -*/
 
-/*# Check the global stash for our endpoint #*/
-/*- set maybe_notification = _pop(stash_name) -*/
+  /*- if interface_end.parent.type.get_attribute("%s_global_endpoint" % end).default != true -*/
+      /*? raise(Exception('%s does not declare %s_global_endpoint:' % (interface_end.parent.type.name,end))) ?*/
+  /*- endif -*/
 
-/*# Create the endpoint if we need to #*/
-/*- if maybe_notification is none -*/
-    /*# If a component uses one endpoint for several connections, the
-     *# endpoint's integrity label should normally be the component
-     *# itself. The current convention for such systems is to name the
-     *# endpoint after the component. We detect this convention here and
-     *# automatically adjust the endpoint's label. #*/
-    /*- if name in map(lambda('c: c.name'), composition.instances) -*/
-        /*- set notification_owner = name -*/
-        /*- set notification_object = alloc_obj(name, seL4_NotificationObject, label=notification_owner) -*/
-    /*- else -*/
-        /*- set notification_owner = None -*//*# just go with the default #*/
-        /*- set notification_object = alloc_obj(name, seL4_NotificationObject) -*/
-    /*- endif -*/
-/*- else -*/
-    /*- set notification_object, notification_owner = maybe_notification -*/
-/*- endif -*/
+  /*- set name = '%s_global_endpoint' % instance.name -*/
+  /*- set config_name = configuration[instance.name].get('%s_global_endpoint' % interface_end.interface.name) -*/
+  /*- if config_name and config_name != name -*/
+    /*? raise(Exception('%s.%s_global_endpoint can no longer be set to an arbirtary value: %s %s' % (instance, interface_end.interface.name, config_name, name))) ?*/
+  /*- endif -*/
 
-/*# If the endpoint's owner is a component that is not a party to this
- *# connection, we will need extra access rights in the seL4 integrity
- *# model. #*/
-/*- if (notification_owner is not none and
-        notification_owner in map(lambda('c: c.name'), composition.instances) and
-        notification_owner not in map(lambda('e: e.instance.name'), me.parent.from_ends + me.parent.to_ends)) -*/
-    /*- do add_policy_extra(instance, 'auth.Notify', notification_owner) -*/
-    /*- do add_policy_extra(instance, 'auth.Reset', notification_owner) -*/
-/*- endif -*/
+  /*- set badge = macros.global_endpoint_badges(composition, interface_end, configuration) -*/
+  /*- set stash_name = "%s_global_notification" % (name) -*/
 
-/*# Put it back into the stash #*/
-/*- do _stash(stash_name, (notification_object, notification_owner)) -*/
+  /*# Check the global stash for our endpoint #*/
+  /*- set maybe_notification = _pop(stash_name) -*/
 
-/*# Create the badged endpoint #*/
-/*- set notification = alloc_cap('%s_%s_%d_notification_object_cap' % (name, badge, is_reader), notification_object, read=is_reader, write=True) -*/
-/*- if not is_reader -*/
-  /*- do cap_space.cnode[notification].set_badge(int(badge, 10)) -*/
-/*- endif -*/
-/*- do stash('notification', notification) -*/
-/*- do stash('badge', int(badge, 10)) -*/
+  /*# Create the endpoint if we need to #*/
+  /*- if maybe_notification is none -*/
+          /*- set notification_owner = instance.name -*/
+          /*- set notification_object = alloc_obj(name, seL4_NotificationObject, label=notification_owner) -*/
+  /*- else -*/
+      /*- set notification_object, notification_owner = maybe_notification -*/
+  /*- endif -*/
+
+  /*# Put it back into the stash #*/
+  /*- do _stash(stash_name, (notification_object, notification_owner)) -*/
+
+  /*# Create the badged endpoint #*/
+  /*- set notification = alloc_cap('%s_%s_%d_notification_object_cap' % (name, badge, is_reader), notification_object, read=is_reader, write=True) -*/
+  /*- if not is_reader -*/
+    /*- do cap_space.cnode[notification].set_badge(badge) -*/
+  /*- endif -*/
+  /*- do stash('notification', notification) -*/
+  /*- do stash('badge', badge) -*/
+/*- endmacro -*/

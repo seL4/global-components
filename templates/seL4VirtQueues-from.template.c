@@ -10,6 +10,8 @@
  * @TAG(DATA61_BSD)
  */
 
+/*- from 'global-endpoint.template.c' import allocate_cap with context -*/
+
 #include <sel4/sel4.h>
 #include <camkes/dataport.h>
 #include <camkes.h>
@@ -51,37 +53,30 @@
 
 /*# We need to create a notification badge of their notificaion in our cspace #*/
 
-//notifaction objects, dataport,
-//func: return channel
-/*- set is_reader = False -*/
-/*- set instance = me.instance.name -*/
-/*- set interface = me.interface.name -*/
-/*- include 'global-endpoint.template.c' -*/
-/*- set notification = pop('notification') -*/
+/*- for c in me.parent.from_ends -*/
+  /*- if str(c) == other_interface_name -*/
 
-static void /*? me.interface.name ?*/_notify(void) {
-    seL4_Signal(/*? notification ?*/);
+    /*- do allocate_cap(c, is_reader=False) -*/
+    /*- set notification = pop('notification') -*/
+
+    static void /*? me.interface.name ?*/_notify(void) {
+        seL4_Signal(/*? notification ?*/);
+    }
+  /*- endif -*/
+/*- endfor -*/
+
+/*# We need to get the badge that they will signal us on #*/
+/*- do allocate_cap(me, is_reader=True) -*/
+/*- set notification = pop('notification') -*/
+/*- set badge = pop('badge') -*/
+
+static seL4_CPtr /*? me.interface.name ?*/_notification(void) {
+    return /*? notification ?*/;
 }
 
-/*- for c in me.parent.from_ends -*/
-    /*- if str(c) == other_interface_name -*/
-        /*# We need to get the badge that they will signal us on #*/
-        /*- set is_reader = True -*/
-        /*- set instance = c.instance.name -*/
-        /*- set interface = c.interface.name -*/
-        /*- include 'global-endpoint.template.c' -*/
-        /*- set notification = pop('notification') -*/
-        /*- set badge = pop('badge') -*/
-
-        static seL4_CPtr /*? me.interface.name ?*/_notification(void) {
-            return /*? notification ?*/;
-        }
-
-        seL4_Word /*? me.interface.name ?*/_notification_badge(void) {
-            return /*? badge ?*/;
-        }
-    /*- endif -*/
-/*- endfor -*/
+seL4_Word /*? me.interface.name ?*/_notification_badge(void) {
+    return /*? badge ?*/;
+}
 
 /*- set interface_name =  me.interface.type.name -*/
 

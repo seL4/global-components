@@ -59,6 +59,7 @@
 connector seL4RPCCallSignal {
     from Procedures;
     to Procedure;
+    attribute bool from_global_endpoint = True;
 }
 
 /**
@@ -123,6 +124,7 @@ connector seL4RPCDataport {
 connector seL4RPCDataportSignal {
     from Procedures;
     to Procedure;
+    attribute bool from_global_endpoint = True;
 }
 
 /**
@@ -149,6 +151,7 @@ connector seL4RPCDataportSignal {
 connector seL4GlobalAsynch {
     from Event with 0 threads;
     to Events with 0 threads;
+    attribute bool to_global_endpoint = True;
 
     attribute string isabelle_connector_spec = "\<lparr>
         connector_type = NativeConnector,
@@ -187,6 +190,7 @@ connector seL4GlobalAsynch {
 connector seL4GlobalAsynchCallback {
     from Event;
     to Events;
+    attribute bool to_global_endpoint = True;
 
     attribute string isabelle_connector_spec = "\<lparr>
         connector_type = NativeConnector,
@@ -205,6 +209,7 @@ connector seL4GlobalAsynchCallback {
 connector seL4TimeServer {
     from Procedures with 0 threads;
     to Procedure;
+    attribute bool from_global_endpoint = True;
 
     /* TODO: double check this */
     attribute string isabelle_connector_spec = "\<lparr>
@@ -223,6 +228,7 @@ connector seL4TimeServer {
 connector seL4SerialServer {
     from Procedures with 0 threads;
     to Procedure;
+    attribute bool from_global_endpoint = True;
 
     /* TODO: double check this */
     attribute string isabelle_connector_spec = "\<lparr>
@@ -243,6 +249,7 @@ connector seL4SerialServer {
 connector seL4PicoServerSignal {
     from Procedures with 0 threads;
     to Procedure;
+    attribute bool from_global_endpoint = True;
 }
 
 connector seL4PicoServer {
@@ -262,6 +269,7 @@ connector seL4PicoServer {
 connector seL4Ethdriver {
     from Procedures with 0 threads;
     to Procedure;
+    attribute bool from_global_endpoint = True;
 }
 
 connector seL4SharedDataWithCaps {
@@ -285,6 +293,8 @@ connector seL4VirtQueues {
     from Procedures;
     to Procedure;
     attribute bool disable_interface_type_checking = true;
+    attribute bool from_global_endpoint = True;
+    attribute bool to_global_endpoint = True;
 
     attribute string isabelle_connector_spec = "\<lparr>
         connector_type = NativeConnector,

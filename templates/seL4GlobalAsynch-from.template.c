@@ -10,16 +10,15 @@
  *#@TAG(DATA61_BSD)
   #*/
 #include <sel4/sel4.h>
+/*- from 'global-endpoint.template.c' import allocate_cap with context -*/
 
 /*? macros.show_includes(me.instance.type.includes) ?*/
 
-/*- set is_reader = False -*/
-/*- set instance = me.instance.name -*/
-/*- set interface = me.interface.name -*/
-/*- include 'global-endpoint.template.c' -*/
+/*- for c in me.parent.to_ends -*/
+    /*- do allocate_cap(c, is_reader=False) -*/
+    /*- set notification = pop('notification') -*/
 
-/*- set notification = pop('notification') -*/
-
-void /*? me.interface.name ?*/_emit_underlying(void) {
-    seL4_Signal(/*? notification ?*/);
-}
+    void /*? c.interface.name ?*/_emit_underlying(void) {
+        seL4_Signal(/*? notification ?*/);
+    }
+/*- endfor -*/
