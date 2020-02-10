@@ -40,6 +40,7 @@ foreach(
     seL4VirtQueues
     seL4MessageQueue
     seL4SharedDataWithCaps
+    seL4RPCOverMultiSharedData
 )
     DeclareCAmkESConnector(
         ${connector}

@@ -128,6 +128,24 @@ connector seL4RPCDataportSignal {
 }
 
 /**
+ * seL4RPCOverMultiSharedData connector
+ *
+ * This connector is similar to seL4RPCCall but will use shared memory instead of
+ * the IPC buffer to transfer data between components. It supports multiple clients
+ * communicating with a single server. Each client has a separate shared memory region
+ * with the server. The size of the shared memory region can be configured on a
+ * per-client basis via setting ${client_instance}.${interface_name}_shmem_size.
+ * The default shared memory size is 4096 bytes.
+ * For a multi-threaded caller, subsequent calls to the interface will block until
+ * the first call returns in order to preserve the integrity of the shared buffer.
+ *
+ */
+connector seL4RPCOverMultiSharedData {
+    from Procedures with 0 threads;
+    to Procedure;
+}
+
+/**
  * seL4GlobalAsynch
  *
  * This is a 1-to-n global endpoint Event connector that makes the underlying
