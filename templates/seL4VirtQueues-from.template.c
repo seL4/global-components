@@ -18,13 +18,12 @@
 #include <camkes/virtqueue_template.h>
 #include <virtqueue.h>
 
-/*- set suffix = "_buf" -*/
-/*- include 'seL4MultiSharedData-from.template.c' -*/
-
 /*- if len(me.parent.to_ends) != 1 -*/
     /*? raise(Exception('%s must only have 1 to end' % (me.parent.name))) ?*/
 /*- endif -*/
 /*- set to_end = me.parent.to_ends[0] -*/
+
+/*- set all_connection_ends = me.parent.from_ends -*/
 
 /*- set interface_name =  me.interface.type.name -*/
 
@@ -36,7 +35,7 @@
     /*- set other_end_string = "drv" -*/
 /*- endif -*/
 
-/*- set topology = configuration[to_end.instance.name].get("%s_topology" % to_end.interface.name) -*/
+/*- set topology = configuration[to_end.instance.name].get("%s_topology" % to_end.interface.name, []) -*/
 /*- set topology_entry = [] -*/
 
 /*- for entry in topology -*/
@@ -49,21 +48,50 @@
     /*? raise(Exception('Could not find topology entry for: %s.%s' % (me.instance.name, me.interface.name))) ?*/
 /*- endif -*/
 
+/*# Check that there is a valid interface on the other end of the topology from us #*/
 /*- set other_interface_name = topology_entry[0][other_end_string] -*/
-
-/*# We need to create a notification badge of their notificaion in our cspace #*/
-
-/*- for c in me.parent.from_ends -*/
+/*- set other_interface = [0] -*/
+/*- for c in all_connection_ends -*/
   /*- if str(c) == other_interface_name -*/
-
-    /*- do allocate_cap(c, is_reader=False) -*/
-    /*- set notification = pop('notification') -*/
-
-    static void /*? me.interface.name ?*/_notify(void) {
-        seL4_Signal(/*? notification ?*/);
-    }
+    /*- do other_interface.__setitem__(0, c) -*/
   /*- endif -*/
 /*- endfor -*/
+/*- if other_interface[0] == 0 -*/
+    /*? raise(TemplateError('Interface %s is not present in connection.' % (other_interface_name))) ?*/
+/*- endif -*/
+/*- set other_interface = other_interface[0] -*/
+
+/*# Create shared memory region between the two interfaces #*/
+/*- set shmem_size = configuration[me.instance.name].get("%s_shmem_size" % me.interface.name, 4096) -*/
+/*- if shmem_size != configuration[other_interface.instance.name].get("%s_shmem_size" % other_interface.interface.name, 4096) -*/
+    /*? raise(TemplateError('Setting %s.%s_shmem_size does not match size configuration from other side: %d vs. %d' % (me.instance.name, me.interface.name, shmem_size, configuration[other_interface.instance.name].get("%s_shmem_size" % other_interface.interface.name, 4096)))) ?*/
+/*- endif -*/
+/*- if end_string == 'drv' -*/
+    /*- set shmem_symbol = '%s_%s_data' % (str(me), other_interface_name) -*/
+/*- else -*/
+    /*- set shmem_symbol = '%s_%s_data' % (other_interface_name, str(me)) -*/
+/*- endif -*/
+/*- set shmem_symbol = shmem_symbol.replace('.', '_') -*/
+/*- set page_size = macros.get_page_size(shmem_size, options.architecture) -*/
+/*- if page_size == 0 -*/
+  /*? raise(TemplateError('Setting %s.%s_shmem_size does not meet minimum size and alignment requirements. %d must be at least %d and %d aligned' % (me.instance.name, me.interface.name, size, 4096, 4096))) ?*/
+/*- endif -*/
+
+/*? macros.shared_buffer_symbol(sym=shmem_symbol, shmem_size=shmem_size, page_size=page_size) ?*/
+/*? register_shared_variable(shmem_symbol, shmem_symbol, shmem_size, frame_size=page_size) ?*/
+
+size_t /*? me.interface.name ?*/_get_size(void) {
+    return sizeof(/*? shmem_symbol ?*/);
+}
+
+
+/*# We need to create a notification badge of their notificaion in our cspace #*/
+/*- do allocate_cap(other_interface, is_reader=False) -*/
+/*- set notification = pop('notification') -*/
+
+static void /*? me.interface.name ?*/_notify(void) {
+    seL4_Signal(/*? notification ?*/);
+}
 
 /*# We need to get the badge that they will signal us on #*/
 /*- do allocate_cap(me, is_reader=True) -*/
@@ -88,8 +116,8 @@ seL4_Word /*? me.interface.name ?*/_notification_badge(void) {
 //This is called by camkes runtime during init.
 static void __attribute__((constructor)) register_connector(void) {
 /*- if interface_name == "VirtQueueDrv" -*/
-    camkes_virtqueue_channel_register(/*? queue_id ?*/, "/*? me.interface.name ?*/", /*? me.interface.name ?*/_get_size(),  /*? me.interface.name ?*/_buf, /*? me.interface.name ?*/_notify, /*? me.interface.name ?*/_notification(), /*? me.interface.name ?*/_notification_badge(), VIRTQUEUE_DRIVER);
+    camkes_virtqueue_channel_register(/*? queue_id ?*/, "/*? me.interface.name ?*/", /*? me.interface.name ?*/_get_size(), (volatile void *) &/*? shmem_symbol ?*/,  /*? me.interface.name ?*/_notify, /*? me.interface.name ?*/_notification(), /*? me.interface.name ?*/_notification_badge(), VIRTQUEUE_DRIVER);
 /*- else -*/
-    camkes_virtqueue_channel_register(/*? queue_id ?*/, "/*? me.interface.name ?*/", /*? me.interface.name ?*/_get_size(),  /*? me.interface.name ?*/_buf, /*? me.interface.name ?*/_notify, /*? me.interface.name ?*/_notification(), /*? me.interface.name ?*/_notification_badge(), VIRTQUEUE_DEVICE);
+    camkes_virtqueue_channel_register(/*? queue_id ?*/, "/*? me.interface.name ?*/", /*? me.interface.name ?*/_get_size(), (volatile void *) &/*? shmem_symbol ?*/,  /*? me.interface.name ?*/_notify, /*? me.interface.name ?*/_notification(), /*? me.interface.name ?*/_notification_badge(), VIRTQUEUE_DEVICE);
 /*- endif -*/
 }
