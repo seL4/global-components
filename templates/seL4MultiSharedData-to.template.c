@@ -41,16 +41,7 @@
         /*- endif -*/
         /*- set page_size_bits = int(math.log(page_size, 2)) -*/
 
-
-        #define SHM_ALIGN (1 << 12)
-        struct {
-            char content[ROUND_UP_UNSAFE(/*? shmem_size ?*/, SIZE_BITS_TO_BYTES(/*? page_size_bits ?*/))];
-        } /*? shmem_symbol ?*/
-                ALIGN(/*? page_size ?*/)
-                SECTION("align_/*? page_size_bits ?*/bit")
-                __attribute__((externally_visible))
-                USED;
-
+        /*? macros.shared_buffer_symbol(sym=shmem_symbol, shmem_size=shmem_size, page_size=page_size) ?*/
         /*? register_shared_variable('%s_%s_data' % (me.parent.name, client_id), shmem_symbol, shmem_size, frame_size=page_size) ?*/
 
         volatile void * /*? shmem_name ?*/ = (volatile void *) & /*? shmem_symbol ?*/;
