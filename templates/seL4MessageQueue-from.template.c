@@ -18,7 +18,7 @@
 #include <virtqueue.h>
 #include <utils/util.h>
 
-/*- include 'seL4SharedData-from.template.c' -*/
+/*- include 'seL4SharedData.template.c' -*/
 
 /*# Message Type #*/
 

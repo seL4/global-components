@@ -18,7 +18,7 @@
 #include <virtqueue.h>
 #include <utils/util.h>
 
-/*- include 'seL4SharedData-to.template.c' -*/
+/*- include 'seL4SharedData.template.c' -*/
 
 /*# Do a sanity check to make sure there are no two senders #*/
 /*- if len(me.parent.from_ends) != 1 -*/
