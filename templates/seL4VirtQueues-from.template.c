@@ -86,7 +86,7 @@ seL4_Word /*? me.interface.name ?*/_notification_badge(void) {
 /*- endif -*/
 
 //This is called by camkes runtime during init.
-void /*? me.interface.name ?*/__init() {
+static void __attribute__((constructor)) register_connector(void) {
 /*- if interface_name == "VirtQueueDrv" -*/
     camkes_virtqueue_channel_register(/*? queue_id ?*/, /*? me.interface.name ?*/_get_size(), /*? me.interface.name ?*/_buf,  /*? me.interface.name ?*/_notify, /*? me.interface.name ?*/_notification(), /*? me.interface.name ?*/_notification_badge(), VIRTQUEUE_DRIVER);
 /*- else -*/

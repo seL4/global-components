@@ -308,8 +308,8 @@ connector seL4SharedDataWithCaps {
 * is intended to be an empty/stub component.
 */
 connector seL4VirtQueues {
-    from Procedures;
-    to Procedure;
+    from Procedures with 0 threads;
+    to Procedure with 0 threads;
     attribute bool disable_interface_type_checking = true;
     attribute bool from_global_endpoint = True;
     attribute bool to_global_endpoint = True;
