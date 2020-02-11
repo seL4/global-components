@@ -36,6 +36,22 @@
 /*- endif -*/
 
 /*- set topology = configuration[to_end.instance.name].get("%s_topology" % to_end.interface.name, []) -*/
+/*- if len(topology) == 0 -*/
+    /*- if len(all_connection_ends) > 2 -*/
+        /*? raise(Exception("%s: Has more than 2 ends and could not find 'topology' definition describing how to connect them." % (me.parent.name))) ?*/
+    /*- else -*/
+        /*- do topology.append({}) -*/
+        /*- for end in all_connection_ends -*/
+            /*- if end == me -*/
+                /*- do topology[0].update({end_string: str(end)}) -*/
+            /*- else -*/
+                /*- do topology[0].update({other_end_string: str(end)}) -*/
+            /*- endif -*/
+        /*- endfor -*/
+
+    /*- endif -*/
+/*- endif -*/
+
 /*- set topology_entry = [] -*/
 
 /*- for entry in topology -*/
