@@ -80,7 +80,7 @@ seL4_Word /*? me.interface.name ?*/_notification_badge(void) {
 
 /*- set interface_name =  me.interface.type.name -*/
 
-/*- set queue_id = configuration[me.instance.name].get("%s_id" % me.interface.name) -*/
+/*- set queue_id = macros.virtqueue_get_client_id(composition, me, configuration) -*/
 /*- if queue_id is none or not isinstance(queue_id, six.integer_types) -*/
   /*? raise(Exception('%s.%s_id must be set to a number' % (me.instance.name, me.interface.name))) ?*/
 /*- endif -*/
