@@ -38,8 +38,16 @@
 /*- set shmem_symbol_size = "MAX_UNSAFE(%s, %s)" % (type_size, dataport_size) -*/
 /*? macros.shared_buffer_symbol(sym=dataport_symbol_name, shmem_size=shmem_symbol_size, page_size=page_size) ?*/
 
+/*- set arch_name = obj_space.spec.arch.capdl_name() -*/
+/*- if arch_name in ['ia32', 'x86_64'] -*/
+    /*- set cached_default = true -*/
+/*- else -*/
+    /*- set cached_default = false -*/
+/*- endif -*/
+/*- set cached = configuration[me.parent.to_instance.name].get('%s_hardware_cached' % me.parent.to_interface.name, cached_default) -*/
+
 /*- set perm = macros.get_perm(configuration, me.instance.name, me.interface.name) -*/
-/*? register_shared_variable('%s_data' % me.parent.name, dataport_symbol_name, dataport_size, frame_size=page_size, perm=perm) ?*/
+/*? register_shared_variable('%s_data' % me.parent.name, dataport_symbol_name, dataport_size, frame_size=page_size, perm=perm, cached=cached) ?*/
 
 volatile /*? macros.dataport_type(me.interface.type) ?*/ * /*? me.interface.name ?*/ =
     (volatile /*? macros.dataport_type(me.interface.type) ?*/ *) &/*? dataport_symbol_name ?*/;
