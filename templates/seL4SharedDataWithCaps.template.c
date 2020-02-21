@@ -29,7 +29,7 @@
 
 /*- set dataport_symbol_name = "%s_%d_%s_data" % (end, index, me.interface.name) -*/
 /*- set type_size = macros.dataport_size(me.interface.type) -*/
-/*- set dataport_size = configuration[me.instance.name].get('%s_size' % me.interface.name) -*/
+/*- set dataport_size = configuration[me.instance.name].get('%s_size' % me.interface.name, 4096) -*/
 /*- set page_size = macros.get_page_size(dataport_size, options.architecture) -*/
 /*- if page_size == 0 -*/
   /*? raise(TemplateError('Setting %s.%s_size does not meet minimum size requirements. %d must be at least %d and %d aligned' % (me.instance.name, me.interface.name, size, 4096, 4096))) ?*/
@@ -98,7 +98,7 @@ static unsigned int /*? me.interface.name ?*/_get_num_frame_caps(void) {
 }
 
 static unsigned int /*? me.interface.name ?*/_get_id(void) {
-    return /*? configuration[me.instance.name].get('%s_id' % me.interface.name) ?*/;
+    return /*? configuration[me.instance.name].get('%s_id' % me.interface.name, 0) ?*/;
 }
 
 static size_t /*? me.interface.name ?*/_get_size(void) {
