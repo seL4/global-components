@@ -39,7 +39,6 @@ foreach(
     seL4Ethdriver
     seL4VirtQueues
     seL4MessageQueue
-    seL4SharedDataWithCaps
     seL4RPCOverMultiSharedData
 )
     DeclareCAmkESConnector(
@@ -50,6 +49,13 @@ foreach(
         ${connector}-to.template.c
     )
 endforeach()
+DeclareCAmkESConnector(
+    seL4SharedDataWithCaps
+    FROM
+    seL4SharedDataWithCaps.template.c
+    TO
+    seL4SharedDataWithCaps.template.c
+)
 DeclareCAmkESConnector(
     seL4TimeServer
     FROM

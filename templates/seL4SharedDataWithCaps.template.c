@@ -18,11 +18,16 @@
 
 /*? macros.show_includes(me.instance.type.includes) ?*/
 
-/*- set index = me.parent.to_ends.index(me) -*/
+/*- if me in me.parent.from_ends -*/
+  /*- set index = me.parent.from_ends.index(me) -*/
+  /*- set end = 'from' -*/
+/*- elif me in me.parent.to_ends -*/
+  /*- set index = me.parent.to_ends.index(me) -*/
+  /*- set end = 'to' -*/
+/*- endif -*/
 
-#define SHM_ALIGN /*? macros.PAGE_SIZE ?*/
 
-/*- set dataport_symbol_name = "to_%d_%s_data" % (index, me.interface.name) -*/
+/*- set dataport_symbol_name = "%s_%d_%s_data" % (end, index, me.interface.name) -*/
 /*- set type_size = macros.dataport_size(me.interface.type) -*/
 /*- set dataport_size = configuration[me.instance.name].get('%s_size' % me.interface.name) -*/
 /*- set page_size = macros.get_page_size(dataport_size, options.architecture) -*/
@@ -35,6 +40,29 @@
 
 /*- set perm = macros.get_perm(configuration, me.instance.name, me.interface.name) -*/
 /*? register_shared_variable('%s_data' % me.parent.name, dataport_symbol_name, dataport_size, frame_size=page_size, perm=perm) ?*/
+
+volatile /*? macros.dataport_type(me.interface.type) ?*/ * /*? me.interface.name ?*/ =
+    (volatile /*? macros.dataport_type(me.interface.type) ?*/ *) &/*? dataport_symbol_name ?*/;
+
+/*- set id = composition.connections.index(me.parent) -*/
+
+int /*? me.interface.name ?*/_wrap_ptr(dataport_ptr_t *p, void *ptr) {
+    if ((uintptr_t)ptr < (uintptr_t)/*? me.interface.name ?*/ ||
+            (uintptr_t)ptr >= (uintptr_t)/*? me.interface.name ?*/ + /*? macros.dataport_size(me.interface.type) ?*/) {
+        return -1;
+    }
+    p->id = /*? id ?*/;
+    p->offset =  (off_t)((uintptr_t)ptr - (uintptr_t)/*? me.interface.name ?*/);
+    return 0;
+}
+
+void * /*? me.interface.name ?*/_unwrap_ptr(dataport_ptr_t *p) {
+    if (p->id == /*? id ?*/) {
+        return (void*)((uintptr_t)/*? me.interface.name ?*/ + (uintptr_t)p->offset);
+    } else {
+        return NULL;
+    }
+}
 
 /*- set read_perm = False -*/
 /*- set write_perm = False -*/
@@ -56,28 +84,6 @@ static seL4_CPtr frame_caps[] = {
 };
 /*- set num_frame_caps = len(frame_caps) -*/
 
-volatile /*? macros.dataport_type(me.interface.type) ?*/ * /*? me.interface.name ?*/ =
-    (volatile /*? macros.dataport_type(me.interface.type) ?*/ *) & to_/*? index ?*/_/*? me.interface.name ?*/_data;
-
-/*- set id = composition.connections.index(me.parent) -*/
-
-int /*? me.interface.name ?*/_wrap_ptr(dataport_ptr_t *p, void *ptr) {
-    if ((uintptr_t)ptr < (uintptr_t)/*? me.interface.name ?*/ ||
-            (uintptr_t)ptr >= (uintptr_t)/*? me.interface.name ?*/ + /*? macros.dataport_size(me.interface.type) ?*/) {
-        return -1;
-    }
-    p->id = /*? id ?*/;
-    p->offset =  (off_t)((uintptr_t)ptr - (uintptr_t)/*? me.interface.name ?*/);
-    return 0;
-}
-
-void * /*? me.interface.name ?*/_unwrap_ptr(dataport_ptr_t *p) {
-    if (p->id == /*? id ?*/) {
-        return (void*)((uintptr_t)/*? me.interface.name ?*/ + (uintptr_t)p->offset);
-    } else {
-        return NULL;
-    }
-}
 
 static seL4_CPtr /*? me.interface.name ?*/_get_nth_frame_cap(unsigned int n) {
     return frame_caps[n];
@@ -103,8 +109,8 @@ static seL4_CapRights_t /*? me.interface.name ?*/_get_rights(void) {
     /*- if perm is none -*/
         return seL4_AllRights;
     /*- else -*/
-        /*- set read = int("R" in perm) -*/
-        /*- set write = int("W" in perm) -*/
+        /*- set read = int(read_perm) -*/
+        /*- set write = int(write_perm) -*/
         /*# The 0 grant/grantreply argument below is because the grant operations are meaningless on dataports.
          *# The lack of execute permission is because cap rights don't capture the right to execute
          *# the contents of a mapped-in page. #*/
