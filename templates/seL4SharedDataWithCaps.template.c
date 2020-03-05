@@ -29,7 +29,23 @@
 
 /*- set dataport_symbol_name = "%s_%d_%s_data" % (end, index, me.interface.name) -*/
 /*- set type_size = macros.dataport_size(me.interface.type) -*/
-/*- set dataport_size = configuration[me.instance.name].get('%s_size' % me.interface.name, 4096) -*/
+/*# Get the dataport size from the .size property on the dataport connection. For backwards compatiblity reasons
+  # also check the ${interface_name}_size property on the `to` end of the connector.
+  #*/
+/*- if 'size' in configuration[me.parent.name] -*/
+  /*- set dataport_size = configuration[me.parent.name].get('size') -*/
+/*- else -*/
+  /*- set dataport_size = none -*/
+/*- endif -*/
+/*- if '%s_size' % me.parent.to_interface.name in configuration[me.parent.to_instance.name] -*/
+  /*- if dataport_size != none -*/
+    /*? raise(TemplateError('Duplicate setting for %s dataport size: Cannot set both %s.%s and %s.%s' % (me.parent.name, me.parent.name, 'size', me.parent.to_instance.name, '%s_size' % me.parent.to_interface.name))) ?*/
+  /*- endif -*/
+  /*- set dataport_size = configuration[me.parent.to_instance.name].get('%s_size' % me.parent.to_interface.name) -*/
+/*- endif -*/
+/*- if dataport_size == none -*/
+  /*- set dataport_size = 4096 -*/
+/*- endif -*/
 /*- set page_size = macros.get_page_size(dataport_size, options.architecture) -*/
 /*- if page_size == 0 -*/
   /*? raise(TemplateError('Setting %s.%s_size does not meet minimum size requirements. %d must be at least %d and %d aligned' % (me.instance.name, me.interface.name, size, 4096, 4096))) ?*/
