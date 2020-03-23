@@ -11,12 +11,16 @@
  */
 #pragma once
 
+#define HARDWARE_CLOCK_EXTRA_IMPORTS
+
 #define HARDWARE_CLOCK_COMPONENT
 
 #define HARDWARE_CLOCK_INTERFACES   \
     emits Dummy dummy_source;       \
     consumes Dummy ccm;             \
     consumes Dummy anatop;
+
+#define HARDWARE_CLOCK_EXTRA_INTERFACES
 
 #define HARDWARE_CLOCK_ATTRIBUTES
 

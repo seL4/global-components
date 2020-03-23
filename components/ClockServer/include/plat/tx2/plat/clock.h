@@ -11,6 +11,8 @@
  */
 #pragma once
 
+#define HARDWARE_CLOCK_EXTRA_IMPORTS
+
 #define HARDWARE_CLOCK_COMPONENT        \
     component BPMP {                    \
         hardware;                       \
@@ -24,6 +26,8 @@
     consumes Dummy hsp;             \
     dataport Buf(4096) bpmp_tx;     \
     dataport Buf(4096) bpmp_rx;
+
+#define HARDWARE_CLOCK_EXTRA_INTERFACES
 
 #define HARDWARE_CLOCK_ATTRIBUTES
 

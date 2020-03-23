@@ -13,6 +13,7 @@
 #include <plat/clock.h>
 
 import <Clock.idl4>;
+HARDWARE_CLOCK_EXTRA_IMPORTS
 
 HARDWARE_CLOCK_COMPONENT
 
@@ -22,6 +23,11 @@ component ClockServer {
     provides Clock the_clock;
 
     HARDWARE_CLOCK_INTERFACES
+
+    /* These additional interfaces need to be connected to other components,
+       see each platform's respective clock.h file */
+    HARDWARE_CLOCK_EXTRA_INTERFACES
+
     HARDWARE_CLOCK_ATTRIBUTES
 
     composition {
