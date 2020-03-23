@@ -69,7 +69,8 @@ int the_clock_init_clock(clk_id_t clk_id)
     int error = 0;
 
     if (!check_valid_clk_id(clk_id)) {
-        error = EINVAL;
+        ZF_LOGE("Invalid clock ID");
+        error = -EINVAL;
         goto out;
     }
 
@@ -77,7 +78,8 @@ int the_clock_init_clock(clk_id_t clk_id)
 
     if (check_clk_initialised(clk_id)) {
         if (!check_is_owner(clk_id, client_id)) {
-            error = EBUSY;
+            ZF_LOGE("Clock is already initialised by another owner");
+            error = -EBUSY;
             goto out;
         } else {
             error = 0;
@@ -87,7 +89,8 @@ int the_clock_init_clock(clk_id_t clk_id)
 
     clock_table[clk_id].clk = clk_get_clock(&ops.clock_sys, clk_id);
     if (!clock_table[clk_id].clk) {
-        error = ENODEV;
+        ZF_LOGE("Failed to get clock for clock ID %d", clk_id);
+        error = -ENODEV;
         goto out;
     }
 
@@ -118,6 +121,7 @@ freq_t the_clock_get_freq(clk_id_t clk_id)
     freq_t freq = 0;
 
     if (!check_valid_clk_id(clk_id)) {
+        ZF_LOGE("Invalid clock ID");
         freq = 0;
         goto out;
     }
@@ -125,11 +129,13 @@ freq_t the_clock_get_freq(clk_id_t clk_id)
     seL4_Word client_id = get_client_id();
 
     if (!check_clk_initialised(clk_id)) {
+        ZF_LOGE("Clock isn't initialised");
         freq = 0;
         goto out;
     }
 
     if (!check_is_owner(clk_id, client_id)) {
+        ZF_LOGE("Client is not the owner of this clock");
         freq = 0;
         goto out;
     }
@@ -148,6 +154,7 @@ freq_t the_clock_set_freq(clk_id_t clk_id, freq_t hz)
     freq_t set_freq = 0;
 
     if (!check_valid_clk_id(clk_id)) {
+        ZF_LOGE("Invalid clock ID");
         set_freq = 0;
         goto out;
     }
@@ -155,11 +162,13 @@ freq_t the_clock_set_freq(clk_id_t clk_id, freq_t hz)
     seL4_Word client_id = get_client_id();
 
     if (!check_clk_initialised(clk_id)) {
+        ZF_LOGE("Clock isn't initialised");
         set_freq = 0;
         goto out;
     }
 
     if (!check_is_owner(clk_id, client_id)) {
+        ZF_LOGE("Client is not the owner of this clock");
         set_freq = 0;
         goto out;
     }
@@ -178,29 +187,33 @@ int the_clock_register_child(clk_id_t parent, clk_id_t child)
     int error = 0;
 
     if (!check_valid_clk_id(parent) || !check_valid_clk_id(child)) {
-        error = EINVAL;
+        error = -EINVAL;
         goto out;
     }
 
     seL4_Word client_id = get_client_id();
 
     if (!check_clk_initialised(parent)) {
-        error = EPERM;
+        ZF_LOGE("Parent clock isn't initialised");
+        error = -EPERM;
         goto out;
     }
 
     if (!check_is_owner(parent, client_id)) {
-        error = EPERM;
+        ZF_LOGE("Client is not the owner of the parent clock");
+        error = -EPERM;
         goto out;
     }
 
     if (!check_clk_initialised(child)) {
-        error = EPERM;
+        ZF_LOGE("Child clock isn't initialised");
+        error = -EPERM;
         goto out;
     }
 
     if (!check_is_owner(child, client_id)) {
-        error = EPERM;
+        ZF_LOGE("Client is not the owner of the child clock");
+        error = -EPERM;
         goto out;
     }
 
