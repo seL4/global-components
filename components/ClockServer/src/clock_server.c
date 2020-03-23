@@ -19,6 +19,8 @@
 #include <platsupport/clock.h>
 #include <utils/util.h>
 
+#include "plat.h"
+
 typedef struct clock_entry {
     bool initialised;
     seL4_Word owner;
@@ -217,6 +219,13 @@ void post_init(void)
 
     error = camkes_io_ops(&ops);
     ZF_LOGF_IF(error, "Failed to get camkes_io_ops");
+
+    if (plat_init) {
+        /* Perform some platform specific initialisation before initialising
+         * the clock subsystem */
+        error = plat_init(&ops);
+        ZF_LOGF_IF(error, "Failed to perform the platform initialisation");
+    }
 
     error = clock_sys_init(&ops, &ops.clock_sys);
     ZF_LOGF_IF(error, "Failed to initialise the clock subsystem");

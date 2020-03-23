@@ -17,10 +17,22 @@ project(ClockServer C)
 set(CAmkESDTS ON CACHE BOOL "" FORCE)
 set(CAmkESCPP ON CACHE BOOL "" FORCE)
 
-if("${KernelPlatform}" STREQUAL "tx2")
-    DeclareCAmkESComponent(ClockServer SOURCES src/clock_server.c LIBS platsupportports)
-else()
-    DeclareCAmkESComponent(ClockServer SOURCES src/clock_server.c)
+# Check if platform specific source files exists
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/src/plat/${KernelPlatform}/plat.c")
+    set(ClockServerPlatSources "src/plat/${KernelPlatform}/plat.c")
 endif()
+
+if("${KernelPlatform}" STREQUAL "tx2")
+    set(ClockServerExtraLibs platsupportports BPMPServer-client)
+endif()
+
+DeclareCAmkESComponent(
+    ClockServer
+    SOURCES
+    src/clock_server.c
+    ${ClockServerPlatSources}
+    LIBS
+    ${ClockServerExtraLibs}
+)
 
 CAmkESAddCPPInclude("${CMAKE_CURRENT_LIST_DIR}/include/plat/${KernelPlatform}/")
