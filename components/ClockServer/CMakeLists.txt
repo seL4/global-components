@@ -36,3 +36,8 @@ DeclareCAmkESComponent(
 )
 
 CAmkESAddCPPInclude("${CMAKE_CURRENT_LIST_DIR}/include/plat/${KernelPlatform}/")
+
+add_subdirectory(
+    "${CMAKE_CURRENT_LIST_DIR}/libClockServer-client"
+    ${CMAKE_CURRENT_BINARY_DIR}/libClockServer-client
+)
