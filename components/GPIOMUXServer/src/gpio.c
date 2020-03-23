@@ -119,7 +119,7 @@ out:
     return error;
 }
 
-int the_gpio_set_level(gpio_id_t pin_id, int level)
+int the_gpio_set_level(gpio_id_t pin_id, gpio_level_t level)
 {
     ZF_LOGF_IF(big_lock_lock(), "Failed to grab the big lock for the GPIOMUXServer");
 
@@ -136,9 +136,9 @@ int the_gpio_set_level(gpio_id_t pin_id, int level)
         goto out;
     }
 
-    if (level > 0) {
+    if (level == GPIO_LEVEL_HIGH) {
         error = gpio_set(&gpio_table[pin_id].gpio);
-    } else if (level == 0) {
+    } else if (level == GPIO_LEVEL_LOW) {
         error = gpio_clr(&gpio_table[pin_id].gpio);
     } else {
         /* level < 0 is not valid */
@@ -168,13 +168,6 @@ int the_gpio_read_level(gpio_id_t pin_id)
     }
 
     ret = gpio_get(&gpio_table[pin_id].gpio);
-
-    /* 'Normalise' the level values, but leave it the same for error values */
-    if (ret > 0) {
-        ret = 1;
-    } else if (ret == 0) {
-        ret = 0;
-    }
 
 out:
     ZF_LOGF_IF(big_lock_unlock(), "Failed to release the big lock for the GPIOMUXServer");

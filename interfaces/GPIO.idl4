@@ -13,8 +13,8 @@
 procedure GPIO {
     include <platsupport/gpio.h>;
     int init_pin(in gpio_id_t pin_id, in gpio_dir_t dir);
-    /* Non-zero positive 'level' is high, zero 'level' is low */
-    int set_level(in gpio_id_t pin_id, in int level);
-    /* Returns 1 on high, 0 on low, negative number on error */
+    /* GPIO_LEVEL_LOW for a low level, GPIO_LEVEL_HIGH for a high level */
+    int set_level(in gpio_id_t pin_id, in gpio_level_t level);
+    /* Returns GPIO_LEVEL_HIGH on high, GPIO_LEVEL_LOW on low, negative number on error */
     int read_level(in gpio_id_t pin_id);
 };
