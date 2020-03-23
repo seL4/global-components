@@ -28,6 +28,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/components/Ethdriver/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/components/PicoServer/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/components/ClockServer/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/components/GPIOMUXServer/CMakeLists.txt)
+include(${CMAKE_CURRENT_LIST_DIR}/components/ResetServer/CMakeLists.txt)
 
 # Add platform specific CAmkES components
 if(KernelPlatformTx2)

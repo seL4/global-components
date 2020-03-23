@@ -1,0 +1,38 @@
+/*
+ * Copyright 2020, Data61
+ * Commonwealth Scientific and Industrial Research Organisation (CSIRO)
+ * ABN 41 687 119 230.
+ *
+ * This software may be distributed and modified according to the terms of
+ * the BSD 2-Clause license. Note that NO WARRANTY is provided.
+ * See "LICENSE_BSD2.txt" for details.
+ *
+ * @TAG(DATA61_BSD)
+ */
+
+#include <plat/reset.h>
+
+import <Reset.idl4>;
+HARDWARE_RESET_EXTRA_IMPORTS
+
+component ResetServer {
+    has mutex reset_server;
+
+    provides Reset the_reset;
+
+    HARDWARE_RESET_INTERFACES
+
+    /* These additional interfaces need to be connected to other components,
+       see each platform's respective reset.h file */
+    HARDWARE_RESET_EXTRA_INTERFACES
+
+    HARDWARE_RESET_ATTRIBUTES
+
+    composition {
+        HARDWARE_RESET_COMPOSITION
+    }
+
+    configuration {
+        HARDWARE_RESET_CONFIG
+    }
+}
