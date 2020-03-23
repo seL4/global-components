@@ -13,6 +13,7 @@
 #include <plat/eth_devices.h>
 
 import <Ethdriver.idl4>;
+HARDWARE_ETHERNET_EXTRA_IMPORTS
 
 component Ethdriver82574 {
     has mutex ethdriver;

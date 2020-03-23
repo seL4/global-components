@@ -11,6 +11,8 @@
  */
 #pragma once
 
+#define HARDWARE_ETHERNET_EXTRA_IMPORTS
+
 #define HARDWARE_ETHERNET_COMPONENT
 
 #define HARDWARE_ETHERNET_INTERFACES                                                \
