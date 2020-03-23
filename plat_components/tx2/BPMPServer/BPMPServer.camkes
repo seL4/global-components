@@ -1,0 +1,48 @@
+/*
+ * Copyright 2020, Data61
+ * Commonwealth Scientific and Industrial Research Organisation (CSIRO)
+ * ABN 41 687 119 230.
+ *
+ * This software may be distributed and modified according to the terms of
+ * the BSD 2-Clause license. Note that NO WARRANTY is provided.
+ * See "LICENSE_BSD2.txt" for details.
+ *
+ * @TAG(DATA61_BSD)
+ */
+
+import <BPMP.idl4>;
+
+component BPMP {
+    hardware;
+    dataport Buf(4096) tx_channel;
+    dataport Buf(4096) rx_channel;
+}
+
+component BPMPServer {
+    has mutex bpmp_server;
+
+    provides BPMP the_bpmp;
+
+    /* hardware interfaces */
+    emits Dummy dummy_source;
+    consumes Dummy hsp;
+    dataport Buf(4096) bpmp_tx;
+    dataport Buf(4096) bpmp_rx;
+
+    composition {
+        component BPMP bpmp;
+        connection seL4DTBHardware hsp_conn(from dummy_source, to hsp);
+        /* The BPMP shared memory regions aren't located in a particularly nice
+         * location for the seL4DTBHardware connector */
+        connection seL4HardwareMMIO bpmp_tx_mmio(from bpmp_tx, to bpmp.tx_channel);
+        connection seL4HardwareMMIO bpmp_rx_mmio(from bpmp_rx, to bpmp.rx_channel);
+    }
+
+    configuration {
+        hsp.dtb = dtb({ "path" : "/tegra-hsp@3c00000" });
+        bpmp.tx_channel_paddr = 0x3004e000;
+        bpmp.tx_channel_size = 0x1000;
+        bpmp.rx_channel_paddr = 0x3004f000;
+        bpmp.rx_channel_size = 0x1000;
+    }
+}

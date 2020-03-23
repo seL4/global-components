@@ -13,7 +13,9 @@
 cmake_minimum_required(VERSION 3.8.2)
 
 CAmkESAddImportPath(components)
+CAmkESAddImportPath(plat_components/${KernelPlatform})
 CAmkESAddImportPath(interfaces)
+CAmkESAddImportPath(plat_interfaces/${KernelPlatform})
 CAmkESAddTemplatesPath(templates)
 
 include(${CMAKE_CURRENT_LIST_DIR}/components/PCIConfigIO/CMakeLists.txt)
@@ -26,6 +28,11 @@ include(${CMAKE_CURRENT_LIST_DIR}/components/Ethdriver/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/components/PicoServer/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/components/ClockServer/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/components/GPIOMUXServer/CMakeLists.txt)
+
+# Add platform specific CAmkES components
+if(KernelPlatformTx2)
+    include(${CMAKE_CURRENT_LIST_DIR}/plat_components/tx2/BPMPServer/CMakeLists.txt)
+endif()
 
 foreach(
     connector
