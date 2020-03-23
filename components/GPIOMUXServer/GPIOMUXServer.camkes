@@ -19,6 +19,9 @@ import <MUX.idl4>;
 component GPIOMUXServer {
     has mutex big_lock;
 
+    /* These interfaces should be connected via the seL4RPCCall connector.
+     * Client interfaces should go on the 'from' side, this server should be
+     * one the 'to' side. */
     provides GPIO the_gpio;
     provides MUX the_mux;
 
