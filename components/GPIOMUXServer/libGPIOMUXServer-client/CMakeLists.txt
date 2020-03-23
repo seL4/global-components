@@ -14,9 +14,11 @@ cmake_minimum_required(VERSION 3.8.2)
 
 project(libGPIOMUXServer-client C)
 
-add_library(GPIOMUXServer-client INTERFACE)
+add_library(GPIOMUXServer-client EXCLUDE_FROM_ALL gpio.c mux.c)
 
-target_include_directories(GPIOMUXServer-client INTERFACE include plat_include/${KernelPlatform})
+target_include_directories(GPIOMUXServer-client PUBLIC include plat_include/${KernelPlatform})
 if("${KernelPlatform}" STREQUAL "tx2")
-    target_link_libraries(GPIOMUXServer-client INTERFACE platsupportports)
+    target_link_libraries(GPIOMUXServer-client platsupport platsupportports)
+else()
+    target_link_libraries(GPIOMUXServer-client platsupport)
 endif()
