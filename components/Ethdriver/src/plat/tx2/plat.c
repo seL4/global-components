@@ -52,11 +52,6 @@ int ethif_init(struct eth_driver *eth_driver, ps_io_ops_t *io_ops, ps_irq_ops_t 
     if (irq_id < 0) {
         return -1;
     }
-    ps_irq_t irq_info1 = { .type = PS_INTERRUPT, .irq = { .number = TX2_INT_RX0_ETHER_QOS }};
-    irq_id_t irq_id1 = ps_irq_register(irq_ops, irq_info1, eth_irq_handle, &irq_info1);
-    if (irq_id1 < 0) {
-        return -1;
-    }
 
     return 0;
 }
