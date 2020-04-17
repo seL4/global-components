@@ -293,6 +293,18 @@ connector seL4Ethdriver {
 connector seL4SharedDataWithCaps {
     from Dataport;
     to Dataport;
+
+    attribute string isabelle_connector_spec = "\<lparr>
+        connector_type = NativeConnector,
+        connector_interface = DataportInterface,
+        connector_access = \<lparr>
+            access_from_to   = {Reset, Notify},
+            access_to_from   = {},
+            access_from_from = {},
+            access_to_to     = {},
+            access_from_conn = {Read, Write},
+            access_to_conn   = {Read, Write}
+        \<rparr> \<rparr>";
 }
 
 /**
