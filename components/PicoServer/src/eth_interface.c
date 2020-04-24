@@ -22,109 +22,59 @@
 
 #include "pico_common.h"
 
-static void low_level_init(struct eth_driver *driver, uint8_t *mac, int *mtu)
+/* 1500 is the standard ethernet MTU at the network layer. */
+#define ETHER_MTU 1500
+static void low_level_init(uint8_t *mac, int *mtu)
 {
-    // 1500 is the standard ethernet MTU at the network layer.
-    *mtu = 1500;
+    *mtu = ETHER_MTU;
     ethdriver_mac(&mac[0], &mac[1], &mac[2], &mac[3], &mac[4], &mac[5]);
 }
 
 extern void *ethdriver_buf;
 
-static void raw_poll(struct eth_driver *driver)
+
+static int pico_eth_send(struct pico_device *dev, void *input_buf, int len)
+{
+
+    assert(len <= ETHER_MTU);
+
+    memcpy((void *)ethdriver_buf, input_buf, len);
+
+    int status = ethdriver_tx(len);
+
+    switch (status) {
+    case ETHIF_TX_FAILED:
+        return 0; // Error for PICO
+    case ETHIF_TX_COMPLETE:
+    case ETHIF_TX_ENQUEUED:
+        break;
+    }
+
+    return len;
+
+}
+
+/* Async driver will set a flag to signal that there is work to be done  */
+static int pico_eth_poll(struct pico_device *dev, int loop_score)
 {
     int len;
-    int status;
-    status = ethdriver_rx(&len);
-    while (status != -1) {
-        void *buf;
-        void *cookie;
-        buf = (void *)driver->i_cb.allocate_rx_buf(driver->cb_cookie, len, &cookie);
-        if (buf) {
-            // Only proceed if we successfully got a buffer. If not, the packet will simply be dropped.
-            // UDP doesn't mind, and the packet will be resent for TCP due to us not sending an ACK.
-            // This prevents crashing in a DDOS attack or malicious packet that is too large.
-            memcpy(buf, (void *)ethdriver_buf, len);
-            driver->i_cb.rx_complete(driver->cb_cookie, 1, &cookie, (unsigned int *)&len);
+    while (loop_score > 0) {
+        int status = ethdriver_rx(&len);
+        if (status == -1) {
+            break;
         }
 
-        if (status == 1) {
-            status = ethdriver_rx(&len);
-        } else {
-            /* if status is 0 we already saw the last packet */
-            assert(status == 0);
-            status = -1;
+        pico_stack_recv(dev, (void *)ethdriver_buf, len);
+        loop_score--;
+        if (status== 0) {
+            break;
         }
     }
+    return loop_score;
 }
 
-static int raw_tx(struct eth_driver *driver, unsigned int num, uintptr_t *phys, unsigned int *len, void *cookie)
-{
-    unsigned int total_len = 0;
-    int i;
-    void *p = (void *)ethdriver_buf;
-    for (i = 0; i < num; i++) {
-        memcpy(p + total_len, (void *)phys[i], len[i]);
-        total_len += len[i];
-    }
-    ethdriver_tx(total_len);
-    return ETHIF_TX_COMPLETE;
-}
-
-static void handle_irq(struct eth_driver *driver, int irq)
-{
-    pico_stack_tick();
-    raw_poll(driver);
-}
-
-static struct raw_iface_funcs iface_fns = {
-    .raw_handleIRQ = handle_irq,
-    .print_state = NULL,
-    .low_level_init = low_level_init,
-    .raw_tx = raw_tx,
-    .raw_poll = raw_poll
-};
-
-static int ethdriver_init(struct eth_driver *eth_driver, ps_io_ops_t io_ops, void *config)
-{
-    eth_driver->eth_data = NULL;
-    eth_driver->dma_alignment = 1;
-    eth_driver->i_fn = iface_fns;
-    return 0;
-}
-
-static void *malloc_dma_alloc(void *cookie, size_t size, int align, int cached, ps_mem_flags_t flags)
-{
-    assert(cached);
-    int error;
-    void *ret = malloc(size);
-    if (ret == NULL) {
-        ZF_LOGE("ERR: Failed to allocate %d\n", size);
-        return NULL;
-    }
-    return ret;
-}
-
-static void malloc_dma_free(void *cookie, void *addr, size_t size)
-{
-    free(addr);
-}
-
-static uintptr_t malloc_dma_pin(void *cookie, void *addr, size_t size)
-{
-    return (uintptr_t)addr;
-}
-
-static void malloc_dma_unpin(void *cookie, void *addr, size_t size)
-{
-}
-
-static void malloc_dma_cache_op(void *cookie, void *addr, size_t size, dma_cache_op_t op)
-{
-}
-
-
-struct pico_device *pico_driver;
+struct pico_device _pico_driver;
+struct pico_device *pico_driver = &_pico_driver;
 uint32_t dhcp_client_xid;
 bool dhcp_negotiating = false;
 
@@ -190,26 +140,26 @@ void eth_init_custom_ip(void)
     }
 }
 
-static ps_io_ops_t io_ops;
 
-void eth_init(pico_device_eth *picotcp_driver)
+void eth_init(void)
 {
-    memset(&io_ops, 0, sizeof(io_ops));
-    io_ops.dma_manager = (ps_dma_man_t) {
-        .cookie = NULL,
-        .dma_alloc_fn = malloc_dma_alloc,
-        .dma_free_fn = malloc_dma_free,
-        .dma_pin_fn = malloc_dma_pin,
-        .dma_unpin_fn = malloc_dma_unpin,
-        .dma_cache_op_fn = malloc_dma_cache_op
-    };
+
 
     /* Initialise the PicoTCP stack */
     pico_stack_init();
 
     /* Create a driver. This utilises preallocated buffers, backed up by malloc above */
-    pico_driver = pico_eth_create_no_malloc("eth0", ethdriver_init, NULL, io_ops, picotcp_driver);
-    ZF_LOGF_IF(pico_driver == NULL, "Failed to create the PicoTCP Driver");
+    /* Attach funciton pointers */
+    pico_driver->send = pico_eth_send;
+    pico_driver->poll = pico_eth_poll;
+
+    /* Configure the mtu in picotcp */
+    uint8_t mac[6] = {0};
+    low_level_init(mac, &pico_driver->mtu);
+    if (pico_device_init(pico_driver, "eth0", mac) != 0) {
+        ZF_LOGF("Failed to initialize pico device");
+        return;
+    }
 
     /* if ip_addr is configured, use it; otherwise get an IP address from DHCP */
     if (strlen(ip_addr)) {

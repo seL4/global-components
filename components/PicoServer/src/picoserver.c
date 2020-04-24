@@ -61,7 +61,7 @@ seL4_CPtr ethdriver_notification(void);
  * Needed for the picotcp from pico_sel4.h
  * Although time is not needed for UDP, it is used in the arp update.
  */
-volatile unsigned long int pico_ms_tick = 0;
+volatile uint32_t pico_ms_tick = 0;
 
 /*
  * Gets the client's ID and checks that it is valid.
@@ -526,8 +526,6 @@ int pico_recv_recvfrom(int socket_fd, int len, int buffer_offset, uint32_t *src_
     return ret;
 }
 
-static pico_device_eth _picotcp_driver;
-
 /*
  * Required for the camkes_sys_clock_gettime() in sys_clock.c of libsel4camkes.
  */
@@ -544,7 +542,7 @@ void timer_complete_callback(void)
         picotcp_lock();
     }
     pico_ms_tick += PICO_TICK_MS;
-    ethif_pico_handle_irq(&_picotcp_driver, 0);
+    pico_stack_tick();
     if (!dhcp_negotiating) {
         picotcp_unlock();
     }
@@ -552,7 +550,7 @@ void timer_complete_callback(void)
 
 void pre_init(void)
 {
-    eth_init(&_picotcp_driver);
+    eth_init();
 
     picoserver_clients_init();
 
