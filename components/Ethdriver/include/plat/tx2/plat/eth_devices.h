@@ -11,47 +11,39 @@
  */
 #pragma once
 
-#define HARDWARE_ETHERNET_EXTRA_IMPORTS
+#define HARDWARE_ETHERNET_EXTRA_IMPORTS             \
+    import <BPMP.idl4>;                             \
+    import <BPMPServer/BPMPServer.camkes>;          \
+    import <ClockServer/ClockServer.camkes>;        \
+    import <ResetServer/ResetServer.camkes>;        \
+    import <GPIOMUXServer/GPIOMUXServer.camkes>;
+
+#define HARDWARE_ETHERNET_COMPONENT
+
+#define HARDWARE_ETHERNET_INTERFACES    \
+    consumes Dummy EthDriver;           \
+    emits Dummy dummy_source;           \
+    uses Clock clock;                   \
+    uses Reset reset;                   \
+    uses GPIO gpio;
 
 
-#define HARDWARE_ETHERNET_COMPONENT     \
-    component BPMP {                    \
-        hardware;                       \
-        dataport Buf(4096) tx_channel;  \
-        dataport Buf(4096) rx_channel;  \
-    }
-
-#define HARDWARE_ETHERNET_INTERFACES                                    \
-    consumes Dummy EthDriver;                                           \
-    consumes Dummy Clock;               \
-    consumes Dummy Hsp;                 \
-    consumes Dummy Gpio;                \
-    consumes Dummy mux;                \
-    dataport Buf(4096) bpmp_tx;         \
-    dataport Buf(4096) bpmp_rx;         \
-    emits Dummy dummy_source;
-
-
-#define HARDWARE_ETHERNET_COMPOSITION                                           \
-    component BPMP bpmp;                                                        \
-    connection seL4HardwareMMIO bpmp_tx_mmio(from bpmp_tx, to bpmp.tx_channel); \
-    connection seL4HardwareMMIO bpmp_rx_mmio(from bpmp_rx, to bpmp.rx_channel); \
-    connection seL4DTBHardware hsp_conn(from dummy_source, to Hsp);             \
-    connection seL4DTBHardware ethdriver_conn(from dummy_source, to EthDriver); \
-    connection seL4DTBHardware clock_conn(from dummy_source, to Clock);         \
-    connection seL4DTBHardware mux_conn(from dummy_source, to mux);             \
-    connection seL4DTBHardware gpio_conn(from dummy_source, to Gpio);
+#define HARDWARE_ETHERNET_COMPOSITION                                                   \
+    component BPMPServer bpmp_server;                                                   \
+    component ClockServer clock_server;                                                 \
+    component ResetServer reset_server;                                                 \
+    component GPIOMUXServer gpiomux_server;                                             \
+    connection seL4DTBHardware ethdriver_conn(from dummy_source, to EthDriver);         \
+    connection seL4RPCDataport clock_server_bpmp(from clock_server.bpmp,                \
+                                                 to bpmp_server.the_bpmp);              \
+    connection seL4RPCDataport reset_server_bpmp(from reset_server.bpmp,                \
+                                                 to bpmp_server.the_bpmp);              \
+    connection seL4RPCCall ethernet_reset(from reset, to reset_server.the_reset);       \
+    connection seL4RPCCall ethernet_clock(from clock, to clock_server.the_clock);       \
+    connection seL4RPCCall ethernet_gpio(from gpio, to gpiomux_server.the_gpio);
 
 
 
-#define HARDWARE_ETHERNET_CONFIG                                        \
-    Clock.dtb = dtb({ "path" : "/clock@5000000" });                     \
-    Hsp.dtb = dtb({ "path" : "/tegra-hsp@3c00000" });                   \
-    EthDriver.dtb = dtb({ "path" : "/ether_qos@2490000" });             \
-    Gpio.dtb = dtb({ "path" : "/gpio@2200000" });                       \
-    mux.dtb = dtb({"path" : "/pinmux@2430000"});                        \
-    bpmp.tx_channel_paddr = 0x3004e000;                                 \
-    bpmp.tx_channel_size = 0x1000;                                      \
-    bpmp.rx_channel_paddr = 0x3004f000;                                 \
-    bpmp.rx_channel_size = 0x1000;                                      \
+#define HARDWARE_ETHERNET_CONFIG                                \
+    EthDriver.dtb = dtb({ "path" : "/ether_qos@2490000" });     \
     EthDriver.generate_interrupts = 1;
