@@ -18,7 +18,7 @@
     /*- do allocate_cap(c, is_reader=False) -*/
     /*- set notification = pop('notification') -*/
 
-    void /*? c.interface.name ?*/_emit_underlying(void) {
+    void /*? me.interface.name ?*/_emit_underlying(void) {
         seL4_Signal(/*? notification ?*/);
     }
 /*- endfor -*/
