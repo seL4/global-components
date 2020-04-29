@@ -376,3 +376,17 @@ connector seL4MessageQueue {
     from Dataports;
     to Dataports;
 }
+
+/** seL4GlobalAsynchHardwareInterrupt
+ *
+ * This connector is similar to the seL4HardwareInterrupt and has the same attributes for
+ * specifying an IRQ to allocate but doesn't allocate any threads. In order to process
+ * callback handlers for a received notification, a function provided by libsel4camkes,
+ * camkes_handle_global_endpoint_irq(), can be called.
+ *
+ */
+connector seL4GlobalAsynchHardwareInterrupt {
+    from hardware Event;
+    to Event with 0 threads;
+    attribute bool to_global_endpoint = True;
+}

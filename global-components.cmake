@@ -92,3 +92,7 @@ DeclareCAmkESConnector(
     TO
     seL4RPCDataport-to.template.c
 )
+
+DeclareCAmkESConnector(
+    seL4GlobalAsynchHardwareInterrupt TO seL4GlobalAsynchHardwareInterrupt.template.c
+)
