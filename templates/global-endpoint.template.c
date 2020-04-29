@@ -58,6 +58,30 @@
   /*- do stash('badge', badge) -*/
 /*- endmacro -*/
 
+/*- macro allocate_cap_instance(instance) -*/
+
+  /*- set name = '%s_global_endpoint' % instance.name -*/
+  /*- set stash_name = "%s_global_notification" % (name) -*/
+
+  /*# Check the global stash for our endpoint #*/
+  /*- set maybe_notification = _pop(stash_name) -*/
+
+  /*# Create the endpoint if we need to #*/
+  /*- if maybe_notification is none -*/
+          /*- set notification_owner = instance.name -*/
+          /*- set notification_object = alloc_obj(name, seL4_NotificationObject, label=notification_owner) -*/
+  /*- else -*/
+      /*- set notification_object, notification_owner = maybe_notification -*/
+  /*- endif -*/
+
+  /*# Put it back into the stash #*/
+  /*- do _stash(stash_name, (notification_object, notification_owner)) -*/
+
+  /*- set notification = alloc_cap('%s_read_notification_object_cap' % (name), notification_object, read=True, write=True) -*/
+  /*- do stash('notification', notification) -*/
+
+/*- endmacro -*/
+
 /*- macro allocate_rpc_endpoint_cap(interface_end, is_reader, other_end) -*/
   /*? assert(isinstance(is_reader, bool)) ?*/
 
@@ -109,4 +133,28 @@
   /*- do stash('endpoint', endpoint) -*/
   /*- do stash('badge', badge) -*/
   /*- do stash('badges', badges) -*/
+/*- endmacro -*/
+
+/*- macro allocate_rpc_cap_instance(instance) -*/
+
+  /*- set name = '%s_global_rpc_endpoint' % instance.name -*/
+  /*- set stash_name = "%s_global_rpc_endpoint" % (name) -*/
+
+  /*# Check the global stash for our endpoint #*/
+  /*- set maybe_object = _pop(stash_name) -*/
+
+  /*# Create the endpoint if we need to #*/
+  /*- if maybe_object is none -*/
+          /*- set endpoint_owner = instance.name -*/
+          /*- set object = alloc_obj(name, seL4_EndpointObject, label=endpoint_owner) -*/
+  /*- else -*/
+      /*- set object, endpoint_owner = maybe_object -*/
+  /*- endif -*/
+
+  /*# Put it back into the stash #*/
+  /*- do _stash(stash_name, (object, endpoint_owner)) -*/
+
+  /*- set endpoint = alloc_cap('%s_read_endpoint_object_cap' % (name), object, read=True) -*/
+  /*- do stash('endpoint', endpoint) -*/
+
 /*- endmacro -*/
