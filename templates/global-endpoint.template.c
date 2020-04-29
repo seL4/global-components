@@ -57,3 +57,56 @@
   /*- do stash('notification', notification) -*/
   /*- do stash('badge', badge) -*/
 /*- endmacro -*/
+
+/*- macro allocate_rpc_endpoint_cap(interface_end, is_reader, other_end) -*/
+  /*? assert(isinstance(is_reader, bool)) ?*/
+
+  /*- set instance = interface_end.instance -*/
+  /*- if interface_end in interface_end.parent.from_ends -*/
+    /*- set from_end = True -*/
+    /*- set end = "from" -*/
+    /*- set index = interface_end.parent.from_ends.index(interface_end) -*/
+    /*- set other_index = interface_end.parent.to_ends.index(other_end) -*/
+  /*- else -*/
+    /*- set from_end = False -*/
+    /*- set end = "to" -*/
+    /*- set index = interface_end.parent.to_ends.index(interface_end) -*/
+    /*- set other_index = interface_end.parent.from_ends.index(other_end) -*/
+  /*- endif -*/
+
+  /*- if interface_end.parent.type.get_attribute("%s_global_rpc_endpoint" % end).default != true -*/
+      /*? raise(Exception('%s does not declare %s_global_rpc_endpoint:' % (interface_end.parent.type.name,end))) ?*/
+  /*- endif -*/
+
+
+  /*- set name = '%s_global_rpc_endpoint' % instance.name -*/
+
+  /*- set badges = macros.global_rpc_endpoint_badges(composition, interface_end, configuration) -*/
+  /*- set stash_name = "%s_global_rpc_endpoint" % (name) -*/
+
+  /*# Check the global stash for our endpoint #*/
+  /*- set maybe_object = _pop(stash_name) -*/
+
+  /*# Create the endpoint if we need to #*/
+  /*- if maybe_object is none -*/
+          /*- set endpoint_owner = instance.name -*/
+          /*- set object = alloc_obj(name, seL4_EndpointObject, label=endpoint_owner) -*/
+  /*- else -*/
+      /*- set object, endpoint_owner = maybe_object -*/
+  /*- endif -*/
+
+  /*# Put it back into the stash #*/
+  /*- do _stash(stash_name, (object, endpoint_owner)) -*/
+
+  /*# Create the badged endpoint #*/
+  /*- if not is_reader -*/
+    /*- set badge = badges[other_index] -*/
+    /*- set endpoint = alloc_cap('%s_%s_%d_endpoint_object_cap' % (name, badge, is_reader), object, read=is_reader, write=not is_reader, grantreply=not is_reader) -*/
+    /*- do cap_space.cnode[endpoint].set_badge(badge) -*/
+  /*- else -*/
+      /*- set endpoint = alloc_cap('%s_%d_endpoint_object_cap' % (name, is_reader), object, read=is_reader, write=not is_reader, grantreply=not is_reader) -*/
+  /*- endif -*/
+  /*- do stash('endpoint', endpoint) -*/
+  /*- do stash('badge', badge) -*/
+  /*- do stash('badges', badges) -*/
+/*- endmacro -*/
