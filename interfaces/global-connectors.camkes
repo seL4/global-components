@@ -390,3 +390,18 @@ connector seL4GlobalAsynchHardwareInterrupt {
     to Event with 0 threads;
     attribute bool to_global_endpoint = True;
 }
+
+/** seL4RPCNoThreads
+ *
+ * This connector is similar to the seL4RPCCall connector for performing RPC using the
+ * seL4 IPC buffer. In order to process messages, an interface function needs to be
+ * called to handle each received message.
+ *
+ * This makes it possible to tie several different interfaces to the same underlying
+ * endpoint object.
+ */
+connector seL4RPCNoThreads {
+    from Procedures with 0 threads;
+    to Procedure with 0 threads;
+    attribute bool to_global_rpc_endpoint = True;
+}

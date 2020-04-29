@@ -96,3 +96,13 @@ DeclareCAmkESConnector(
 DeclareCAmkESConnector(
     seL4GlobalAsynchHardwareInterrupt TO seL4GlobalAsynchHardwareInterrupt.template.c
 )
+
+DeclareCAmkESConnector(
+    seL4RPCNoThreads
+    FROM
+    seL4RPCNoThreads-from.template.c
+    TO
+    seL4RPCNoThreads-to.template.c
+    TO_HEADER
+    seL4RPCNoThreads-to.template.h
+)

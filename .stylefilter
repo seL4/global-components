@@ -10,4 +10,5 @@
 # @TAG(DATA61_BSD)
 #
 *.template.c
+*.template.h
 components/PicoServer/include/khash.h
