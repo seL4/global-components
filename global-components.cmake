@@ -18,6 +18,8 @@ CAmkESAddImportPath(interfaces)
 CAmkESAddImportPath(plat_interfaces/${KernelPlatform})
 CAmkESAddTemplatesPath(templates)
 
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/remote-drivers/picotcp-ethernet-async/ remote-drivers/picotcp-ethernet-async)
+
 include(${CMAKE_CURRENT_LIST_DIR}/components/PCIConfigIO/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/components/RTC/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/components/SerialServer/CMakeLists.txt)
