@@ -9,6 +9,8 @@
  *
  * @TAG(DATA61_BSD)
  */
+#include <camkes-BPMPServer.h>
+
 
 #define HARDWARE_RESET_EXTRA_IMPORTS \
     import <BPMP.idl4>;
@@ -18,7 +20,7 @@
 /* This should be connected to the respective interface in BPMPServer using the */
 /* seL4RPCDataport connector. The BPMPServer's interface should be on the 'to' side. */
 #define HARDWARE_RESET_EXTRA_INTERFACES \
-    uses BPMP bpmp;
+    BPMPServer_client_interfaces(bpmp)
 
 #define HARDWARE_RESET_ATTRIBUTES
 

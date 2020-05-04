@@ -10,7 +10,9 @@
  * @TAG(DATA61_BSD)
  */
 
-import <BPMP.idl4>;
+#include <camkes-single-threaded.h>
+#include <camkes-BPMPServer.h>
+#include <camkes-fdt-bind-driver.h>
 
 component BPMP {
     hardware;
@@ -19,13 +21,13 @@ component BPMP {
 }
 
 component BPMPServer {
-    has mutex bpmp_server;
-
-    provides BPMP the_bpmp;
+    single_threaded_component()
+    BPMPServer_server_interfaces(the_bpmp)
 
     /* hardware interfaces */
     emits Dummy dummy_source;
     consumes Dummy hsp;
+    fdt_bind_drivers_interfaces()
     dataport Buf(4096) bpmp_tx;
     dataport Buf(4096) bpmp_rx;
 
@@ -36,6 +38,8 @@ component BPMPServer {
          * location for the seL4DTBHardware connector */
         connection seL4HardwareMMIO bpmp_tx_mmio(from bpmp_tx, to bpmp.tx_channel);
         connection seL4HardwareMMIO bpmp_rx_mmio(from bpmp_rx, to bpmp.rx_channel);
+        fdt_bind_driver_connections()
+        BPMPServer_server_connections(the_bpmp)
     }
 
     configuration {
@@ -44,5 +48,7 @@ component BPMPServer {
         bpmp.tx_channel_size = 0x1000;
         bpmp.rx_channel_paddr = 0x3004f000;
         bpmp.rx_channel_size = 0x1000;
+        fdt_bind_driver_configuration(["/bpmp"])
+        BPMPServer_server_configurations(the_bpmp)
     }
 }

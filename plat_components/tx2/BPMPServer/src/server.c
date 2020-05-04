@@ -14,7 +14,6 @@
 #include <string.h>
 #include <errno.h>
 
-#include <camkes.h>
 #include <camkes/io.h>
 #include <tx2bpmp/bpmp.h>
 #include <utils/util.h>
@@ -30,11 +29,11 @@
 /* Prototypes for the functions in templates that do not have prototypes
  * auto-generated yet */
 seL4_Word the_bpmp_get_sender_id(void);
+seL4_Word the_bpmp_enumerate_badge(unsigned int i);
 void *the_bpmp_buf(seL4_Word);
-int the_bpmp_largest_badge(void);
 
-static struct tx2_bpmp bpmp;
-static ps_io_ops_t io_ops;
+struct tx2_bpmp bp;
+static struct tx2_bpmp *bpmp;
 /* MSG_MIN_SZ is from tx2bpmp/bpmp.h */
 static char bpmp_rx_buf[MSG_MIN_SZ] = {0};
 
@@ -44,42 +43,40 @@ int the_bpmp_call(int mrq, size_t tx_size, size_t *bytes_rxd)
         return -EINVAL;
     }
 
-    int error = bpmp_server_lock();
-    ZF_LOGF_IF(error, "Failed to lock bpmp server");
-
     seL4_Word client_id = the_bpmp_get_sender_id();
-    void *client_buf = the_bpmp_buf(client_id);
+    void *client_buf = the_bpmp_buf(the_bpmp_enumerate_badge(client_id));
     assert(client_buf);
 
-    int ret = tx2_bpmp_call(&bpmp, mrq, client_buf, tx_size, &bpmp_rx_buf, sizeof(bpmp_rx_buf));
+    int ret = tx2_bpmp_call(bpmp, mrq, client_buf, tx_size, &bpmp_rx_buf, sizeof(bpmp_rx_buf));
     if (ret >= 0) {
         /* Success! Copy the contents of the rx buf into the shared memory region */
         memcpy(client_buf, bpmp_rx_buf, ret);
         /* Zero out the contents of the rx buf for the next request */
-        memset(bpmp_rx_buf, 0, sizeof(bpmp_rx_buf));
+        // memset(bpmp_rx_buf, 0, sizeof(bpmp_rx_buf));
         /* Write the amount of bytes received from the BPMP module */
         *bytes_rxd = ret;
         /* Return zero as a success code */
         ret = 0;
     }
 
-    error = bpmp_server_unlock();
-    ZF_LOGF_IF(error, "Failed to unlock BPMP server");
-
     return ret;
 }
-
-void pre_init(void)
+static int interface_search_handler(void *handler_data, void *interface_instance, char **properties)
 {
-    int error = bpmp_server_lock();
-    ZF_LOGF_IF(error, "Failed to lock bpmp server");
+    /* Select the first one that is registered */
+    bpmp = (struct tx2_bpmp *) interface_instance;
+    return PS_INTERFACE_FOUND_MATCH;
+}
 
-    error = camkes_io_ops(&io_ops);
-    ZF_LOGF_IF(error, "Failed to get IO ops");
 
-    error = tx2_bpmp_init(&io_ops, &bpmp);
-    ZF_LOGF_IF(error, "Failed to initialise the BPMP structure");
+int bpmp_server_init(ps_io_ops_t *io_ops)
+{
 
-    error = bpmp_server_unlock();
-    ZF_LOGF_IF(error, "Failed to unlock bpmp server");
+    int error = ps_interface_find(&io_ops->interface_registration_ops, TX2_BPMP_INTERFACE,
+                              interface_search_handler, NULL);
+    ZF_LOGF_IF(error, "Failed to find bpmp driver");
+    printf("found interface\n");
+
+
+    return 0;
 }

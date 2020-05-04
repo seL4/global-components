@@ -11,6 +11,8 @@
  */
 #pragma once
 
+#include <camkes-BPMPServer.h>
+
 #define HARDWARE_CLOCK_EXTRA_IMPORTS \
     import <BPMP.idl4>;
 
@@ -24,7 +26,7 @@
  * seL4RPCDataport connector. The BPMPServer's interface should be on the 'to'
  * side. */
 #define HARDWARE_CLOCK_EXTRA_INTERFACES \
-    uses BPMP bpmp;
+    BPMPServer_client_interfaces(bpmp)
 
 #define HARDWARE_CLOCK_ATTRIBUTES
 

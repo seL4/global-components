@@ -23,7 +23,7 @@ if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/src/plat/${KernelPlatform}/plat.c")
 endif()
 
 if("${KernelPlatform}" STREQUAL "tx2")
-    set(ResetServerExtraLibs platsupportports BPMPServer-client)
+    set(ResetServerExtraLibs platsupportports)
 endif()
 
 DeclareCAmkESComponent(
