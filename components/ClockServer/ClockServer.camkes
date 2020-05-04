@@ -11,6 +11,8 @@
  */
 
 #include <plat/clock.h>
+#include <camkes-single-threaded.h>
+#include <camkes-ClockServer.h>
 
 import <Clock.idl4>;
 HARDWARE_CLOCK_EXTRA_IMPORTS
@@ -18,9 +20,8 @@ HARDWARE_CLOCK_EXTRA_IMPORTS
 HARDWARE_CLOCK_COMPONENT
 
 component ClockServer {
-    has mutex clock;
-
-    provides Clock the_clock;
+    single_threaded_component()
+    ClockServer_server_interfaces(the_clock)
 
     HARDWARE_CLOCK_INTERFACES
 
@@ -32,9 +33,11 @@ component ClockServer {
 
     composition {
         HARDWARE_CLOCK_COMPOSITION
+        ClockServer_server_connections(the_clock)
     }
 
     configuration {
         HARDWARE_CLOCK_CONFIG
+        ClockServer_server_configurations(the_clock)
     }
 }
