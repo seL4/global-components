@@ -165,3 +165,11 @@ DeclareCAmkESConnector(
     TO_HEADER
     seL4RPCNoThreads-to.template.h
 )
+
+DeclareCAmkESConnector(
+    seL4DTBHardwareThreadless
+    FROM
+    empty.c
+    TO
+    seL4DTBHardwareThreadless.template.c
+)

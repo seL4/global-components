@@ -412,3 +412,10 @@ connector seL4RPCNoThreads {
     to Procedure with 0 threads;
     attribute bool to_global_rpc_endpoint = True;
 }
+
+connector seL4DTBHardwareThreadless {
+    from Event with 0 threads;
+    to Events with 0 threads;
+    attribute bool to_global_endpoint = True;
+
+}
