@@ -12,6 +12,7 @@
 #pragma once
 
 #include <camkes-BPMPServer.h>
+#include <camkes-ResetServer.h>
 
 #define HARDWARE_ETHERNET_EXTRA_IMPORTS             \
     import <BPMP.idl4>;                             \
@@ -26,7 +27,7 @@
     consumes Dummy EthDriver;           \
     emits Dummy dummy_source;           \
     uses Clock clock;                   \
-    uses Reset reset;                   \
+    ResetServer_client_interfaces(reset)\
     uses GPIO gpio;
 
 
@@ -38,7 +39,7 @@
     connection seL4DTBHardware ethdriver_conn(from dummy_source, to EthDriver);         \
     BPMPServer_client_connections(bpmp, clock_server, the_bpmp, bpmp_server)            \
     BPMPServer_client_connections(bpmp, reset_server, the_bpmp, bpmp_server)            \
-    connection seL4RPCCall ethernet_reset(from reset, to reset_server.the_reset);       \
+    ResetServer_client_connections_embedded(reset, the_reset, reset_server) \
     connection seL4RPCCall ethernet_clock(from clock, to clock_server.the_clock);       \
     connection seL4RPCCall ethernet_gpio(from gpio, to gpiomux_server.the_gpio);
 
@@ -48,4 +49,5 @@
     EthDriver.dtb = dtb({ "path" : "/ether_qos@2490000" });     \
     EthDriver.generate_interrupts = 1; \
     BPMPServer_client_configurations(bpmp, clock_server) \
-    BPMPServer_client_configurations(bpmp, reset_server)
+    BPMPServer_client_configurations(bpmp, reset_server) \
+    ResetServer_client_configurations_embedded(reset)

@@ -14,26 +14,33 @@ cmake_minimum_required(VERSION 3.8.2)
 
 project(ResetServer C)
 
-set(CAmkESDTS ON CACHE BOOL "" FORCE)
-set(CAmkESCPP ON CACHE BOOL "" FORCE)
+CAmkESAddImportPath(camkes-include)
+CAmkESAddCPPInclude(camkes-include)
+CAmkESAddTemplatesPath(templates)
 
-# Check if platform specific source files exists
-if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/src/plat/${KernelPlatform}/plat.c")
-    set(ResetServerPlatSources "src/plat/${KernelPlatform}/plat.c")
-endif()
+DeclareCAmkESConnector(
+    ResetServerInit
+    FROM
+    ResetServer.template.c
+    FROM_LIBS
+    ResetServer-server
+    TO
+    empty.c
+)
+
+DeclareCAmkESConnector(
+    ResetServerClientInit
+    FROM
+    ResetServer-client.template.c
+    FROM_LIBS
+    ResetServer-client
+    TO
+    empty.c
+)
 
 if("${KernelPlatform}" STREQUAL "tx2")
     set(ResetServerExtraLibs platsupportports)
 endif()
-
-DeclareCAmkESComponent(
-    ResetServer
-    SOURCES
-    src/reset.c
-    ${ResetServerPlatSources}
-    LIBS
-    ${ResetServerExtraLibs}
-)
 
 CAmkESAddCPPInclude("${CMAKE_CURRENT_LIST_DIR}/include/plat/${KernelPlatform}/")
 
@@ -41,3 +48,6 @@ add_subdirectory(
     "${CMAKE_CURRENT_LIST_DIR}/libResetServer-client"
     ${CMAKE_CURRENT_BINARY_DIR}/libResetServer-client
 )
+
+add_library(ResetServer-server EXCLUDE_FROM_ALL src/reset.c)
+target_link_libraries(ResetServer-server sel4camkes ${ResetServerExtraLibs})

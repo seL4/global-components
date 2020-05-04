@@ -45,5 +45,5 @@ add_subdirectory(
     ${CMAKE_CURRENT_BINARY_DIR}/libBPMPServer-client
 )
 
-add_library(BPMPServer-server src/server.c)
+add_library(BPMPServer-server EXCLUDE_FROM_ALL src/server.c)
 target_link_libraries(BPMPServer-server sel4camkes platsupportports)

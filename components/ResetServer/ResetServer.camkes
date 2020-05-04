@@ -11,14 +11,15 @@
  */
 
 #include <plat/reset.h>
+#include <camkes-single-threaded.h>
+#include <camkes-ResetServer.h>
 
 import <Reset.idl4>;
 HARDWARE_RESET_EXTRA_IMPORTS
 
 component ResetServer {
-    has mutex reset_server;
-
-    provides Reset the_reset;
+    single_threaded_component()
+    ResetServer_server_interfaces(the_reset)
 
     HARDWARE_RESET_INTERFACES
 
@@ -30,9 +31,11 @@ component ResetServer {
 
     composition {
         HARDWARE_RESET_COMPOSITION
+        ResetServer_server_connections(the_reset)
     }
 
     configuration {
         HARDWARE_RESET_CONFIG
+        ResetServer_server_configurations(the_reset)
     }
 }

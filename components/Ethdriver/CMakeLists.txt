@@ -23,7 +23,6 @@ if("${KernelPlatform}" STREQUAL tx2)
     list(
         APPEND
             ETHDRIVER_LIBS
-            ResetServer-client
             ClockServer-client
             GPIOMUXServer-client
     )

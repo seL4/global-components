@@ -15,12 +15,9 @@
 #include <assert.h>
 #include <stdbool.h>
 #include <sel4/sel4.h>
-#include <camkes.h>
 #include <camkes/io.h>
 #include <platsupport/reset.h>
 #include <utils/util.h>
-
-#include "plat.h"
 
 /*
  * Gotchas:
@@ -32,51 +29,21 @@
 /* reset_sys for interacting with the reset lines */
 static reset_sys_t reset_sys;
 /* io_ops structure to access IO resources with */
-static ps_io_ops_t io_ops;
 
 int the_reset_assert_reset(reset_id_t id)
 {
-    int error = reset_server_lock();
-    ZF_LOGF_IF(error, "Failed to lock the reset server");
-
-    int ret = reset_sys_assert(&reset_sys, id);
-
-    error = reset_server_unlock();
-    ZF_LOGF_IF(error, "Failed to unlock the reset server");
-
-    return ret;
+    return reset_sys_assert(&reset_sys, id);
 }
 
 int the_reset_deassert_reset(reset_id_t id)
 {
-    int error = reset_server_lock();
-    ZF_LOGF_IF(error, "Failed to lock the reset server");
-
-    int ret = reset_sys_deassert(&reset_sys, id);
-
-    error = reset_server_unlock();
-    ZF_LOGF_IF(error, "Failed to unlock the reset server");
-
-    return ret;
+    return reset_sys_deassert(&reset_sys, id);
 }
 
-void post_init()
+int ResetServer_init(ps_io_ops_t *io_ops)
 {
-    int error = reset_server_lock();
-    ZF_LOGF_IF(error, "Failed to lock the reset server");
+    int error;
 
-    error = camkes_io_ops(&io_ops);
-    ZF_LOGF_IF(error, "Failed to get camkes_io_ops");
-
-    /* Do platform-specific initialisation for the reset subsystem */
-    if (plat_init) {
-        error = plat_init(&io_ops);
-        ZF_LOGF_IF(error, "Failed to perform the platform initialisation");
-    }
-
-    error = reset_sys_init(&io_ops, NULL, &reset_sys);
+    error = reset_sys_init(io_ops, NULL, &reset_sys);
     ZF_LOGF_IF(error, "Failed to initialise the reset subsystem with the BPMP");
-
-    error = reset_server_unlock();
-    ZF_LOGF_IF(error, "Failed to unlock the reset server");
 }

@@ -18,7 +18,18 @@ CAmkESAddImportPath(interfaces)
 CAmkESAddImportPath(plat_interfaces/${KernelPlatform})
 CAmkESAddTemplatesPath(templates)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/remote-drivers/picotcp-ethernet-async/ remote-drivers/picotcp-ethernet-async)
+add_subdirectory(
+    ${CMAKE_CURRENT_LIST_DIR}/remote-drivers/picotcp-ethernet-async/
+    remote-drivers/picotcp-ethernet-async
+)
+add_subdirectory(
+    ${CMAKE_CURRENT_LIST_DIR}/components/modules/fdt-bind-driver/
+    components/modules/fdt-bind-driver
+)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/components/ResetServer/ components/ResetServer)
+add_subdirectory(
+    ${CMAKE_CURRENT_LIST_DIR}/plat_components/tx2/BPMPServer/ plat_components/tx2/BPMPServer
+)
 
 include(${CMAKE_CURRENT_LIST_DIR}/components/PCIConfigIO/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/components/RTC/CMakeLists.txt)
@@ -30,12 +41,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/components/Ethdriver/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/components/PicoServer/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/components/ClockServer/CMakeLists.txt)
 include(${CMAKE_CURRENT_LIST_DIR}/components/GPIOMUXServer/CMakeLists.txt)
-include(${CMAKE_CURRENT_LIST_DIR}/components/ResetServer/CMakeLists.txt)
-
-# Add platform specific CAmkES components
-if(KernelPlatformTx2)
-    include(${CMAKE_CURRENT_LIST_DIR}/plat_components/tx2/BPMPServer/CMakeLists.txt)
-endif()
 
 foreach(
     connector

@@ -23,14 +23,12 @@
 #include <allocman/vka.h>
 #include <sel4utils/vspace.h>
 
-#include <resetserver_client.h>
 #include <clockserver_client.h>
 #include <gpiomuxserver.h>
 
 #include "../../ethdriver.h"
 
 static ps_irq_t irq_info;
-static reset_sys_t reset_server_wrapper;
 static clock_sys_t clock_server_wrapper;
 static gpio_sys_t gpio_server_wrapper;
 
@@ -47,12 +45,6 @@ static int initialise_hardware_interfaces(ps_io_ops_t *io_ops)
     /* Create the server interfaces using the CAmkES procedures created by the
      * conenctors, see eth_devices.h inside the tx2 plat folder in the include
      * folder */
-    error = resetserver_interface_init(reset_assert_reset, reset_deassert_reset,
-                                       &reset_server_wrapper);
-    if (error) {
-        ZF_LOGE("Failed to initialise the ResetServer interface");
-        return error;
-    }
 
     error = clockserver_interface_init(io_ops, clock_init_clock, clock_set_gate_mode,
                                        clock_get_freq, clock_set_freq, clock_register_child,
@@ -72,12 +64,6 @@ static int initialise_hardware_interfaces(ps_io_ops_t *io_ops)
     /* Register these interfaces against the interface registration service.
      * Don't bother with cleaning up in case of failure, the Ethdriver will
      * fail to start if this fails. */
-    error = ps_interface_register(&io_ops->interface_registration_ops, PS_RESET_INTERFACE,
-                                  &reset_server_wrapper, NULL);
-    if (error) {
-        ZF_LOGE("Failed to register the ResetServer interface");
-        return error;
-    }
 
     error = ps_interface_register(&io_ops->interface_registration_ops, PS_CLOCK_INTERFACE,
                                   &clock_server_wrapper, NULL);

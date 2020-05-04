@@ -10,7 +10,14 @@
  * @TAG(DATA61_BSD)
  */
 
-#include <platsupport/io.h>
-#include <utils/attribute.h>
+import <Reset.idl4>;
 
-WEAK int plat_init(ps_io_ops_t *io_ops);
+connector ResetServerInit {
+    from Event with 0 threads;
+    to Event with 0 threads;
+}
+
+connector ResetServerClientInit {
+    from Event with 0 threads;
+    to Event with 0 threads;
+}
