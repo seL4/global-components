@@ -1,5 +1,5 @@
 /*#
- *#Copyright 2019, Data61
+ *#Copyright 2020, Data61
  *#Commonwealth Scientific and Industrial Research Organisation (CSIRO)
  *#ABN 41 687 119 230.
  *#
@@ -10,11 +10,7 @@
  *#@TAG(DATA61_BSD)
   #*/
 
-/*- if me.parent.type.to_threads == 0 -*/
-    /*- include 'seL4RPCNoThreads-to.template.c' -*/
-/*- else -*/
-    /*- include 'seL4RPCCall-to.template.c' -*/
-/*- endif -*/
 
+seL4_CPtr /*? me.interface.name ?*/_notification(void);
 
-/*- include 'rpc-signalling.template.c' -*/
+seL4_Word /*? me.interface.name ?*/_notification_badge(void);

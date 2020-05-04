@@ -16,10 +16,14 @@
 /*? macros.show_includes(me.instance.type.includes) ?*/
 
 /*# Assign client ids and badges #*/
-/*- from 'rpc-connector.c' import allocate_badges with context -*/
-/*- set client_ids = namespace() -*/
-/*- do allocate_badges(client_ids) -*/
-/*- set badges = client_ids.badges -*/
+/*- set badges = namespace() -*/
+/*- if client_ids is not none -*/
+    /*- set badges.badges = client_ids.badges -*/
+/*- else -*/
+    /*- from 'rpc-connector.c' import allocate_badges with context -*/
+    /*- do allocate_badges(badges) -*/
+/*- endif -*/
+/*- set badges = badges.badges -*/
 
 /*# Enumerate all the incoming interfaces #*/
 /*- set shmems = [] -*/

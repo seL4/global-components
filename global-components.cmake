@@ -39,8 +39,6 @@ foreach(
     connector
     IN
     ITEMS
-    seL4RPCCallSignal
-    seL4RPCDataport
     seL4RPCDataportSignal
     seL4GlobalAsynch
     seL4GlobalAsynchCallback
@@ -68,6 +66,8 @@ DeclareCAmkESConnector(
     seL4TimeServer
     FROM
     seL4RPCCallSignal-from.template.c
+    FROM_HEADER
+    get-notification.template.h
     TO
     seL4RPCCallSignal-to.template.c
 )
@@ -79,18 +79,62 @@ DeclareCAmkESConnector(
     seL4RPCDataportSignal-to.template.c
 )
 DeclareCAmkESConnector(
+    seL4RPCCallSignal
+    FROM
+    seL4RPCCallSignal-from.template.c
+    TO
+    seL4RPCCallSignal-to.template.c
+    TO_HEADER
+    seL4RPCCallSignal-to.template.h
+)
+
+DeclareCAmkESConnector(
+    seL4RPCCallSignalNoThreads
+    FROM
+    seL4RPCCallSignal-from.template.c
+    TO
+    seL4RPCCallSignal-to.template.c
+    TO_HEADER
+    seL4RPCCallSignal-to.template.h
+)
+
+DeclareCAmkESConnector(
     seL4PicoServerSignal
     FROM
     seL4RPCCallSignal-from.template.c
     TO
     seL4RPCCallSignal-to.template.c
+    TO_HEADER
+    seL4RPCCallSignal-to.template.h
 )
+DeclareCAmkESConnector(
+    seL4RPCDataport
+    FROM
+    seL4RPCDataport-from.template.c
+    TO
+    seL4RPCDataport-to.template.c
+    TO_HEADER
+    seL4RPCDataport-to.template.h
+)
+
+DeclareCAmkESConnector(
+    seL4RPCDataportNoThreads
+    FROM
+    seL4RPCDataport-from.template.c
+    TO
+    seL4RPCDataport-to.template.c
+    TO_HEADER
+    seL4RPCDataport-to.template.h
+)
+
 DeclareCAmkESConnector(
     seL4PicoServer
     FROM
     seL4RPCDataport-from.template.c
     TO
     seL4RPCDataport-to.template.c
+    TO_HEADER
+    seL4RPCDataport-to.template.h
 )
 
 DeclareCAmkESConnector(

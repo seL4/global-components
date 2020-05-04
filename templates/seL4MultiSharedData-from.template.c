@@ -15,10 +15,14 @@
 /*? macros.show_includes(me.instance.type.includes) ?*/
 
 /*# Assign client ids and badges #*/
-/*- from 'rpc-connector.c' import allocate_badges with context -*/
-/*- set client_ids = namespace() -*/
-/*- do allocate_badges(client_ids) -*/
-/*- set client_id = client_ids.badges[me.parent.from_ends.index(me)] -*/
+/*- set badges = namespace() -*/
+/*- if client_ids is not none -*/
+    /*- set badges.badges = client_ids.badges -*/
+/*- else -*/
+    /*- from 'rpc-connector.c' import allocate_badges with context -*/
+    /*- do allocate_badges(badges) -*/
+/*- endif -*/
+/*- set client_id = badges.badges[me.parent.from_ends.index(me)] -*/
 
 /*- if suffix is not defined -*/
   /*- set suffix = '' -*/

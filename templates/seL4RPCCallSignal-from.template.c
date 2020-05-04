@@ -9,6 +9,11 @@
  *#
  *#@TAG(DATA61_BSD)
   #*/
-/*- include 'seL4RPCCall-from.template.c' -*/
+
+/*- if me.parent.type.to_threads == 0 -*/
+    /*- include 'seL4RPCNoThreads-from.template.c' -*/
+/*- else -*/
+    /*- include 'seL4RPCCall-from.template.c' -*/
+/*- endif -*/
 
 /*- include 'get-notification.template.c' -*/

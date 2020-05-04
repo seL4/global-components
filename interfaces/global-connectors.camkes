@@ -102,6 +102,13 @@ connector seL4RPCDataport {
         \<rparr> \<rparr>";
 }
 
+connector seL4RPCDataportNoThreads {
+    from Procedures with 0 threads;
+    to Procedure with 0 threads;
+    attribute bool to_global_rpc_endpoint = True;
+}
+
+
 /**
  * RPCDataportSignal connector
  *
