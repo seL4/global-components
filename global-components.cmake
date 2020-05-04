@@ -26,6 +26,14 @@ add_subdirectory(
     ${CMAKE_CURRENT_LIST_DIR}/components/modules/fdt-bind-driver/
     components/modules/fdt-bind-driver
 )
+add_subdirectory(
+    ${CMAKE_CURRENT_LIST_DIR}/components/modules/dynamic-untyped-allocators/
+    components/modules/dynamic-untyped-allocators
+)
+add_subdirectory(
+    ${CMAKE_CURRENT_LIST_DIR}/components/modules/single-threaded/
+    components/modules/single-threaded
+)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/components/ClockServer/ components/ClockServer)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/components/GPIOMUXServer/ components/GPIOMUXServer)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/components/ResetServer/ components/ResetServer)
