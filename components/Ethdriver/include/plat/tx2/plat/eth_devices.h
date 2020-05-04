@@ -14,6 +14,7 @@
 #include <camkes-BPMPServer.h>
 #include <camkes-ClockServer.h>
 #include <camkes-ResetServer.h>
+#include <camkes-GPIOServer.h>
 
 #define HARDWARE_ETHERNET_EXTRA_IMPORTS             \
     import <BPMP.idl4>;                             \
@@ -29,7 +30,7 @@
     emits Dummy dummy_source;           \
     ClockServer_client_interfaces(clock)\
     ResetServer_client_interfaces(reset)\
-    uses GPIO gpio;
+    GPIOServer_client_interfaces(gpio)
 
 
 #define HARDWARE_ETHERNET_COMPOSITION                                                   \
@@ -42,7 +43,7 @@
     BPMPServer_client_connections(bpmp, reset_server, the_bpmp, bpmp_server)            \
     ClockServer_client_connections_embedded(clock, the_clock, clock_server) \
     ResetServer_client_connections_embedded(reset, the_reset, reset_server) \
-    connection seL4RPCCall ethernet_gpio(from gpio, to gpiomux_server.the_gpio);
+    GPIOServer_client_connections_embedded(gpio, the_gpio, gpiomux_server)
 
 
 
@@ -52,4 +53,5 @@
     BPMPServer_client_configurations(bpmp, clock_server) \
     BPMPServer_client_configurations(bpmp, reset_server) \
     ClockServer_client_configurations_embedded(clock) \
-    ResetServer_client_configurations_embedded(reset)
+    ResetServer_client_configurations_embedded(reset) \
+    GPIOServer_client_configurations_embedded(gpio)

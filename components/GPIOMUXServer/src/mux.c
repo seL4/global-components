@@ -12,12 +12,9 @@
 
 #include <assert.h>
 #include <stdio.h>
-#include <camkes.h>
 #include <camkes/io.h>
 #include <platsupport/io.h>
 #include <utils/util.h>
-
-#include <gpiomuxserver.h>
 
 #include "mux.h"
 

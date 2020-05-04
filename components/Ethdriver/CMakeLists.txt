@@ -19,13 +19,6 @@ set(CAmkESCPP ON CACHE BOOL "" FORCE)
 CAmkESAddCPPInclude("${CMAKE_CURRENT_LIST_DIR}/include/plat/${KernelPlatform}/")
 
 set(ETHDRIVER_LIBS sel4utils sel4vka sel4allocman sel4vspace sel4simple sel4platsupport ethdrivers)
-if("${KernelPlatform}" STREQUAL tx2)
-    list(
-        APPEND
-            ETHDRIVER_LIBS
-            GPIOMUXServer-client
-    )
-endif()
 
 DeclareCAmkESComponent(
     Ethdriver82574

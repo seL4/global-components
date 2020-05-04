@@ -14,14 +14,14 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <errno.h>
-#include <camkes.h>
 #include <camkes/io.h>
 #include <camkes/irq.h>
 #include <platsupport/io.h>
 #include <platsupport/irq.h>
 #include <utils/util.h>
 
-#include <gpiomuxserver.h>
+#include <platsupport/gpio.h>
+#include <gpiomuxserver_plat.h>
 
 #include "gpio.h"
 
@@ -71,12 +71,11 @@ static inline bool check_client_owns_pin(gpio_id_t pin_id, seL4_Word client_id)
 static inline seL4_Word get_client_id(void)
 {
     /* We substract one as the IDs start from 1 to avoid using the zero badge */
-    return the_gpio_get_sender_id() - 1;
+    return the_gpio_get_sender_id();
 }
 
 int the_gpio_init_pin(gpio_id_t pin_id, gpio_dir_t dir)
 {
-    ZF_LOGF_IF(big_lock_lock(), "Failed to grab the big lock for the GPIOMUXServer");
 
     int error = 0;
 
@@ -115,13 +114,11 @@ int the_gpio_init_pin(gpio_id_t pin_id, gpio_dir_t dir)
     gpio_entry->owner = client_id;
 
 out:
-    ZF_LOGF_IF(big_lock_unlock(), "Failed to release the big lock for the GPIOMUXServer");
     return error;
 }
 
 int the_gpio_set_level(gpio_id_t pin_id, gpio_level_t level)
 {
-    ZF_LOGF_IF(big_lock_lock(), "Failed to grab the big lock for the GPIOMUXServer");
 
     seL4_Word client_id = get_client_id();
     int error = 0;
@@ -146,13 +143,11 @@ int the_gpio_set_level(gpio_id_t pin_id, gpio_level_t level)
     }
 
 out:
-    ZF_LOGF_IF(big_lock_unlock(), "Failed to release the big lock for the GPIOMUXServer");
     return error;
 }
 
 int the_gpio_read_level(gpio_id_t pin_id)
 {
-    ZF_LOGF_IF(big_lock_lock(), "Failed to grab the big lock for the GPIOMUXServer");
 
     seL4_Word client_id = get_client_id();
     int ret = 0;
@@ -170,7 +165,6 @@ int the_gpio_read_level(gpio_id_t pin_id)
     ret = gpio_get(&gpio_table[pin_id].gpio);
 
 out:
-    ZF_LOGF_IF(big_lock_unlock(), "Failed to release the big lock for the GPIOMUXServer");
     return ret;
 }
 

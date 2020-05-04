@@ -12,18 +12,15 @@
 
 #include <plat/gpio.h>
 #include <plat/mux.h>
+#include <camkes-single-threaded.h>
+#include <camkes-GPIOServer.h>
+#include <camkes-MUXServer.h>
 
-import <GPIO.idl4>;
-import <MUX.idl4>;
 
 component GPIOMUXServer {
-    has mutex big_lock;
-
-    /* These interfaces should be connected via the seL4RPCCall connector.
-     * Client interfaces should go on the 'from' side, this server should be
-     * one the 'to' side. */
-    provides GPIO the_gpio;
-    provides MUX the_mux;
+    single_threaded_component()
+    GPIOServer_server_interfaces(the_gpio)
+    MUXServer_server_interfaces(the_mux)
 
     HARDWARE_GPIO_INTERFACES
     HARDWARE_GPIO_ATTRIBUTES
@@ -34,10 +31,14 @@ component GPIOMUXServer {
     composition {
         HARDWARE_GPIO_COMPOSITION
         HARDWARE_MUX_COMPOSITION
+        MUXServer_server_connections(the_mux)
+        GPIOServer_server_connections(the_gpio)
     }
 
     configuration {
         HARDWARE_GPIO_CONFIG
         HARDWARE_MUX_CONFIG
+        MUXServer_server_configurations(the_mux)
+        GPIOServer_server_configurations(the_gpio)
     }
 }
