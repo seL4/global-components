@@ -17,7 +17,7 @@
 
 /*# Assign client ids and badges #*/
 /*- set badges = namespace() -*/
-/*- if client_ids is not none -*/
+/*- if client_ids is not undefined -*/
     /*- set badges.badges = client_ids.badges -*/
 /*- else -*/
     /*- from 'rpc-connector.c' import allocate_badges with context -*/
