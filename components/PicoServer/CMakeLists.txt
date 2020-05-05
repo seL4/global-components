@@ -17,7 +17,6 @@ project(PicoServer C)
 DeclareCAmkESComponent(
     PicoServer
     SOURCES
-    src/picoserver.c
     src/eth_interface.c
     INCLUDES
     include

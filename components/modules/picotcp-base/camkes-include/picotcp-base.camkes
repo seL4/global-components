@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, Data61
+ * Copyright 2020, Data61
  * Commonwealth Scientific and Industrial Research Organisation (CSIRO)
  * ABN 41 687 119 230.
  *
@@ -10,8 +10,9 @@
  * @TAG(DATA61_BSD)
  */
 
-#pragma once
+import <Timer.idl4>;
 
-#include <stdbool.h>
-
-void eth_init(void);
+connector PicotcpBaseInit {
+    from Event with 0 threads;
+    to Event with 0 threads;
+}

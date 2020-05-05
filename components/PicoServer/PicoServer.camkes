@@ -17,16 +17,14 @@ import <PicoRecv.idl4>;
 import <Timer.idl4>;
 #include <camkes-single-threaded.h>
 #include <camkes-picotcp-socket-sync.h>
+#include <camkes-picotcp-base.h>
 
 component PicoServer {
     single_threaded_component()
     picotcp_socket_sync_server_interfaces(pico)
-    /* Used for PicoTCP's TCP stack */
-    uses Timer timer;
+    picotcp_base_interfaces(pico_base)
 
     uses Ethdriver ethdriver;
-    attribute string ip_addr = "";
-    attribute string multicast_addr;
 
     composition {
         picotcp_socket_sync_server_connections(pico)
