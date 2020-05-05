@@ -12,6 +12,7 @@
 
 #include <autoconf.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include <camkes.h>
 #include <camkes/dma.h>
@@ -20,19 +21,9 @@
 
 #include <platsupport/io.h>
 #include <platsupport/irq.h>
-#include <vka/vka.h>
-#include <simple/simple.h>
-#include <simple/simple_helpers.h>
-#include <allocman/allocman.h>
-#include <allocman/bootstrap.h>
-#include <allocman/vka.h>
-#include <sel4utils/vspace.h>
 #include <ethdrivers/raw.h>
 #include <ethdrivers/intel.h>
 #include <sel4utils/sel4_zf_logif.h>
-
-#include "ethdriver.h"
-#include "plat.h"
 
 #define RX_BUFS 256
 
@@ -41,23 +32,9 @@
 
 #define BUF_SIZE 2048
 
-#define BRK_VIRTUAL_SIZE 400000000
 
-reservation_t muslc_brk_reservation;
-void *muslc_brk_reservation_start;
-vspace_t  *muslc_this_vspace;
-static sel4utils_res_t muslc_brk_reservation_memory;
-static allocman_t *allocman;
-static char allocator_mempool[8388608];
-static simple_t camkes_simple;
-static vka_t vka;
-static vspace_t vspace;
-static sel4utils_alloc_data_t vspace_data;
-static struct eth_driver eth_driver;
+static struct eth_driver *eth_driver;
 
-static ps_irq_ops_t irq_ops;
-
-void camkes_make_simple(simple_t *simple);
 
 /*
  *Struct eth_buf contains a virtual address (buf) to use for memory operations
@@ -142,40 +119,6 @@ void *client_buf(unsigned int client_id);
 bool client_has_mac(unsigned int client_id);
 void client_get_mac(unsigned int client_id, uint8_t *mac);
 
-static void init_system(void)
-{
-    int error;
-
-    /* Camkes adds nothing to our address space, so this array is empty */
-    void *existing_frames[] = {
-        NULL
-    };
-    camkes_make_simple(&camkes_simple);
-
-    /* Initialize allocator */
-    allocman = bootstrap_use_current_1level(
-                   simple_get_cnode(&camkes_simple),
-                   simple_get_cnode_size_bits(&camkes_simple),
-                   simple_last_valid_cap(&camkes_simple) + 1,
-                   BIT(simple_get_cnode_size_bits(&camkes_simple)),
-                   sizeof(allocator_mempool), allocator_mempool
-               );
-    assert(allocman);
-    error = allocman_add_simple_untypeds(allocman, &camkes_simple);
-    allocman_make_vka(&vka, allocman);
-
-    /* Initialize the vspace */
-    error = sel4utils_bootstrap_vspace(&vspace, &vspace_data,
-                                       simple_get_init_cap(&camkes_simple, seL4_CapInitThreadPD), &vka, NULL, NULL, existing_frames);
-    assert(!error);
-
-    sel4utils_reserve_range_no_alloc(&vspace, &muslc_brk_reservation_memory, BRK_VIRTUAL_SIZE, seL4_AllRights, 1,
-                                     &muslc_brk_reservation_start);
-    muslc_this_vspace = &vspace;
-    muslc_brk_reservation = (reservation_t) {
-        .res = &muslc_brk_reservation_memory
-    };
-}
 
 static void eth_tx_complete(void *iface, void *cookie)
 {
@@ -323,7 +266,6 @@ static struct raw_iface_callbacks ethdriver_callbacks = {
  */
 int client_rx(int *len)
 {
-    int UNUSED err;
     if (!done_init) {
         return -1;
     }
@@ -337,10 +279,8 @@ int client_rx(int *len)
     }
     assert(client);
     void *packet = client->dataport;
-    err = ethdriver_lock();
     if (client->pending_rx_head == client->pending_rx_tail) {
         client->should_notify = 1;
-        err = ethdriver_unlock();
         return -1;
     }
     rx_frame_t rx = client->pending_rx[client->pending_rx_tail];
@@ -355,13 +295,11 @@ int client_rx(int *len)
     }
     rx_buf_pool[num_rx_bufs] = rx.buf;
     num_rx_bufs++;
-    err = ethdriver_unlock();
     return ret;
 }
 
 int client_tx(int len)
 {
-    int UNUSED error;
     if (!done_init) {
         return -1;
     }
@@ -381,7 +319,6 @@ int client_tx(int len)
     }
     assert(client);
     void *packet = client->dataport;
-    error = ethdriver_lock();
     /* silently drop packets */
     if (client->num_tx != 0) {
         client->num_tx --;
@@ -398,21 +335,19 @@ int client_tx(int len)
         }
 
         /* queue up transmit */
-        err = eth_driver.i_fn.raw_tx(&eth_driver, 1, (uintptr_t *) & (tx_buf->buf.phys),
-                                     (unsigned int *)&len, tx_buf);
+        err = eth_driver->i_fn.raw_tx(eth_driver, 1, (uintptr_t *) & (tx_buf->buf.phys),
+                                      (unsigned int *)&len, tx_buf);
         if (err != ETHIF_TX_ENQUEUED) {
             /* Free the internal tx buffer in case tx fails. Up to the client to retry the trasmission */
             client->num_tx++;
         }
     }
-    error = ethdriver_unlock();
 
     return err;
 }
 
 void client_mac(uint8_t *b1, uint8_t *b2, uint8_t *b3, uint8_t *b4, uint8_t *b5, uint8_t *b6)
 {
-    int UNUSED error;
     int id = client_get_sender_id();
     client_t *client = NULL;
     for (int i = 0; i < num_clients; i++) {
@@ -422,71 +357,43 @@ void client_mac(uint8_t *b1, uint8_t *b2, uint8_t *b3, uint8_t *b4, uint8_t *b5,
     }
     assert(client);
     assert(done_init);
-    error = ethdriver_lock();
     *b1 = client->mac[0];
     *b2 = client->mac[1];
     *b3 = client->mac[2];
     *b4 = client->mac[3];
     *b5 = client->mac[4];
     *b6 = client->mac[5];
-    error = ethdriver_unlock();
 }
 
-void eth_irq_handle(void *data, ps_irq_acknowledge_fn_t acknowledge_fn, void *ack_data)
+
+static int hardware_interface_searcher(void *cookie, void *interface_instance, char **properties)
 {
-    int error;
 
-    error = ethdriver_lock();
-    ZF_LOGF_IF(error, "Failed to obtain lock for Ethdriver");
+    eth_driver = interface_instance;
+    return PS_INTERFACE_FOUND_MATCH;
+}
 
-    ps_irq_t *irq = data;
 
-    if (irq && irq->type == PS_INTERRUPT) {
-        /*
-         * Sabre, ZYNQ doesn't care about the number being passed in,
-         * however Beaglebone does
-         */
-        eth_driver.i_fn.raw_handleIRQ(&eth_driver, irq->irq.number);
-    } else {
-        /*
-         * Other platforms which use different interrupt types
-         * do not care about the interrupt number at the moment
-         */
-        eth_driver.i_fn.raw_handleIRQ(&eth_driver, 0);
+int server_init(ps_io_ops_t *io_ops)
+{
+
+    int error = ps_interface_find(&io_ops->interface_registration_ops,
+                                  PS_ETHERNET_INTERFACE, hardware_interface_searcher, NULL);
+    if (error) {
+        ZF_LOGF("Unable to find an ethernet device");
     }
 
-    error = acknowledge_fn(irq);
-    ZF_LOGF_IF(error, "Failed to acknowledge IRQ");
 
-    error = ethdriver_unlock();
-    ZF_LOGF_IF(error, "Failed to release lock for Ethdriver");
-}
+    eth_driver->cb_cookie = NULL;
+    eth_driver->i_cb = ethdriver_callbacks;
 
-void post_init(void)
-{
-    int error = 0;
-    error = ethdriver_lock();
-    /* initialize seL4 allocators and give us a half sane environment */
-    init_system();
-
-    ps_io_ops_t io_ops = {0};
-
-    error = camkes_irq_ops(&irq_ops);
-    ZF_LOGF_IF(error, "Failed to initialise IRQ ops");
-
-    eth_driver.cb_cookie = NULL;
-    eth_driver.i_cb = ethdriver_callbacks;
-
-    /* initialise the driver */
-    error = ethif_preinit(&vka, &camkes_simple, &vspace, &io_ops);
-    ZF_LOGF_IF(error, "Failed to setup the initialisation of the ethernet interface");
 
     /* preallocate buffers */
     for (int i = 0; i < RX_BUFS; i++) {
-        void *buf = ps_dma_alloc(&io_ops.dma_manager, BUF_SIZE, 4, 1, PS_MEM_NORMAL);
+        void *buf = ps_dma_alloc(&io_ops->dma_manager, BUF_SIZE, 4, 1, PS_MEM_NORMAL);
         assert(buf);
         memset(buf, 0, BUF_SIZE);
-        uintptr_t phys = ps_dma_pin(&io_ops.dma_manager, buf, BUF_SIZE);
+        uintptr_t phys = ps_dma_pin(&io_ops->dma_manager, buf, BUF_SIZE);
         rx_bufs[num_rx_bufs] = (eth_buf_t) {
             .buf = buf, .phys = phys
         };
@@ -500,10 +407,10 @@ void post_init(void)
         clients[client].client_id = client_enumerate_badge(client);
         clients[client].dataport = client_buf(clients[client].client_id);
         for (int i = 0; i < CLIENT_TX_BUFS; i++) {
-            void *buf = ps_dma_alloc(&io_ops.dma_manager, BUF_SIZE, 4, 1, PS_MEM_NORMAL);
+            void *buf = ps_dma_alloc(&io_ops->dma_manager, BUF_SIZE, 4, 1, PS_MEM_NORMAL);
             assert(buf);
             memset(buf, 0, BUF_SIZE);
-            uintptr_t phys = ps_dma_pin(&io_ops.dma_manager, buf, BUF_SIZE);
+            uintptr_t phys = ps_dma_pin(&io_ops->dma_manager, buf, BUF_SIZE);
             tx_frame_t *tx_buf = &clients[client].tx_mem[clients[client].num_tx];
             *tx_buf = (tx_frame_t) {
                 .len = BUF_SIZE, .client = client
@@ -516,11 +423,10 @@ void post_init(void)
         }
     }
 
-    error = ethif_init(&eth_driver, &io_ops, &irq_ops);
-    ZF_LOGF_IF(error, "Failed to initialise the ethernet device");
 
     uint8_t hw_mac[6];
-    eth_driver.i_fn.get_mac(&eth_driver, hw_mac);
+    eth_driver->i_fn.get_mac(eth_driver, hw_mac);
+    eth_driver->i_fn.raw_poll(eth_driver);
 
     int num_defaults = 0;
     for (int client = 0; client < num_clients; client++) {
@@ -534,6 +440,7 @@ void post_init(void)
     }
 
     done_init = 1;
-
-    error = ethdriver_unlock();
+    return 0;
 }
+
+CAMKES_POST_INIT_MODULE_DEFINE(ethdriver_run, server_init);

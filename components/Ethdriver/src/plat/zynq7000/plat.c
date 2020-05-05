@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, Data61
+ * Copyright 2020, Data61
  * Commonwealth Scientific and Industrial Research Organisation (CSIRO)
  * ABN 41 687 119 230.
  *
@@ -18,47 +18,18 @@
 #include <platsupport/io.h>
 #include <platsupport/clock.h>
 #include <platsupport/irq.h>
-#include <vka/vka.h>
-#include <simple/simple.h>
-#include <allocman/vka.h>
-#include <sel4utils/vspace.h>
 
-#include "../../ethdriver.h"
 
-static ps_irq_t irq_info;
 
-int ethif_preinit(vka_t *vka, simple_t *camkes_simple, vspace_t *vspace,
-                  ps_io_ops_t *io_ops)
+static int init_device(ps_io_ops_t *io_ops)
 {
-    int ret = camkes_io_ops(io_ops);
-    if (ret) {
-        return ret;
-    }
+
     // This may reinitialise the clocks, timeserver might not like this,
     // but zynq7000/uboot/zynq_gem.c requires access to the SLCR registers
     // to configure some clocks related to the Ethernet device.
     return clock_sys_init(io_ops, &io_ops->clock_sys);
 }
 
-int ethif_init(struct eth_driver *eth_driver, ps_io_ops_t *io_ops, ps_irq_ops_t *irq_ops)
-{
-    struct arm_eth_plat_config eth_config = (struct arm_eth_plat_config) {
-        .buffer_addr = (void *) EthDriver_0,
-        .prom_mode = (uint8_t) promiscuous_mode
-    };
 
-    int error = ethif_zynq7000_init(eth_driver, *io_ops, (void *) &eth_config);
-    if (error) {
-        return error;
-    }
+CAMKES_PRE_INIT_MODULE_DEFINE(ethdriver_setup, init_device);
 
-    irq_info = (ps_irq_t) {
-        .type = PS_INTERRUPT, .irq = { .number = ZYNQ7000_INTERRUPT_ETH0 }
-    };
-    irq_id_t irq_id = ps_irq_register(irq_ops, irq_info, eth_irq_handle, &irq_info);
-    if (irq_id < 0) {
-        return -1;
-    }
-
-    return 0;
-}

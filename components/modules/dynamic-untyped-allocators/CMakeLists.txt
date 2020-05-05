@@ -24,6 +24,8 @@ DeclareCAmkESConnector(
     dynamic-untyped-allocators.template.c
     FROM_HEADER
     dynamic-untyped-allocators.template.h
+    FROM_LIBS
+    sel4allocman
     TO
     empty.c
 )
