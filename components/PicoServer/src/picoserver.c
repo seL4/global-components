@@ -17,6 +17,7 @@
 #include <ethdrivers/pico_dev_eth.h>
 #include <pico_stack.h>
 #include <pico_socket.h>
+#include <pico_device.h>
 #include <pico_addressing.h>
 #include <pico_ipv4.h>
 #include <sel4/sel4.h>
@@ -362,13 +363,17 @@ picoserver_event_t pico_control_event_poll(void)
     return event;
 }
 
-uint32_t pico_control_get_ipv4(void)
+int pico_control_get_ipv4(uint32_t *addr)
 {
     picotcp_lock();
-    uint32_t ret = get_ipv4();
+    struct pico_device* dev = pico_get_device("eth0");
+    if (dev == NULL) {
+        return -1;
+    }
+    *addr = pico_ipv4_link_by_dev(dev)->address.addr;
     picotcp_unlock();
 
-    return ret;
+    return 0;
 }
 
 int pico_send_write(int socket_fd, int len, int buffer_offset)

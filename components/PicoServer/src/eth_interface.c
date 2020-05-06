@@ -78,19 +78,6 @@ struct pico_device *pico_driver = &_pico_driver;
 uint32_t dhcp_client_xid;
 bool dhcp_negotiating = false;
 
-uint32_t get_ipv4(void)
-{
-    void *cli = pico_dhcp_get_identifier(dhcp_client_xid);
-    struct pico_ip4 address;
-
-    if (cli) {
-        address = pico_dhcp_get_address(cli);
-    } else {
-        pico_string_to_ipv4(ip_addr, &address.addr);
-    }
-    return address.addr;
-}
-
 void eth_init_continue(void *cli, int code)
 {
     struct pico_ip4 address, gateway, netmask, multicast, zero = {0};
