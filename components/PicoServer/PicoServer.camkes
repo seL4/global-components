@@ -16,10 +16,11 @@ import <PicoSend.idl4>;
 import <PicoRecv.idl4>;
 import <Timer.idl4>;
 #include <camkes-single-threaded.h>
+#include <camkes-picotcp-socket-sync.h>
 
 component PicoServer {
     single_threaded_component()
-
+    picotcp_socket_sync_server_interfaces(pico)
     /* Used for PicoTCP's TCP stack */
     uses Timer timer;
 
@@ -27,15 +28,10 @@ component PicoServer {
     attribute string ip_addr = "";
     attribute string multicast_addr;
 
-    /* 
-     * This interface should be connected with the seL4RPCCallSignal connector, 
-     * and with no threads on the 'from' side 
-     */
-    provides PicoControl pico_control;
-    /* 
-     * These interfaces should be connected with the seL4RPCDataport connector,
-     * and with no threads on the 'from' side 
-     */
-    provides PicoRecv pico_recv;
-    provides PicoSend pico_send;
+    composition {
+        picotcp_socket_sync_server_connections(pico)
+    }
+    configuration {
+        picotcp_socket_sync_server_configurations(pico)
+    }
 }

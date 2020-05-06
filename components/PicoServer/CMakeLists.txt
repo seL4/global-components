@@ -19,18 +19,10 @@ DeclareCAmkESComponent(
     SOURCES
     src/picoserver.c
     src/eth_interface.c
-    src/picoserver_client.c
     INCLUDES
     include
     LIBS
     sel4utils
     picotcp
-    sel4vspace
     ethdrivers
-    PicoServer-client
-)
-
-add_subdirectory(
-    "${CMAKE_CURRENT_LIST_DIR}/libPicoServer-client"
-    ${CMAKE_CURRENT_BINARY_DIR}/libPicoServer-client
 )

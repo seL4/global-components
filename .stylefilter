@@ -11,4 +11,4 @@
 #
 *.template.c
 *.template.h
-components/PicoServer/include/khash.h
+remote-drivers/picotcp-socket-sync/server/khash.h

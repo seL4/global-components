@@ -10,8 +10,12 @@
  * @TAG(DATA61_GPL)
  */
 
+#include <stdbool.h>
 #include <limits.h>
-#include <picoserver_client.h>
+#include <utils/util.h>
+#include <sel4utils/sel4_zf_logif.h>
+
+#include "picoserver_client.h"
 
 static picoserver_client_t **clients = NULL;
 static khash_t(socket_addr) *socket_addr_table = NULL;

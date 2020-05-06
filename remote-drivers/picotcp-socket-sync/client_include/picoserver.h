@@ -12,11 +12,6 @@
 
 #pragma once
 
-#include <pico_socket.h>
-#include <pico_addressing.h>
-#include <pico_ipv4.h>
-#include <picoserver_event.h>
-#include <picoserver_peer.h>
 
 /*
  * Reference only the necessary constants and functions to clients that are
@@ -25,12 +20,26 @@
  * These constants and functions cover all the functionality that the
  * PicoServer currently provides.
  */
+#ifndef PICO_SOCK_EV_RD
+#define PICO_SOCK_EV_RD 1u
+#define PICO_SOCK_EV_WR 2u
+#define PICO_SOCK_EV_CONN 4u
+#define PICO_SOCK_EV_CLOSE 8u
+#define PICO_SOCK_EV_FIN 0x10u
+#define PICO_SOCK_EV_ERR 0x80u
+#define PICO_SHUT_RD   1
+#define PICO_SHUT_WR   2
+#define PICO_SHUT_RDWR 3
+#define PICO_IPV4_INADDR_ANY 0x00000000U
+#endif
+
 #define PICOSERVER_READ PICO_SOCK_EV_RD
 #define PICOSERVER_WRITE PICO_SOCK_EV_WR
 #define PICOSERVER_CONN PICO_SOCK_EV_CONN
 #define PICOSERVER_CLOSE PICO_SOCK_EV_CLOSE
 #define PICOSERVER_FIN PICO_SOCK_EV_FIN
 #define PICOSERVER_ERR PICO_SOCK_EV_ERR
+#define PICOSERVER_IP_AVAIL (PICO_SOCK_EV_ERR << 1)
 
 #define PICOSERVER_SHUT_RD PICO_SHUT_RD
 #define PICOSERVER_SHUT_WR PICO_SHUT_WR

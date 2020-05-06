@@ -1,0 +1,26 @@
+/*
+ * Copyright 2020, Data61
+ * Commonwealth Scientific and Industrial Research Organisation (CSIRO)
+ * ABN 41 687 119 230.
+ *
+ * This software may be distributed and modified according to the terms of
+ * the BSD 2-Clause license. Note that NO WARRANTY is provided.
+ * See "LICENSE_BSD2.txt" for details.
+ *
+ * @TAG(DATA61_BSD)
+ */
+
+#include <picotcp-socket-sync.h>
+#include <camkes.h>
+
+/*- set connection_name = configuration[me.parent.name].get('connection_name') -*/
+
+int picotcp_socket_sync_server_init(ps_io_ops_t *io_ops, int num_clients, register_callback_handler_fn_t callback_handler);
+
+unsigned int /*? connection_name ?*/_recv_num_badges(void);
+
+static int init_server(ps_io_ops_t *io_ops) {
+    return picotcp_socket_sync_server_init(io_ops, /*? connection_name ?*/_recv_num_badges(), single_threaded_component_register_handler);
+}
+
+CAMKES_POST_INIT_MODULE_DEFINE(/*? connection_name ?*/_server_setup, init_server);

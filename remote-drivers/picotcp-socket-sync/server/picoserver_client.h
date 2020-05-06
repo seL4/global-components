@@ -12,11 +12,10 @@
 
 #pragma once
 
-#include <camkes.h>
+#include "khash.h"
 #include <sel4/sel4.h>
-#include <sel4utils/sel4_zf_logif.h>
-#include <khash.h>
-#include <picoserver_socket.h>
+#undef PACKED
+#include "picoserver_socket.h"
 #include <picoserver_event.h>
 
 /* Declare a hash map to keep track of sockets by ID*/

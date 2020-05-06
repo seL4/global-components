@@ -38,6 +38,10 @@ add_subdirectory(
     ${CMAKE_CURRENT_LIST_DIR}/components/modules/x86-iospace-dma/
     components/modules/x86-iospace-dma
 )
+add_subdirectory(
+    ${CMAKE_CURRENT_LIST_DIR}/remote-drivers/picotcp-socket-sync/
+    remote-drivers/picotcp-socket-sync
+)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/components/ClockServer/ components/ClockServer)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/components/GPIOMUXServer/ components/GPIOMUXServer)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/components/ResetServer/ components/ResetServer)

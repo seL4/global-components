@@ -17,4 +17,4 @@ project(libPicoServer-client C)
 add_library(PicoServer-client INTERFACE)
 
 target_include_directories(PicoServer-client INTERFACE ./)
-target_link_libraries(PicoServer-client INTERFACE picotcp)
+target_link_libraries(PicoServer-client)
