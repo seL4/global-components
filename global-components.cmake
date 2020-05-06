@@ -184,3 +184,9 @@ DeclareCAmkESConnector(
     TO
     seL4DTBHardwareThreadless.template.c
 )
+
+DeclareCAmkESConnector(
+    seL4DTBHWThreadless
+    TO
+    seL4DTBHardwareThreadless.template.c
+)

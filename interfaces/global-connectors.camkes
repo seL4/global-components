@@ -421,3 +421,10 @@ connector seL4DTBHardwareThreadless {
     attribute bool to_global_endpoint = True;
 
 }
+
+connector seL4DTBHWThreadless {
+    from hardware Event;
+    to Events with 0 threads;
+    attribute bool to_global_endpoint = True;
+
+}
