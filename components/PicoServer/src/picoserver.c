@@ -536,7 +536,7 @@ int pico_recv_recvfrom(int socket_fd, int len, int buffer_offset, uint32_t *src_
  */
 int clk_get_time(void)
 {
-    uint64_t time_in_ms = timer_time() / NS_IN_MS;
+    uint64_t time_in_ms = pico_ms_tick;
     return (time_in_ms & 0xFFFFFFFF);
 }
 
