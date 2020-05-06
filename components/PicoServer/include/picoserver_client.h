@@ -40,7 +40,7 @@ typedef struct picoserver_client {
  * Initialises each of the client's bookkeeping structures, i.e. their
  * picoserver_client_t struct.
  */
-void picoserver_clients_init(void);
+void picoserver_clients_init(int num_clients);
 
 /*
  * Gets the number of sockets currently assigned to a particular client.

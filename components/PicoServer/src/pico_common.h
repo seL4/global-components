@@ -14,14 +14,4 @@
 
 #include <stdbool.h>
 
-/*
- * To prevent users from operating on the half-initialised picoserver, the picotcp
- * lock is held by the picoserver till the DHCP negotiation is finished.
- * Meanwhile, `dhcp_negotiating` is set to true, which allows `timer_complete_callback`
- * to involk callback functions without having to acquire the picotcp lock.
- * the lock will eventually be released after `eth_init_continue` is finished.
- * This is a **hacky** way to sync components.
- */
-extern bool dhcp_negotiating;
-
 void eth_init(void);

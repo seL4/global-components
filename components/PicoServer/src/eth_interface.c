@@ -76,7 +76,6 @@ static int pico_eth_poll(struct pico_device *dev, int loop_score)
 struct pico_device _pico_driver;
 struct pico_device *pico_driver = &_pico_driver;
 uint32_t dhcp_client_xid;
-bool dhcp_negotiating = false;
 
 void eth_init_continue(void *cli, int code)
 {
@@ -101,9 +100,6 @@ void eth_init_continue(void *cli, int code)
             // It can be done at the igmp level too by using igmp_state_change. See the picoTCP documentation
             // Eg: pico_igmp_state_change(&ipaddr, &multicast, .... );
         }
-
-        /* DHCP negotiation done, the picotcp lock is going to be released after this function return */
-        dhcp_negotiating = false;
     }
 }
 
@@ -155,8 +151,5 @@ void eth_init(void)
         ZF_LOGF_IF(pico_dhcp_initiate_negotiation(pico_driver, &eth_init_continue, &dhcp_client_xid) != 0,
                    "Failed to initiate the DHCP negotiation");
 
-        /* DHCP negotiation in progress */
-        dhcp_negotiating = true;
-        picotcp_lock();
     }
 }

@@ -15,6 +15,8 @@
 
 static picoserver_client_t **clients = NULL;
 static khash_t(socket_addr) *socket_addr_table = NULL;
+static int num_clients;
+
 
 static khint32_t find_free_id(seL4_Word client_id)
 {
@@ -40,8 +42,9 @@ static khint32_t find_free_id(seL4_Word client_id)
     }
 }
 
-void picoserver_clients_init(void)
+void picoserver_clients_init(int num_clients_)
 {
+    num_clients = num_clients_;
     clients = calloc(num_clients, sizeof(picoserver_client_t *));
     ZF_LOGF_IF(clients == NULL, "Failed to allocate memory for the picoserver_client_t struct array");
     for (int i = 0; i < num_clients; i++) {
@@ -87,7 +90,7 @@ picoserver_socket_t *client_get_socket_by_addr(struct pico_socket *socket_addr)
 
 int client_put_socket(seL4_Word client_id, picoserver_socket_t *new_socket)
 {
-    ZF_LOGF_IF(client_id > num_clients, "Client ID is greater than the number of clients registered");
+    ZF_LOGF_IF(client_id >= num_clients, "Client ID is greater than the number of clients registered");
     /* Sanity check, just in case */
     ZF_LOGF_IF(new_socket == NULL, "Trying to insert an empty picoserver_socket into the socket table");
     picoserver_client_t *client = clients[client_id];

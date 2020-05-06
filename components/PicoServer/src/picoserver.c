@@ -26,6 +26,7 @@
 #include <picoserver_socket.h>
 #include <picoserver_event.h>
 #include <picoserver_peer.h>
+#include <platsupport/io.h>
 
 #include "pico_common.h"
 
@@ -51,10 +52,12 @@ int pico_control_largest_badge(void);
 seL4_Word pico_recv_get_sender_id(void);
 void *pico_recv_buf(seL4_Word);
 size_t pico_recv_buf_size(seL4_Word);
+seL4_Word pico_recv_enumerate_badge(unsigned int);
 
 seL4_Word pico_send_get_sender_id(void);
 void *pico_send_buf(seL4_Word);
 size_t pico_send_buf_size(seL4_Word);
+seL4_Word pico_send_enumerate_badge(unsigned int);
 
 seL4_CPtr ethdriver_notification(void);
 
@@ -64,14 +67,15 @@ seL4_CPtr ethdriver_notification(void);
  */
 volatile uint32_t pico_ms_tick = 0;
 
+int num_clients;
 /*
  * Gets the client's ID and checks that it is valid.
  */
 static inline seL4_Word client_check(void)
 {
     /* Client IDs start from one to avoid using the zero badge */
-    seL4_Word client_id = pico_control_get_sender_id() - 1;
-    ZF_LOGF_IF(client_id > num_clients, "Client ID is greater than the number of clients registered!");
+    seL4_Word client_id = pico_control_get_sender_id();
+    ZF_LOGF_IF(client_id >= num_clients, "Client ID is greater than the number of clients registered!");
     return client_id;
 }
 
@@ -159,13 +163,9 @@ static void socket_cb(uint16_t ev, struct pico_socket *s)
 int pico_control_open(bool is_udp)
 {
     seL4_Word client_id = client_check();
-
-    picotcp_lock();
-
     picoserver_socket_t *new_socket = calloc(1, sizeof(picoserver_socket_t));
     if (new_socket == NULL) {
         ZF_LOGE("Failed to malloc memory for the picoserver struct");
-        picotcp_unlock();
         return -1;
     }
 
@@ -175,7 +175,6 @@ int pico_control_open(bool is_udp)
     if (new_socket->socket == NULL) {
         ZF_LOGE("Failed to open a new socket through picotcp");
         free(new_socket);
-        picotcp_unlock();
         return -1;
     }
 
@@ -184,12 +183,10 @@ int pico_control_open(bool is_udp)
         ZF_LOGE("Failed to put the socket into the client's hash table");
         pico_socket_close(new_socket->socket);
         free(new_socket);
-        picotcp_unlock();
         return -1;
     }
     new_socket->socket_fd = ret;
 
-    picotcp_unlock();
     return ret;
 }
 
@@ -197,20 +194,17 @@ int pico_control_bind(int socket_fd, uint32_t local_addr, uint16_t port)
 {
     seL4_Word client_id = client_check();
 
-    picotcp_lock();
 
     picoserver_socket_t *client_socket = NULL;
 
     int ret = server_control_common(client_id, socket_fd, &client_socket);
     if (ret) {
-        picotcp_unlock();
         return -1;
     }
 
     port = short_be(port);
 
     ret = pico_socket_bind(client_socket->socket, &local_addr, &port);
-    picotcp_unlock();
     return ret;
 }
 
@@ -218,20 +212,16 @@ int pico_control_connect(int socket_fd, uint32_t server_addr, uint16_t port)
 {
     seL4_Word client_id = client_check();
 
-    picotcp_lock();
-
     picoserver_socket_t *client_socket = NULL;
 
     int ret = server_control_common(client_id, socket_fd, &client_socket);
     if (ret) {
-        picotcp_unlock();
         return -1;
     }
 
     port = short_be(port);
 
     ret = pico_socket_connect(client_socket->socket, &server_addr, port);
-    picotcp_unlock();
     return ret;
 }
 
@@ -239,18 +229,14 @@ int pico_control_listen(int socket_fd, int backlog)
 {
     seL4_Word client_id = client_check();
 
-    picotcp_lock();
-
     picoserver_socket_t *client_socket = NULL;
 
     int ret = server_control_common(client_id, socket_fd, &client_socket);
     if (ret) {
-        picotcp_unlock();
         return -1;
     }
 
     ret = pico_socket_listen(client_socket->socket, backlog);
-    picotcp_unlock();
     return ret;
 }
 
@@ -260,13 +246,11 @@ picoserver_peer_t pico_control_accept(int socket_fd)
 
     picoserver_peer_t peer = {0};
 
-    picotcp_lock();
 
     picoserver_socket_t *client_socket = NULL;
 
     int ret = server_control_common(client_id, socket_fd, &client_socket);
     if (ret) {
-        picotcp_unlock();
         peer.result = -1;
         return peer;
     }
@@ -277,7 +261,6 @@ picoserver_peer_t pico_control_accept(int socket_fd)
     struct pico_socket *socket = pico_socket_accept(client_socket->socket, &peer_addr, &remote_port);
     if (socket == NULL) {
         peer.result = -1;
-        picotcp_unlock();
         return peer;
     }
 
@@ -285,7 +268,6 @@ picoserver_peer_t pico_control_accept(int socket_fd)
     if (new_socket == NULL) {
         peer.result = -1;
         pico_socket_close(socket);
-        picotcp_unlock();
         return peer;
     }
 
@@ -297,7 +279,6 @@ picoserver_peer_t pico_control_accept(int socket_fd)
         peer.result = -1;
         pico_socket_close(socket);
         free(new_socket);
-        picotcp_unlock();
         return peer;
     }
     new_socket->socket_fd = ret;
@@ -307,7 +288,6 @@ picoserver_peer_t pico_control_accept(int socket_fd)
     peer.peer_addr = peer_addr;
     peer.peer_port = remote_port;
 
-    picotcp_unlock();
     return peer;
 }
 
@@ -315,18 +295,15 @@ int pico_control_shutdown(int socket_fd, int mode)
 {
     seL4_Word client_id = client_check();
 
-    picotcp_lock();
 
     picoserver_socket_t *client_socket = NULL;
 
     int ret = server_control_common(client_id, socket_fd, &client_socket);
     if (ret) {
-        picotcp_unlock();
         return -1;
     }
 
     ret = pico_socket_shutdown(client_socket->socket, mode);
-    picotcp_unlock();
     return ret;
 }
 
@@ -334,18 +311,15 @@ int pico_control_close(int socket_fd)
 {
     seL4_Word client_id = client_check();
 
-    picotcp_lock();
 
     picoserver_socket_t *client_socket = NULL;
 
     int ret = server_control_common(client_id, socket_fd, &client_socket);
     if (ret) {
-        picotcp_unlock();
         return -1;
     }
 
     ret = client_delete_socket(client_id, socket_fd);
-    picotcp_unlock();
     return ret;
 }
 
@@ -353,25 +327,21 @@ picoserver_event_t pico_control_event_poll(void)
 {
     seL4_Word client_id = client_check();
 
-    picotcp_lock();
 
     /* Retrieve the client's outstanding events */
     picoserver_event_t event = {0};
     client_get_event(client_id, &event);
 
-    picotcp_unlock();
     return event;
 }
 
 int pico_control_get_ipv4(uint32_t *addr)
 {
-    picotcp_lock();
     struct pico_device* dev = pico_get_device("eth0");
     if (dev == NULL) {
         return -1;
     }
     *addr = pico_ipv4_link_by_dev(dev)->address.addr;
-    picotcp_unlock();
 
     return 0;
 }
@@ -383,21 +353,19 @@ int pico_send_write(int socket_fd, int len, int buffer_offset)
      * client_id needs to be incremented here as the CAmkES generated interfaces are one off
      * from ours
      */
-    size_t buffer_size = pico_send_buf_size(client_id + 1);
-    void *client_buf = pico_send_buf(client_id + 1);
+
+    size_t buffer_size = pico_send_buf_size(pico_send_enumerate_badge(client_id));
+    void *client_buf = pico_send_buf(pico_send_enumerate_badge(client_id));
     picoserver_socket_t *client_socket = NULL;
 
-    picotcp_lock();
 
     int ret = server_communication_common(client_id, socket_fd, len, buffer_offset,
                                           buffer_size, &client_socket, &client_buf);
     if (ret) {
-        picotcp_unlock();
         return -1;
     }
 
     ret = pico_socket_write(client_socket->socket, client_buf, len);
-    picotcp_unlock();
     return ret;
 }
 
@@ -408,21 +376,18 @@ int pico_send_send(int socket_fd, int len, int buffer_offset)
      * client_id needs to be incremented here as the CAmkES generated interfaces are one off
      * from ours
      */
-    size_t buffer_size = pico_send_buf_size(client_id + 1);
-    void *client_buf = pico_send_buf(client_id + 1);
+    size_t buffer_size = pico_send_buf_size(pico_send_enumerate_badge(client_id));
+    void *client_buf = pico_send_buf(pico_send_enumerate_badge(client_id));
     picoserver_socket_t *client_socket = NULL;
 
-    picotcp_lock();
 
     int ret = server_communication_common(client_id, socket_fd, len, buffer_offset,
                                           buffer_size, &client_socket, &client_buf);
     if (ret) {
-        picotcp_unlock();
         return -1;
     }
 
     ret = pico_socket_send(client_socket->socket, client_buf, len);
-    picotcp_unlock();
     return ret;
 }
 
@@ -433,23 +398,20 @@ int pico_send_sendto(int socket_fd, int len, int buffer_offset, uint32_t dst_add
      * client_id needs to be incremented here as the CAmkES generated interfaces are one off
      * from ours
      */
-    size_t buffer_size = pico_send_buf_size(client_id + 1);
-    void *client_buf = pico_send_buf(client_id + 1);
+    size_t buffer_size = pico_send_buf_size(pico_send_enumerate_badge(client_id));
+    void *client_buf = pico_send_buf(pico_send_enumerate_badge(client_id));
     picoserver_socket_t *client_socket = NULL;
 
-    picotcp_lock();
 
     int ret = server_communication_common(client_id, socket_fd, len, buffer_offset,
                                           buffer_size, &client_socket, &client_buf);
     if (ret) {
-        picotcp_unlock();
         return -1;
     }
 
     remote_port = short_be(remote_port);
 
     ret = pico_socket_sendto(client_socket->socket, client_buf, len, &dst_addr, remote_port);
-    picotcp_unlock();
     return ret;
 }
 
@@ -460,21 +422,18 @@ int pico_recv_read(int socket_fd, int len, int buffer_offset)
      * client_id needs to be incremented here as the CAmkES generated interfaces are one off
      * from ours
      */
-    size_t buffer_size = pico_recv_buf_size(client_id + 1);
-    void *client_buf = pico_recv_buf(client_id + 1);
+    size_t buffer_size = pico_recv_buf_size(pico_recv_enumerate_badge(client_id));
+    void *client_buf = pico_recv_buf(pico_recv_enumerate_badge(client_id));
     picoserver_socket_t *client_socket = NULL;
 
-    picotcp_lock();
 
     int ret = server_communication_common(client_id, socket_fd, len, buffer_offset,
                                           buffer_size, &client_socket, &client_buf);
     if (ret) {
-        picotcp_unlock();
         return -1;
     }
 
     ret = pico_socket_read(client_socket->socket, client_buf, len);
-    picotcp_unlock();
     return ret;
 }
 
@@ -485,21 +444,19 @@ int pico_recv_recv(int socket_fd, int len, int buffer_offset)
      * client_id needs to be incremented here as the CAmkES generated interfaces are one off
      * from ours
      */
-    size_t buffer_size = pico_recv_buf_size(client_id + 1);
-    void *client_buf = pico_recv_buf(client_id + 1);
+    size_t buffer_size = pico_recv_buf_size(pico_recv_enumerate_badge(client_id));
+    void *client_buf = pico_recv_buf(pico_recv_enumerate_badge(client_id));
     picoserver_socket_t *client_socket = NULL;
 
-    picotcp_lock();
 
     int ret = server_communication_common(client_id, socket_fd, len, buffer_offset,
                                           buffer_size, &client_socket, &client_buf);
     if (ret) {
-        picotcp_unlock();
         return -1;
     }
 
     ret = pico_socket_recv(client_socket->socket, client_buf, len);
-    picotcp_unlock();
+
     return ret;
 }
 
@@ -510,21 +467,17 @@ int pico_recv_recvfrom(int socket_fd, int len, int buffer_offset, uint32_t *src_
      * client_id needs to be incremented here as the CAmkES generated interfaces are one off
      * from ours
      */
-    size_t buffer_size = pico_recv_buf_size(client_id + 1);
-    void *client_buf = pico_recv_buf(client_id + 1);
+    size_t buffer_size = pico_recv_buf_size(pico_recv_enumerate_badge(client_id));
+    void *client_buf = pico_recv_buf(pico_recv_enumerate_badge(client_id));
     picoserver_socket_t *client_socket = NULL;
-
-    picotcp_lock();
 
     int ret = server_communication_common(client_id, socket_fd, len, buffer_offset,
                                           buffer_size, &client_socket, &client_buf);
     if (ret) {
-        picotcp_unlock();
         return -1;
     }
 
     ret = pico_socket_recvfrom(client_socket->socket, client_buf, len, src_addr, remote_port);
-    picotcp_unlock();
 
     /* Reverse the big endian port number */
     *remote_port = short_be(*remote_port);
@@ -543,22 +496,18 @@ int clk_get_time(void)
 /* Callback that gets called when the timer fires. */
 void timer_complete_callback(void)
 {
-    if (!dhcp_negotiating) {
-        picotcp_lock();
-    }
     pico_ms_tick += PICO_TICK_MS;
     pico_stack_tick();
-    if (!dhcp_negotiating) {
-        picotcp_unlock();
-    }
 }
 
-void pre_init(void)
+int pico_server_init(ps_io_ops_t *io_ops)
 {
     eth_init();
-
-    picoserver_clients_init();
-
+    num_clients = pico_recv_num_badges();
+    picoserver_clients_init(num_clients);
     /* Start the timer for the TCP stack */
     timer_periodic(0, NS_IN_MS * PICO_TICK_MS);
+    single_threaded_component_register_handler(timer_notification_badge(), timer_complete_callback, NULL);
 }
+
+CAMKES_POST_INIT_MODULE_DEFINE(pico_server_setup, pico_server_init);

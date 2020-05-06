@@ -273,13 +273,15 @@ connector seL4SerialServer {
 
 connector seL4PicoServerSignal {
     from Procedures with 0 threads;
-    to Procedure;
+    to Procedure with 0 threads;
     attribute bool from_global_endpoint = True;
+    attribute bool to_global_rpc_endpoint = True;
 }
 
 connector seL4PicoServer {
     from Procedures with 0 threads;
-    to Procedure;
+    to Procedure with 0 threads;
+    attribute bool to_global_rpc_endpoint = True;
 }
 
 /**

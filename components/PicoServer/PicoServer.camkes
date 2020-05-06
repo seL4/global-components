@@ -15,18 +15,17 @@ import <PicoControl.idl4>;
 import <PicoSend.idl4>;
 import <PicoRecv.idl4>;
 import <Timer.idl4>;
+#include <camkes-single-threaded.h>
 
 component PicoServer {
-    has mutex picotcp;
+    single_threaded_component()
 
     /* Used for PicoTCP's TCP stack */
     uses Timer timer;
-    consumes Notification timer_complete;
 
     uses Ethdriver ethdriver;
     attribute string ip_addr = "";
     attribute string multicast_addr;
-    attribute int num_clients;
 
     /* 
      * This interface should be connected with the seL4RPCCallSignal connector, 
