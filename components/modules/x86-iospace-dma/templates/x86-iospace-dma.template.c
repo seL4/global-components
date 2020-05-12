@@ -36,24 +36,6 @@ seL4_CPtr get_dma_frame_cap(vspace_t *vspace, void *vaddr)
     return cap;
 }
 
-/* Allocate a dma buffer backed by the component's dma pool */
-void *camkes_iommu_dma_alloc(void *cookie, size_t size,
-                             int align, int cached, ps_mem_flags_t flags)
-{
-
-    // allocate buffer from the dma pool
-    void *vaddr = camkes_dma_alloc(size, align);
-    if (vaddr == NULL) {
-        return NULL;
-    }
-    int error = sel4utils_iommu_dma_alloc_iospace(cookie, vaddr, size);
-    if (error) {
-        camkes_dma_free(vaddr, size);
-        return NULL;
-    }
-    return vaddr;
-}
-
 static USED SECTION("_dma_frames") struct {} dummy_dma_frame;
 extern dma_frame_t *__start__dma_frames[];
 extern dma_frame_t *__stop__dma_frames[];
