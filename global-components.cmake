@@ -69,7 +69,6 @@ foreach(
     seL4GlobalAsynch
     seL4GlobalAsynchCallback
     seL4Ethdriver
-    seL4VirtQueues
     seL4MessageQueue
     seL4RPCOverMultiSharedData
 )
@@ -185,8 +184,14 @@ DeclareCAmkESConnector(
     seL4DTBHardwareThreadless.template.c
 )
 
+DeclareCAmkESConnector(seL4DTBHWThreadless TO seL4DTBHardwareThreadless.template.c)
+
 DeclareCAmkESConnector(
-    seL4DTBHWThreadless
+    seL4VirtQueues
+    FROM
+    seL4VirtQueues-from.template.c
     TO
-    seL4DTBHardwareThreadless.template.c
+    seL4VirtQueues-to.template.c
+    FROM_HEADER
+    seL4VirtQueues-from.template.h
 )
