@@ -25,7 +25,7 @@
     consumes Dummy gpio3;                                                           \
     consumes Dummy gpio6;                                                           \
     emits Dummy dummy_source; \
-    fdt_bind_drivers_interfaces()
+    fdt_bind_drivers_interfaces(["/soc/aips-bus@2100000/ethernet@2188000"]);
 
 #define HARDWARE_ETHERNET_COMPOSITION                                               \
     connection seL4DTBHardwareThreadless ethernet_conn(from dummy_source, to EthDriver);      \
@@ -35,7 +35,7 @@
     connection seL4DTBHardwareThreadless analog_conn(from dummy_source, to analog);           \
     connection seL4DTBHardwareThreadless gpio3_conn(from dummy_source, to gpio3);             \
     connection seL4DTBHardwareThreadless gpio6_conn(from dummy_source, to gpio6); \
-    fdt_bind_driver_connections()
+    fdt_bind_driver_connections();
 
 #define HARDWARE_ETHERNET_CONFIG                                                    \
     EthDriver.dtb = dtb({ "path" : "/soc/aips-bus@2100000/ethernet@2188000" });     \
@@ -45,5 +45,4 @@
     ccm.dtb = dtb({ "path" : "/soc/aips-bus@2000000/ccm@20c4000" });                \
     analog.dtb = dtb({ "path" : "/soc/aips-bus@2000000/anatop@20c8000" });          \
     gpio3.dtb = dtb({ "path" : "/soc/aips-bus@2000000/gpio@20a4000" });             \
-    gpio6.dtb = dtb({ "path" : "/soc/aips-bus@2000000/gpio@20b0000" }); \
-    fdt_bind_driver_configuration(["/soc/aips-bus@2100000/ethernet@2188000"])
+    gpio6.dtb = dtb({ "path" : "/soc/aips-bus@2000000/gpio@20b0000" });

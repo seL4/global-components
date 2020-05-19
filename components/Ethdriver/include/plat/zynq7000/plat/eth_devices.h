@@ -21,17 +21,16 @@
     consumes Dummy EthDriver;                                           \
     consumes Dummy slcr;                                                \
     emits Dummy dummy_source; \
-    fdt_bind_drivers_interfaces()
+    fdt_bind_drivers_interfaces(["/amba/ethernet@e000b000"]);
 
 #define HARDWARE_ETHERNET_COMPOSITION                                   \
     connection seL4DTBHardwareThreadless ethdriver_conn(from dummy_source,        \
                                              to EthDriver);             \
     connection seL4DTBHardwareThreadless slcr_conn(from dummy_source,             \
                                          to slcr); \
-    fdt_bind_driver_connections()
+    fdt_bind_driver_connections();
 
 #define HARDWARE_ETHERNET_CONFIG                                        \
     EthDriver.dtb = dtb({ "path" : "/amba/ethernet@e000b000" });        \
     EthDriver.generate_interrupts = 1;                                  \
-    slcr.dtb = dtb({ "path" : "/amba/slcr@f8000000" }); \
-    fdt_bind_driver_configuration(["/amba/ethernet@e000b000"])
+    slcr.dtb = dtb({ "path" : "/amba/slcr@f8000000" });
