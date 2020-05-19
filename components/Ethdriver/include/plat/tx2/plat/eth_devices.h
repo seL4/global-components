@@ -32,7 +32,7 @@
     ClockServer_client_interfaces(clock)\
     ResetServer_client_interfaces(reset)\
     GPIOServer_client_interfaces(gpio)\
-    fdt_bind_drivers_interfaces() \
+    fdt_bind_drivers_interfaces(["/ether_qos@2490000"]); \
     attribute int dma_pool_paddr = 0x90000000;
 
 
@@ -47,7 +47,7 @@
     ResetServer_client_connections_embedded(reset, the_reset, reset_server) \
     GPIOServer_client_connections_embedded(gpio, the_gpio, gpiomux_server) \
     connection seL4DTBHardwareThreadless ethdriver_conn(from dummy_source, to EthDriver);         \
-    fdt_bind_driver_connections()
+    fdt_bind_driver_connections();
 
 
 
@@ -58,5 +58,4 @@
     BPMPServer_client_configurations(bpmp, reset_server) \
     ClockServer_client_configurations_embedded(clock) \
     ResetServer_client_configurations_embedded(reset) \
-    GPIOServer_client_configurations_embedded(gpio) \
-    fdt_bind_driver_configuration(["/ether_qos@2490000"])
+    GPIOServer_client_configurations_embedded(gpio)

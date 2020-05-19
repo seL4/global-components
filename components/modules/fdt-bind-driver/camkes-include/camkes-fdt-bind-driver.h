@@ -10,14 +10,15 @@
  * @TAG(DATA61_BSD)
  */
 
-#define fdt_bind_drivers_interfaces() \
-    emits Dummy init_1;       \
-    consumes Dummy init_2;
+#define fdt_bind_drivers_interfaces(default_bind_paths) \
+    emits Dummy fdt_bind_drivers_1;       \
+    consumes Dummy fdt_bind_drivers_2; \
+    attribute string fdt_bind_driver_paths[] = default_bind_paths
 
 
 #define fdt_bind_driver_connections() \
-        connection seL4InitHardware bind_driver_conn(from init_1, to init_2);
+    connection seL4InitHardware bind_driver_conn(from fdt_bind_drivers_1, to fdt_bind_drivers_2)
 
 
-#define fdt_bind_driver_configuration(path) \
-    init_2.paths = path;
+#define fdt_bind_driver_configuration_override(instance, bind_paths) \
+    instance.fdt_bind_driver_paths = bind_paths
