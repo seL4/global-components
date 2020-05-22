@@ -102,6 +102,8 @@ DeclareCAmkESConnector(
     seL4SerialServer
     FROM
     seL4RPCDataportSignal-from.template.c
+    FROM_HEADER
+    get-notification.template.h
     TO
     seL4RPCDataportSignal-to.template.c
 )
@@ -129,6 +131,8 @@ DeclareCAmkESConnector(
     seL4PicoServerSignal
     FROM
     seL4RPCCallSignal-from.template.c
+    FROM_HEADER
+    get-notification.template.h
     TO
     seL4RPCCallSignal-to.template.c
     TO_HEADER
