@@ -76,6 +76,11 @@
     /*? raise(TemplateError('Interface %s is not present in connection.' % (other_interface_name))) ?*/
 /*- endif -*/
 /*- set other_interface = other_interface[0] -*/
+/*- set queue_length = configuration[me.parent.name].get("queue_length", 256) -*/
+/*- if queue_length is none or not isinstance(queue_length, six.integer_types) -*/
+    /*? raise(Exception('%s.queue_length must be set to a number' % (me.parent.name))) ?*/
+/*- endif -*/
+
 
 /*# Create shared memory region between the two interfaces #*/
 /*- set shmem_size = configuration[me.instance.name].get("%s_shmem_size" % me.interface.name, 8192) -*/
@@ -132,8 +137,8 @@ seL4_Word /*? me.interface.name ?*/_notification_badge(void) {
 //This is called by camkes runtime during init.
 static void __attribute__((constructor)) register_connector(void) {
 /*- if interface_name == "VirtQueueDrv" -*/
-    camkes_virtqueue_channel_register(/*? queue_id ?*/, "/*? me.interface.name ?*/", /*? me.interface.name ?*/_get_size(), (volatile void *) &/*? shmem_symbol ?*/,  /*? me.interface.name ?*/_notify, /*? me.interface.name ?*/_notification(), /*? me.interface.name ?*/_notification_badge(), VIRTQUEUE_DRIVER);
+    camkes_virtqueue_channel_register(/*? queue_id ?*/, "/*? me.interface.name ?*/", /*? queue_length ?*/, /*? me.interface.name ?*/_get_size(), (volatile void *) &/*? shmem_symbol ?*/,  /*? me.interface.name ?*/_notify, /*? me.interface.name ?*/_notification(), /*? me.interface.name ?*/_notification_badge(), VIRTQUEUE_DRIVER);
 /*- else -*/
-    camkes_virtqueue_channel_register(/*? queue_id ?*/, "/*? me.interface.name ?*/", /*? me.interface.name ?*/_get_size(), (volatile void *) &/*? shmem_symbol ?*/,  /*? me.interface.name ?*/_notify, /*? me.interface.name ?*/_notification(), /*? me.interface.name ?*/_notification_badge(), VIRTQUEUE_DEVICE);
+    camkes_virtqueue_channel_register(/*? queue_id ?*/, "/*? me.interface.name ?*/", /*? queue_length ?*/, /*? me.interface.name ?*/_get_size(), (volatile void *) &/*? shmem_symbol ?*/,  /*? me.interface.name ?*/_notify, /*? me.interface.name ?*/_notification(), /*? me.interface.name ?*/_notification_badge(), VIRTQUEUE_DEVICE);
 /*- endif -*/
 }

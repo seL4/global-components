@@ -41,7 +41,9 @@
 /*# Queue Size #*/
 
 /*- set queue_size = configuration[me.parent.name].get("queue_size", 128) -*/
-/*- set queue_total_size = '%s * %s + sizeof(vq_vring_avail_t) + sizeof(vq_vring_used_t) + sizeof(vq_vring_desc_t) * DESC_TABLE_SIZE' % (type_size_macro, queue_size) -*/
+/*- set virtqueue_length = 2 * queue_size -*/
+
+/*- set queue_total_size = '%s * %s + sizeof(vq_vring_avail_t) + sizeof(uint16_t) * %s + sizeof(vq_vring_used_t) + sizeof(struct vq_vring_used_elem) * %s  + sizeof(vq_vring_desc_t) * %s' % (type_size_macro, queue_size, virtqueue_length, virtqueue_length, virtqueue_length) -*/
 /*- set index = me.parent.from_ends.index(me) -*/
 /*# TODO This isn't so resilient, maybe stash the name of the buffer? #*/
 /*- set single_shmem_size = 'sizeof(from_%d_%s_data)' % (index, me.interface.name) -*/
@@ -67,6 +69,7 @@ void /*? me.interface.name ?*/__init()
     int error = 0;
     error = camkes_msgqueue_channel_register_sender(/*? queue_id ?*/,
                                                     /*? me.interface.name ?*/,
+                                                    /*? virtqueue_length ?*/,
                                                     /*? single_shmem_size ?*/,
                                                     /*? type_size_macro ?*/,
                                                     /*? me.interface.name ?*/_notify);

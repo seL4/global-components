@@ -40,6 +40,9 @@
     /*? raise(Exception('%s.%s_id must be set to a number and should be unique across seL4MessageQueue connections in an instance ' % (me.instance.name, me.interface.name))) ?*/
 /*- endif -*/
 
+/*- set queue_size = configuration[me.parent.name].get("queue_size", 128) -*/
+/*- set virtqueue_length = 2 * queue_size -*/
+
 static int _/*? me.interface.name ?*/_poll()
 {
     seL4_Word badge;
@@ -61,6 +64,7 @@ void /*? me.interface.name ?*/__init()
     error = camkes_msgqueue_channel_register_receiver(/*? queue_id ?*/,
                                                       /*? me.interface.name ?*/,
                                                       /*# TODO This isn't so resilient, maybe stash the name of the buffer? #*/
+                                                      /*? virtqueue_length ?*/,
                                                       sizeof(/*? 'to_0_%s_data' % me.interface.name ?*/),
                                                       /*? type_size_macro ?*/,
                                                       _/*? me.interface.name ?*/_poll,
