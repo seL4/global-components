@@ -29,7 +29,8 @@
 #include <pico_device.h>
 
 
-#define NUM_BUFS 256
+#define NUM_TX_BUFS 254
+#define NUM_RX_BUFS 254
 #define BUF_SIZE 2048
 
 typedef struct state {
@@ -48,7 +49,7 @@ typedef struct state {
      *                          ^
      *                        num_tx
      */
-    void *pending_tx[NUM_BUFS];
+    void *pending_tx[NUM_TX_BUFS];
 
     /* mac address for this client */
     uint8_t mac[6];
@@ -129,7 +130,6 @@ static void pico_free_buf(uint8_t *buf)
     if (!virtqueue_add_available_buf(&state->rx_virtqueue, &handle, ENCODE_DMA_ADDRESS(buf), BUF_SIZE, VQ_RW)) {
         ZF_LOGF("Error while enqueuing available buffer");
     }
-    state->action = true;
 }
 
 /* Async driver will set a flag to signal that there is work to be done  */
@@ -140,9 +140,18 @@ static int pico_eth_poll(struct pico_device *dev, int loop_score)
         virtqueue_ring_object_t handle;
 
         uint32_t len;
-        if (virtqueue_get_used_buf(&state->rx_virtqueue, &handle, &len) == 0) {
+
+        unsigned next = (state->rx_virtqueue.u_ring_last_seen + 1) & (state->rx_virtqueue.queue_len - 1);
+
+        if (next == state->rx_virtqueue.used_ring->idx) {
             break;
         }
+
+        handle.first = state->rx_virtqueue.used_ring->ring[next].id;
+        len = state->rx_virtqueue.used_ring->ring[next].len;
+
+        handle.cur = handle.first;
+
         void *buf;
         vq_flags_t flag;
         int more = virtqueue_gather_used(&state->rx_virtqueue, &handle, &buf, &len, &flag);
@@ -152,14 +161,15 @@ static int pico_eth_poll(struct pico_device *dev, int loop_score)
 
         if (len > 0) {
             ps_dma_cache_invalidate(&state->io_ops->dma_manager, DECODE_DMA_ADDRESS(buf), len);
-            pico_stack_recv_zerocopy_ext_buffer_notify(dev, DECODE_DMA_ADDRESS(buf), len, pico_free_buf);
-        } else {
-            virtqueue_init_ring_object(&handle);
-            if (!virtqueue_add_available_buf(&state->rx_virtqueue, &handle, (void *)buf, BUF_SIZE, VQ_RW)) {
-                ZF_LOGF("pico_eth_poll: Error while enqueuing available buffer, queue full");
+            int err = pico_stack_recv(dev, DECODE_DMA_ADDRESS(buf), len);
+            if (err <= 0) {
+                ZF_LOGE("Failed to rx buffer in poll");
+                break;
             }
-            state->action = true;
         }
+
+        virtqueue_get_used_buf(&state->rx_virtqueue, &handle, &len);
+        pico_free_buf(DECODE_DMA_ADDRESS(buf));
 
         loop_score--;
     }
@@ -181,8 +191,16 @@ static void irq_from_ethernet(UNUSED seL4_Word badge, void *cookie)
     pico_stack_tick();
 }
 
+int picotcp_ethernet_async_client_init_late(void *cookie, register_callback_handler_fn_t register_handler)
+{
+    state_t *data = cookie;
+    register_handler(0, "notify_ethernet", notify_server, data);
+    return 0;
+
+}
+
 int picotcp_ethernet_async_client_init(ps_io_ops_t *io_ops, const char *tx_virtqueue, const char *rx_virtqueue,
-                                       register_callback_handler_fn_t register_handler, get_mac_client_fn_t get_mac)
+                                       register_callback_handler_fn_t register_handler, get_mac_client_fn_t get_mac, void **cookie)
 {
     state_t *data;
     int error = ps_calloc(&io_ops->malloc_ops, 1, sizeof(*data), (void **)&data);
@@ -206,9 +224,9 @@ int picotcp_ethernet_async_client_init(ps_io_ops_t *io_ops, const char *tx_virtq
 
     bool add_to_mapper = false;
     /* preallocate buffers */
-    for (int i = 0; i < NUM_BUFS - 1; i++) {
-        void *buf = ps_dma_alloc(&io_ops->dma_manager, BUF_SIZE, 4, 1, PS_MEM_NORMAL);
-        assert(buf);
+    for (int i = 0; i < NUM_RX_BUFS; i++) {
+        void *buf = ps_dma_alloc(&io_ops->dma_manager, BUF_SIZE, 64, 1, PS_MEM_NORMAL);
+        ZF_LOGF_IF(buf == NULL, "Alloc Failed\n");
         memset(buf, 0, BUF_SIZE);
         virtqueue_ring_object_t handle;
 
@@ -232,15 +250,15 @@ int picotcp_ethernet_async_client_init(ps_io_ops_t *io_ops, const char *tx_virtq
         }
     }
 
-    for (int i = 0; i < NUM_BUFS - 1; i++) {
-        void *buf = ps_dma_alloc(&io_ops->dma_manager, BUF_SIZE, 4, 1, PS_MEM_NORMAL);
-        assert(buf);
+    for (int i = 0; i < NUM_TX_BUFS; i++) {
+        void *buf = ps_dma_alloc(&io_ops->dma_manager, BUF_SIZE, 64, 1, PS_MEM_NORMAL);
+        ZF_LOGF_IF(buf == NULL, "Alloc Failed\n");
+
         memset(buf, 0, BUF_SIZE);
         data->pending_tx[data->num_tx] = buf;
         data->num_tx++;
     }
     register_handler(tx_badge, "ethernet_event_handler", irq_from_ethernet, data);
-    register_handler(0, "notify_ethernet", notify_server, data);
 
     /* Create a driver. This utilises preallocated buffers, backed up by malloc above */
     /* Attach funciton pointers */
@@ -256,7 +274,12 @@ int picotcp_ethernet_async_client_init(ps_io_ops_t *io_ops, const char *tx_virtq
         ZF_LOGE("Failed to initialize pico device");
         return 1;
     }
+    /* Set max frames to reduce unbounded picotcp memory growth. */
+    data->pico_dev.q_in->max_frames = 512;
+    data->pico_dev.q_out->max_frames = 512;
+
     printf("Installed eth0 into picotcp\n");
     data->tx_virtqueue.notify();
+    *cookie = data;
     return 0;
 }

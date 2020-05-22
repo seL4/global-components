@@ -33,6 +33,8 @@ typedef struct data {
     virtqueue_device_t tx_virtqueue;
     virtqueue_device_t rx_virtqueue;
     bool action;
+    bool blocked_tx;
+    bool no_rx_bufs;
     uint8_t hw_mac[6];
     struct eth_driver *eth_driver;
 } server_data_t;
@@ -49,8 +51,9 @@ static void eth_tx_complete(void *iface, void *cookie)
     if (!virtqueue_add_used_buf(&state->tx_virtqueue, &handle, BUF_SIZE)) {
         ZF_LOGF("eth_tx_complete: Error while enqueuing used buffer, queue full");
     }
-    state->action = true;
-
+    if (state->blocked_tx) {
+        state->action = true;
+    }
 }
 
 static uintptr_t eth_allocate_rx_buf(void *iface, size_t buf_size, void **cookie)
@@ -64,8 +67,10 @@ static uintptr_t eth_allocate_rx_buf(void *iface, size_t buf_size, void **cookie
 
     if (virtqueue_get_available_buf(&state->rx_virtqueue, &handle) == 0) {
         // No buffer available to fill RX ring with.
+        state->no_rx_bufs = true;
         return 0;
     }
+    state->no_rx_bufs = false;
     void *buf;
     unsigned len;
     vq_flags_t flag;
@@ -82,7 +87,6 @@ static uintptr_t eth_allocate_rx_buf(void *iface, size_t buf_size, void **cookie
 static void eth_rx_complete(void *iface, unsigned int num_bufs, void **cookies, unsigned int *lens)
 {
     server_data_t *state = iface;
-    /* insert filtering here. currently everything just goes to one client */
     if (num_bufs != 1) {
         ZF_LOGE("Dropping packets because num_received didn't match descriptor");
         for (int i = 0; i < num_bufs; i++) {
@@ -93,6 +97,7 @@ static void eth_rx_complete(void *iface, unsigned int num_bufs, void **cookies, 
                 ZF_LOGF("eth_rx_complete: Error while enqueuing used buffer, queue full");
             }
         }
+        state->action = true;
         return;
 
     }
@@ -125,22 +130,24 @@ static void client_get_mac(uint8_t *b1, uint8_t *b2, uint8_t *b3, uint8_t *b4, u
     *b6 = state->hw_mac[5];
 }
 
-static void rx_queue_handle_irq(seL4_Word badge, void *cookie)
+static void virt_queue_handle_irq(seL4_Word badge, void *cookie)
 {
     server_data_t *state = cookie;
-    state->eth_driver->i_fn.raw_poll(state->eth_driver);
-}
-
-static void tx_queue_handle_irq(seL4_Word badge, void *cookie)
-{
-    server_data_t *state = cookie;
+    if (state->no_rx_bufs) {
+        state->eth_driver->i_fn.raw_poll(state->eth_driver);
+    }
     while (1) {
 
         virtqueue_ring_object_t handle;
 
-        if (virtqueue_get_available_buf(&state->tx_virtqueue, &handle) == 0) {
+        unsigned next = (state->tx_virtqueue.a_ring_last_seen + 1) & (state->tx_virtqueue.queue_len - 1);
+
+        if (next == state->tx_virtqueue.avail_ring->idx) {
             break;
         }
+        handle.first = state->tx_virtqueue.avail_ring->ring[next];
+        handle.cur = handle.first;
+
         void *buf;
         unsigned len;
         vq_flags_t flag;
@@ -152,16 +159,12 @@ static void tx_queue_handle_irq(seL4_Word badge, void *cookie)
         uintptr_t phys = ps_dma_pin(&state->io_ops->dma_manager, DECODE_DMA_ADDRESS(buf), BUF_SIZE);
         int err = state->eth_driver->i_fn.raw_tx(state->eth_driver, 1, (uintptr_t *) &phys, (unsigned int *)&len,
                                                  (void *)(uintptr_t)handle.first);
-        state->action = true;
         if (err != ETHIF_TX_ENQUEUED) {
-            /* Free the internal tx buffer in case tx fails. Up to the client to retry the trasmission */
-            ZF_LOGE("tx_queue_handle_irq: Device could not enqueue packet. This indicates a misconfigured queue length or the link is down");
-            handle.first = (uint32_t)(uintptr_t)handle.first;
-            handle.cur = (uint32_t)(uintptr_t)handle.first;
-            if (!virtqueue_add_used_buf(&state->tx_virtqueue, &handle, BUF_SIZE)) {
-                ZF_LOGF("tx_queue_handle_irq: Error while enqueuing used buffer, queue full");
-            }
+            state->blocked_tx = true;
             break;
+        } else {
+            state->blocked_tx = false;
+            virtqueue_get_available_buf(&state->tx_virtqueue, &handle);
         }
     }
 
@@ -172,6 +175,9 @@ static void notify_client(UNUSED seL4_Word badge, void *cookie)
 {
     server_data_t *state = cookie;
     if (state->action) {
+        if (state->blocked_tx) {
+            virt_queue_handle_irq(badge, cookie);
+        }
         state->action = false;
         state->tx_virtqueue.notify();
     }
@@ -220,11 +226,11 @@ int picotcp_ethernet_async_server_init(ps_io_ops_t *io_ops, const char *tx_virtq
         ZF_LOGE("Unable to initialise serial server write virtqueue");
     }
 
-    error = register_handler(tx_badge, "tx_event", tx_queue_handle_irq, data);
+    error = register_handler(tx_badge, "tx_event", virt_queue_handle_irq, data);
     if (error) {
         ZF_LOGE("Unable to register handler");
     }
-    error = register_handler(rx_badge, "rx_buffers_available_event", rx_queue_handle_irq, data);
+    error = register_handler(rx_badge, "rx_event", virt_queue_handle_irq, data);
     if (error) {
         ZF_LOGE("Unable to register handler");
     }

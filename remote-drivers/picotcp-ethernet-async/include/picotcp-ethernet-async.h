@@ -38,7 +38,8 @@ typedef void (*register_get_mac_server_fn)(get_mac_server_fn_t get_mac, void *co
 
 
 int picotcp_ethernet_async_client_init(ps_io_ops_t *io_ops, const char *tx_virtqueue, const char *rx_virtqueue,
-                                       register_callback_handler_fn_t register_handler, get_mac_client_fn_t get_mac);
+                                       register_callback_handler_fn_t register_handler, get_mac_client_fn_t get_mac, void **cookie);
+int picotcp_ethernet_async_client_init_late(void *cookie, register_callback_handler_fn_t register_handler);
 
 
 int picotcp_ethernet_async_server_init(ps_io_ops_t *io_ops, const char *tx_virtqueue, const char *rx_virtqueue,

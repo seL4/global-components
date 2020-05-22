@@ -47,7 +47,18 @@ import <picotcp-ethernet-async.camkes>;
 
 
 #define picotcp_ethernet_async_configurations(name, client, driver) \
-    name##_dma.size = 0x400000; \
+    name##_dma.size = 0x100000; \
     name##_dma.controller = VAR_STRINGIZE(client.name##_dma_pool); \
     name##_server_init.connection_name = VAR_STRINGIZE(name); \
-    name##_client_init.connection_name = VAR_STRINGIZE(name);
+    name##_client_init.connection_name = VAR_STRINGIZE(name); \
+    name##_virtq_conn0.queue_length = 512; \
+    name##_virtq_conn1.queue_length = 512; \
+    client.name##_tx_shmem_size = 8192*4; \
+    client.name##_rx_shmem_size = 8192*4; \
+    driver.name##_tx_shmem_size = 8192*4; \
+    driver.name##_rx_shmem_size = 8192*4;
+
+#define picotcp_ethernet_async_configurations_uncached_dma(name, client, driver) \
+    client.name##_dma_pool_cached = false; \
+    driver.name##_dma_pool_cached = false;
+
