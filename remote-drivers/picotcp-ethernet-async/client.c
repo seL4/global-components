@@ -239,8 +239,8 @@ int picotcp_ethernet_async_client_init(ps_io_ops_t *io_ops, const char *tx_virtq
         data->pending_tx[data->num_tx] = buf;
         data->num_tx++;
     }
-    register_handler(tx_badge, irq_from_ethernet, data);
-    register_handler(0, notify_server, data);
+    register_handler(tx_badge, "ethernet_event_handler", irq_from_ethernet, data);
+    register_handler(0, "notify_ethernet", notify_server, data);
 
     /* Create a driver. This utilises preallocated buffers, backed up by malloc above */
     /* Attach funciton pointers */

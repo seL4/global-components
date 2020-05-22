@@ -220,16 +220,16 @@ int picotcp_ethernet_async_server_init(ps_io_ops_t *io_ops, const char *tx_virtq
         ZF_LOGE("Unable to initialise serial server write virtqueue");
     }
 
-    error = register_handler(tx_badge, tx_queue_handle_irq, data);
+    error = register_handler(tx_badge, "tx_event", tx_queue_handle_irq, data);
     if (error) {
         ZF_LOGE("Unable to register handler");
     }
-    error = register_handler(rx_badge, rx_queue_handle_irq, data);
+    error = register_handler(rx_badge, "rx_buffers_available_event", rx_queue_handle_irq, data);
     if (error) {
         ZF_LOGE("Unable to register handler");
     }
 
-    error = register_handler(0, notify_client, data);
+    error = register_handler(0, "notify_client", notify_client, data);
     if (error) {
         ZF_LOGE("Unable to register handler");
     }

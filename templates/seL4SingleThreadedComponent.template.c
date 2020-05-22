@@ -17,8 +17,26 @@
 #include <utils/util.h>
 #include <camkes/tls.h>
 #include <camkes/irq.h>
-
+#include <sel4bench/sel4bench.h>
 /*- from 'global-endpoint.template.c' import allocate_cap_instance, allocate_rpc_cap_instance with context -*/
+
+#define NUM_TRACES 10
+
+uint64_t trace_point_start[NUM_TRACES];
+uint64_t trace_point_end[NUM_TRACES];
+uint64_t trace_point_sum[NUM_TRACES];
+uint64_t trace_point_count[NUM_TRACES];
+
+#define TRACE_START(num) do { \
+        trace_point_start[num] = sel4bench_get_cycle_count(); \
+} while (0)
+
+#define TRACE_END(num) do { \
+        trace_point_sum[num] += sel4bench_get_cycle_count() - trace_point_start[num]; \
+        trace_point_count[num] ++; \
+} while (0)
+
+
 
 /* Force the init sections to be created even if no modules are defined. */
 static USED SECTION("_env_init") struct {} dummy_env_init_module;
@@ -90,22 +108,68 @@ struct handlers {
     seL4_Word badge;
     void (*callback_handler)(seL4_Word, void *);
     void * cookie;
+    const char* name;
 };
 
 static struct handlers *reg_handlers;
 static int num_handlers = 0;
-int single_threaded_component_register_handler(seL4_Word badge, void (*callback_handler)(seL4_Word, void *), void * cookie) {
+int single_threaded_component_register_handler(seL4_Word badge, const char* name, void (*callback_handler)(seL4_Word, void *), void * cookie) {
     reg_handlers = realloc(reg_handlers, (num_handlers+1) * sizeof(*reg_handlers));
     if (!reg_handlers) {
         ZF_LOGF("Failed to allocate handlers");
     }
-    reg_handlers[num_handlers] = (struct handlers) {.badge = badge, .callback_handler = callback_handler, .cookie = cookie};
+    reg_handlers[num_handlers] = (struct handlers) {.badge = badge, .callback_handler = callback_handler, .cookie = cookie, .name = name};
     num_handlers++;
     return 0;
 }
 
 
+void trace_start(void *_arg) {
+    for (int i = 0; i < NUM_TRACES; i++) {
+        trace_point_sum[i] = 0;
+        trace_point_count[i] = 0;
+        
+    }
+    int res = trace_start_reg_callback(trace_start, NULL);
+    if (res) {
+        ZF_LOGE("Failed to register trace callback");
+    }
+
+}
+
+void trace_stop(void *_arg) {
+    printf("traces,%s\n", get_instance_name());
+    for (int i = 0; i < MIN(NUM_TRACES, num_handlers+3); i++) {
+        if (i == 0) {
+            printf("total_endpoint_calls,");
+        } else if (i == 1) {
+            printf("total_notifications,");
+        } else if (i == 2) {
+            printf("irq_handlers,");
+        } else if(i >= 3 && reg_handlers[i-3].name) {
+            printf("%s,", reg_handlers[i-3].name);
+        } else {
+            break;
+        }
+        printf("%ld,%ld\n", trace_point_count[i], trace_point_sum[i]);
+    }
+    int res = trace_stop_reg_callback(trace_stop, NULL);
+    if (res) {
+        ZF_LOGE("Failed to register trace callback");
+    }
+
+}
+
 int run(void) {
+    int res = trace_start_reg_callback ? trace_start_reg_callback(trace_start, NULL): 0;
+    if (res) {
+        ZF_LOGE("Failed to register trace callback");
+    }
+    res = trace_stop_reg_callback ? trace_stop_reg_callback(trace_stop, NULL): 0;
+    if (res) {
+        ZF_LOGE("Failed to register trace callback");
+    }
+
     /* Now poll for events and handle them */
     seL4_Word badge;
     seL4_Word notification_base = /*? configuration[me.name].get("global_endpoint_base", 1) ?*/;
@@ -126,6 +190,7 @@ int run(void) {
 
         if ((badge & endpoint_base) == endpoint_base) {
             int result = 0;
+            TRACE_START(0);
             switch (badge) {
 #define X(b) \
     case (b):
@@ -151,6 +216,7 @@ int run(void) {
             }
 
             if (result == 1) {
+                TRACE_END(0);
                 /* Send the response */
                 /*-- if not options.realtime -*/
                     camkes_tls_t * tls = camkes_get_tls();
@@ -176,6 +242,7 @@ int run(void) {
                 /*-- endif -*/
                 continue;
             } else if (result = 0) {
+                TRACE_END(0);
                 /* Don't reply to the caller */
                 info = /*? generate_seL4_Recv(options, endpoint,
                                                          '&badge',
@@ -184,18 +251,27 @@ int run(void) {
             }
 
         }
-
+        TRACE_START(1);
         if ((badge & notification_base) == notification_base) {
-            camkes_handle_global_endpoint_irq(badge);
-
+            TRACE_START(2);
+            int num_handlers_called = camkes_handle_global_endpoint_irq(badge);
+            TRACE_END(2);
+            trace_point_count[2]+= num_handlers_called;
+            trace_point_count[2]--;
             for (int i = 0; i < num_handlers; i++) {
                 seL4_Word b = reg_handlers[i].badge;
                 if ((badge & b) == b) {
+                    if ((i + 3) < NUM_TRACES) {
+                        TRACE_START(i + 3);
+                    } 
                     reg_handlers[i].callback_handler(b, reg_handlers[i].cookie);
+                    if ((i + 3) < NUM_TRACES) {
+                        TRACE_END(i + 3);
+                    }
                 }
             }
-
         }
+        TRACE_END(1);
         info = /*? generate_seL4_Recv(options, endpoint,
                                     '&badge',
                                     reply_cap_slot) ?*/;

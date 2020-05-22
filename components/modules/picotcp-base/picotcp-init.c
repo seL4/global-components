@@ -99,7 +99,7 @@ void eth_init_custom_ip(struct pico_device *dev, const char *ip_addr)
         // Eg: pico_igmp_state_change(&ipaddr, &multicast, .... );
     }
 }
-typedef int (*register_callback_handler_fn_t)(seL4_Word badge, void (*callback_handler)(seL4_Word, void *),
+typedef int (*register_callback_handler_fn_t)(seL4_Word badge, const char*, void (*callback_handler)(seL4_Word, void *),
                                               void *cookie);
 
 int init_pico_post(ps_io_ops_t *io_ops, seL4_Word timer_badge, int (*timer_periodic)(int p_tid, uint64_t p_ns),
@@ -120,7 +120,7 @@ int init_pico_post(ps_io_ops_t *io_ops, seL4_Word timer_badge, int (*timer_perio
 
     }
 
-    callback_handler(timer_badge, stack_tick_callback, NULL);
+    callback_handler(timer_badge, "pico_server_tick", stack_tick_callback, NULL);
     /* Start the timer for the TCP stack */
     timer_periodic(0, NS_IN_MS * PICO_TICK_MS);
 
