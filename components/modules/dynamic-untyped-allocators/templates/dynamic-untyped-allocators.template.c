@@ -20,37 +20,6 @@
 #include <camkes.h>
 
 
-/* 
-   TODO: This module constructs a vspace and vka backed by an allocman instance
-   that is supplied by untypeds.  It overwrites the malloc static pool with
-   a dynamic vspace brk implementation.  There are a number of configuration
-   options:
-  - input collection of untypeds that are fed to the allocater provided by the
-    simple camkes component environment.
-  - BRK_VIRTUAL_SIZE: Size of malloc brk section.
-  - allocator_mempool: Size of the static mempool provided to the allocator on
-    init.
-  - virtual mempool size: Whether to create a virtual mempool that gets allocated
-    out of the supplied untyped.  Currently there is no virtual mempool.
-
-  These configurations should be exported to the camkes ADL level.
-
-  Some relationships to other camkes environment:
-    - the camkes component heap size should be 0 if this overrides malloc.
-    - Or optionally this component adds in the heap_size to it's own
-      allocation.
-
-  Total allocation:
-   Static allocation
-   virtual = total - static
-
- */
-#define BRK_VIRTUAL_SIZE 400000000
-
-reservation_t muslc_brk_reservation;
-void *muslc_brk_reservation_start;
-vspace_t  *muslc_this_vspace;
-static sel4utils_res_t muslc_brk_reservation_memory;
 static allocman_t *allocman;
 static char allocator_mempool[0x800000];
 static simple_t camkes_simple;
@@ -94,12 +63,6 @@ static int init_system(ps_io_ops_t *io_ops)
                                        simple_get_init_cap(&camkes_simple, seL4_CapInitThreadPD), &vka, NULL, NULL, existing_frames);
     assert(!error);
 
-    sel4utils_reserve_range_no_alloc(&vspace, &muslc_brk_reservation_memory, BRK_VIRTUAL_SIZE, seL4_AllRights, 1,
-                                     &muslc_brk_reservation_start);
-    muslc_this_vspace = &vspace;
-    muslc_brk_reservation = (reservation_t) {
-        .res = &muslc_brk_reservation_memory
-    };
 
     for (camkes_dynamic_module_init_fn_t * init_fun = __start__dynamic_init; init_fun < __stop__dynamic_init; init_fun++) {
         error = (*init_fun)(io_ops, &vka, &camkes_simple, &vspace);
