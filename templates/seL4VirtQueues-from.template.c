@@ -83,8 +83,8 @@
 
 
 /*# Create shared memory region between the two interfaces #*/
-/*- set shmem_size = configuration[me.instance.name].get("%s_shmem_size" % me.interface.name, 8192) -*/
-/*- if shmem_size != configuration[other_interface.instance.name].get("%s_shmem_size" % other_interface.interface.name, 8192) -*/
+/*- set shmem_size = configuration[me.instance.name].get("%s_shmem_size" % me.interface.name, 8192*4) -*/
+/*- if shmem_size != configuration[other_interface.instance.name].get("%s_shmem_size" % other_interface.interface.name, 8192*4) -*/
     /*? raise(TemplateError('Setting %s.%s_shmem_size does not match size configuration from other side: %d vs. %d' % (me.instance.name, me.interface.name, shmem_size, configuration[other_interface.instance.name].get("%s_shmem_size" % other_interface.interface.name, 4096)))) ?*/
 /*- endif -*/
 /*- if end_string == 'drv' -*/

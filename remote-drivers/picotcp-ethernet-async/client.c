@@ -29,7 +29,7 @@
 #include <pico_device.h>
 
 
-#define NUM_BUFS 256
+#define NUM_BUFS 510
 #define BUF_SIZE 2048
 
 typedef struct state {
@@ -152,7 +152,12 @@ static int pico_eth_poll(struct pico_device *dev, int loop_score)
 
         if (len > 0) {
             ps_dma_cache_invalidate(&state->io_ops->dma_manager, DECODE_DMA_ADDRESS(buf), len);
+#ifdef CONFIG_ARCH_AARCH64
+            pico_stack_recv(dev, DECODE_DMA_ADDRESS(buf), len);
+            pico_free_buf(DECODE_DMA_ADDRESS(buf));
+#else
             pico_stack_recv_zerocopy_ext_buffer_notify(dev, DECODE_DMA_ADDRESS(buf), len, pico_free_buf);
+#endif
         } else {
             virtqueue_init_ring_object(&handle);
             if (!virtqueue_add_available_buf(&state->rx_virtqueue, &handle, (void *)buf, BUF_SIZE, VQ_RW)) {
@@ -206,9 +211,9 @@ int picotcp_ethernet_async_client_init(ps_io_ops_t *io_ops, const char *tx_virtq
 
     bool add_to_mapper = false;
     /* preallocate buffers */
-    for (int i = 0; i < NUM_BUFS - 1; i++) {
+    for (int i = 0; i < NUM_BUFS; i++) {
         void *buf = ps_dma_alloc(&io_ops->dma_manager, BUF_SIZE, 4, 1, PS_MEM_NORMAL);
-        assert(buf);
+        ZF_LOGF_IF(buf == NULL, "Alloc Failed\n");
         memset(buf, 0, BUF_SIZE);
         virtqueue_ring_object_t handle;
 
@@ -232,9 +237,10 @@ int picotcp_ethernet_async_client_init(ps_io_ops_t *io_ops, const char *tx_virtq
         }
     }
 
-    for (int i = 0; i < NUM_BUFS - 1; i++) {
+    for (int i = 0; i < NUM_BUFS; i++) {
         void *buf = ps_dma_alloc(&io_ops->dma_manager, BUF_SIZE, 4, 1, PS_MEM_NORMAL);
-        assert(buf);
+        ZF_LOGF_IF(buf == NULL, "Alloc Failed\n");
+
         memset(buf, 0, BUF_SIZE);
         data->pending_tx[data->num_tx] = buf;
         data->num_tx++;

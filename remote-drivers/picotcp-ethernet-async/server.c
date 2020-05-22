@@ -53,6 +53,8 @@ static void eth_tx_complete(void *iface, void *cookie)
 
 }
 
+bool no_bufs = false;
+
 static uintptr_t eth_allocate_rx_buf(void *iface, size_t buf_size, void **cookie)
 {
     if (buf_size > BUF_SIZE) {
@@ -64,6 +66,7 @@ static uintptr_t eth_allocate_rx_buf(void *iface, size_t buf_size, void **cookie
 
     if (virtqueue_get_available_buf(&state->rx_virtqueue, &handle) == 0) {
         // No buffer available to fill RX ring with.
+        no_bufs = true;
         return 0;
     }
     void *buf;
@@ -93,6 +96,7 @@ static void eth_rx_complete(void *iface, unsigned int num_bufs, void **cookies, 
                 ZF_LOGF("eth_rx_complete: Error while enqueuing used buffer, queue full");
             }
         }
+        state->action = true;
         return;
 
     }
@@ -134,6 +138,11 @@ static void rx_queue_handle_irq(seL4_Word badge, void *cookie)
 static void tx_queue_handle_irq(seL4_Word badge, void *cookie)
 {
     server_data_t *state = cookie;
+    if (no_bufs) {
+        no_bufs = false;
+        state->eth_driver->i_fn.raw_poll(state->eth_driver);
+
+    }
     while (1) {
 
         virtqueue_ring_object_t handle;
@@ -161,6 +170,7 @@ static void tx_queue_handle_irq(seL4_Word badge, void *cookie)
             if (!virtqueue_add_used_buf(&state->tx_virtqueue, &handle, BUF_SIZE)) {
                 ZF_LOGF("tx_queue_handle_irq: Error while enqueuing used buffer, queue full");
             }
+            state->action = true;
             break;
         }
     }
