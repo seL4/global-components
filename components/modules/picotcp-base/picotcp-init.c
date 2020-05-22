@@ -38,11 +38,10 @@ int clk_get_time(void)
     uint64_t time_in_ms = pico_ms_tick;
     return (time_in_ms & 0xFFFFFFFF);
 }
-
+uint64_t  pico_base_timer_time(void);
 static void stack_tick_callback(UNUSED seL4_Word badge, void *cookie)
 {
-    pico_ms_tick += PICO_TICK_MS;
-    // printf("tick\n");
+    pico_ms_tick = pico_base_timer_time() / NS_IN_MS;
     pico_stack_tick();
 }
 
