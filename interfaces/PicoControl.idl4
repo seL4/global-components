@@ -27,4 +27,5 @@ procedure PicoControl {
     int close(in int socket_fd);
     picoserver_event_t event_poll(void);
     int get_ipv4(out uint32_t ipaddr);
+    int set_async(in int socket_fd, in bool enabled);
 };
