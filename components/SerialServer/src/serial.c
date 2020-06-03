@@ -38,19 +38,21 @@ void getchar_emit(unsigned int id) WEAK;
 seL4_Word getchar_enumerate_badge(unsigned int id) WEAK;
 unsigned int getchar_num_badges() WEAK;
 void *getchar_buf(unsigned int id) WEAK;
+void *processed_batch_buf(unsigned int id) WEAK;
+void *raw_batch_buf(unsigned int id) WEAK;
 int getchar_largest_badge(void) WEAK;
 
 typedef struct getchar_buffer {
     uint32_t head;
     uint32_t tail;
     char buf[4096 - 8];
-} getchar_buffer_t;
+} client_buffer_t;
 
-compile_time_assert(getchar_buf_sized, sizeof(getchar_buffer_t) == sizeof(Buf));
+compile_time_assert(getchar_buf_sized, sizeof(client_buffer_t) == sizeof(Buf));
 
 typedef struct getchar_client {
     unsigned int client_id;
-    volatile getchar_buffer_t *buf;
+    volatile client_buffer_t *buf;
     uint32_t last_head;
 } getchar_client_t;
 
@@ -548,6 +550,33 @@ void raw_putchar_putchar(int c)
 {
     seL4_Word n = raw_putchar_get_sender_id();
     internal_putchar((int)n + MAX_CLIENTS, c);
+}
+
+seL4_Word processed_batch_get_sender_id(void) WEAK;
+void processed_batch_batch(void)
+{
+    seL4_Word n = processed_batch_get_sender_id();
+    client_buffer_t *putchar_buf = processed_batch_buf(n);
+    while (putchar_buf->head != putchar_buf->tail) {
+        char ch = putchar_buf->buf[putchar_buf->head];
+        if (ch == '\n') {
+            internal_putchar(n, '\r');
+        }
+        internal_putchar((int)n, ch);
+        putchar_buf->head = (putchar_buf->head + 1) % sizeof(putchar_buf->buf);
+    }
+}
+
+seL4_Word raw_batch_get_sender_id(void) WEAK;
+void raw_batch_batch(void)
+{
+    seL4_Word n = raw_batch_get_sender_id();
+    client_buffer_t *putchar_buf = raw_batch_buf(n);
+    while (putchar_buf->head != putchar_buf->tail) {
+        char ch = putchar_buf->buf[putchar_buf->head];
+        internal_putchar((int)n + MAX_CLIENTS, ch);
+        putchar_buf->head = (putchar_buf->head + 1) % sizeof(putchar_buf->buf);
+    }
 }
 
 /* We had to define at least one function in the getchar RPC procedure

@@ -14,6 +14,7 @@
 
 import <GetChar.idl4>;
 import <PutChar.idl4>;
+import <Batch.idl4>;
 import <Timer.idl4>;
 import <serial.camkes>;
 import <VirtQueue/VirtQueue.camkes>;
@@ -23,6 +24,8 @@ component SerialServer {
     has mutex serial;
     provides PutChar processed_putchar;
     provides PutChar raw_putchar;
+    provides Batch processed_batch;
+    provides Batch raw_batch;
     provides GetChar getchar;
     uses Timer timeout;
 
