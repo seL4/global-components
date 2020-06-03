@@ -539,10 +539,10 @@ seL4_Word processed_putchar_get_sender_id(void) WEAK;
 void processed_putchar_putchar(int c)
 {
     seL4_Word n = processed_putchar_get_sender_id();
-    internal_putchar((int)n, c);
     if (c == '\n') {
         internal_putchar(n, '\r');
     }
+    internal_putchar((int)n, c);
 }
 
 seL4_Word raw_putchar_get_sender_id(void) WEAK;
