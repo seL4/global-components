@@ -70,7 +70,6 @@ static inline bool check_client_owns_pin(gpio_id_t pin_id, seL4_Word client_id)
 
 static inline seL4_Word get_client_id(void)
 {
-    /* We substract one as the IDs start from 1 to avoid using the zero badge */
     return the_gpio_get_sender_id();
 }
 
