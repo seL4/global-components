@@ -96,6 +96,12 @@ int the_gpio_init_pin(gpio_id_t pin_id, gpio_dir_t dir)
         goto out;
     }
 
+    /* check if anyone has reserved the pin */
+    if (the_gpio_get_pin_assignee(client_id) != 0) {
+        error = -EBUSY;
+        goto out;
+    }
+
     /* check if anyone else has the pin */
     if (check_pin_initialised(pin_id)) {
         error = -EBUSY;
