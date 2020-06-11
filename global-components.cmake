@@ -196,3 +196,15 @@ DeclareCAmkESConnector(
     FROM_HEADER
     seL4VirtQueues-from.template.h
 )
+
+DeclareCAmkESConnector(
+    seL4GPIOServer
+    FROM
+    seL4GPIOServer-from.template.c
+    TO
+    seL4GPIOServer-to.template.c
+    FROM_HEADER
+    seL4GPIOServer-from.template.h
+    TO_HEADER
+    seL4GPIOServer-to.template.h
+)

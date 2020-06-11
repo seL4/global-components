@@ -428,3 +428,23 @@ connector seL4DTBHWThreadless {
     attribute bool to_global_endpoint = True;
 
 }
+
+/** seL4GPIOServer
+ *
+ * This connector is intended for the exclusive use for GPIOMUXServer.
+ * The connector is essentially the seL4RPCCall connector but with access
+ * control mechanisms for GPIO pins. The user is able to assign specific
+ * pins for clients to be used exclusively.
+ *
+ * This is done by filling out the following configuration item in the
+ * configuration block of a .camkes configuration.
+ *
+ * <component name>.<interface name>_pins = gpio({ "pins" : ["PINS", ...] });
+ *
+ * <interface name> should be the name of the interface of the component that
+ * is connected to the GPIOMUXServer with the seL4GPIOServer connector.
+ */
+connector seL4GPIOServer {
+    from Procedures with 0 threads;
+    to Procedure;
+}
