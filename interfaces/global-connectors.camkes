@@ -300,8 +300,8 @@ connector seL4Ethdriver {
 }
 
 connector seL4SharedDataWithCaps {
-    from Dataport;
-    to Dataport;
+    from Dataports;
+    to Dataports;
 
     attribute string isabelle_connector_spec = "\<lparr>
         connector_type = NativeConnector,

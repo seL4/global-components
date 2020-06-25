@@ -37,11 +37,13 @@
 /*- else -*/
   /*- set dataport_size = none -*/
 /*- endif -*/
-/*- if '%s_size' % me.parent.to_interface.name in configuration[me.parent.to_instance.name] -*/
-  /*- if dataport_size != none -*/
-    /*? raise(TemplateError('Duplicate setting for %s dataport size: Cannot set both %s.%s and %s.%s' % (me.parent.name, me.parent.name, 'size', me.parent.to_instance.name, '%s_size' % me.parent.to_interface.name))) ?*/
+/*- if len(me.parent.to_ends) == 1 -*/
+  /*- if '%s_size' % me.parent.to_interface.name in configuration[me.parent.to_instance.name] -*/
+    /*- if dataport_size != none -*/
+      /*? raise(TemplateError('Duplicate setting for %s dataport size: Cannot set both %s.%s and %s.%s' % (me.parent.name, me.parent.name, 'size', me.parent.to_instance.name, '%s_size' % me.parent.to_interface.name))) ?*/
+    /*- endif -*/
+    /*- set dataport_size = configuration[me.parent.to_instance.name].get('%s_size' % me.parent.to_interface.name) -*/
   /*- endif -*/
-  /*- set dataport_size = configuration[me.parent.to_instance.name].get('%s_size' % me.parent.to_interface.name) -*/
 /*- endif -*/
 /*- if dataport_size == none -*/
   /*- set dataport_size = 4096 -*/
@@ -60,7 +62,7 @@
 /*- else -*/
     /*- set cached_default = false -*/
 /*- endif -*/
-/*- set cached = configuration[me.parent.to_instance.name].get('%s_hardware_cached' % me.parent.to_interface.name, cached_default) -*/
+/*- set cached = configuration[me.instance.name].get('%s_hardware_cached' % me.instance.name, cached_default) -*/
 
 /*- set perm = macros.get_perm(configuration, me.instance.name, me.interface.name) -*/
 /*? register_shared_variable('%s_data' % me.parent.name, dataport_symbol_name, dataport_size, frame_size=page_size, perm=perm, cached=cached) ?*/
