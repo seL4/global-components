@@ -125,8 +125,6 @@
     /*- set ntfn_obj = alloc_obj('%s_ntfn' % me.interface.name, seL4_NotificationObject) -*/
     /*- set root_ntfn = alloc_cap('%s_root_ntfn' % me.interface.name, ntfn_obj, read=True, write=True) -*/
 
-    /*- set irq_ntfn_pairs = [] -*/
-
     /*- set irq_handler_pairs = [] -*/
 
     /*- set interrupt_struct_prefix = '%s_irq' % (me.interface.name) -*/
@@ -160,13 +158,10 @@
         /*- set interrupt_ntfn = alloc_cap('%s_%s_%d_notification_object_cap' % (name, badges[i], False), notification_object, read=False, write=True) -*/
         /*- do cap_space.cnode[interrupt_ntfn].set_badge(badges[i]) -*/
 
-        /*- set irq = alloc('%s_irq_%d' % (me.interface.name, i), seL4_IRQHandler, number=_irq) -*/
+        /*- set irq = alloc('%s_irq_%d' % (me.interface.name, i), seL4_IRQHandler, number=_irq, notification=cap_space.cnode[interrupt_ntfn]) -*/
 
         /*# Add the interrupt number to the IRQ num list for later #*/
         /*- do irq_handler_pairs.append((_irq, irq)) -*/
-
-        /*# Add the interrupt notification and IRQ handler to the list for later #*/
-        /*- do irq_ntfn_pairs.append((interrupt_ntfn, irq)) -*/
 
         /*- set interrupt_interface_name = '%s_%d' % (me.interface.name, i) -*/
 
@@ -197,18 +192,5 @@
         global_notification_irq_handler_t * /*? irq_handler_struct_name ?*/_ptr = &/*? irq_handler_struct_name ?*/;
 
     /*- endfor -*/
-
-    /*# Pair the IRQ handlers with their notification, this resolves the capdl loader issue #*/
-    /*# where the notifications are badged after being paired with their respective handlers #*/
-    static void __attribute__((constructor)) /*? me.interface.name ?*/__init(void) {
-        int error = 0;
-        /*- for (notification, handler) in irq_ntfn_pairs -*/
-            error = seL4_IRQHandler_SetNotification(/*? handler ?*/, /*? notification ?*/);
-            if (error) {
-                assert(!"Failed to pair IRQ handler with notification");
-            }
-        /*- endfor -*/
-    }
-
 
 /*- endif -*/
