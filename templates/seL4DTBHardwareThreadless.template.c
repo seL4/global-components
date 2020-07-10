@@ -54,7 +54,7 @@
 /*- set reg_set = pop('reg_set') -*/
 /*- set cached = configuration[configuration_name].get('hardware_cached', False) -*/
 
-/*- for (paddr, size) in reg_set -*/
+/*- for paddr, size in reg_set -*/
 
         /*# Get the next multiple of 4K that can fit the register #*/
         /*- set size = macros.next_page_multiple(size, options.architecture) -*/
@@ -155,7 +155,7 @@
 
   /*# Create the badged endpoint #*/
 
-    /*- for (_irq, i) in zip(irq_set, range(0, len(irq_set)))  -*/
+    /*- for i,_irq in enumerate(irq_set) -*/
 
         /*- set interrupt_ntfn = alloc_cap('%s_%s_%d_notification_object_cap' % (name, badges[i], False), notification_object, read=False, write=True) -*/
         /*- do cap_space.cnode[interrupt_ntfn].set_badge(badges[i]) -*/
