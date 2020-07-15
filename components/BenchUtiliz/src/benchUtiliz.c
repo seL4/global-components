@@ -62,7 +62,11 @@ void getchar_handler(void)
             break;
         case 'b':
             idle_stop(&total, &kernel, &idle);
-            printf("idle/tot: %llu/%llu, idle proportion: %f%%\n", idle, total, ((double) idle / (double) total) * 100);
+            printf("{\n");
+            printf("\"total\": %"PRIu64",\n", total);
+            printf("\"kernel\": %"PRIu64",\n", kernel);
+            printf("\"idle\": %"PRIu64"\n", idle);
+            printf("}\n", idle);
             break;
         default:
             break;
