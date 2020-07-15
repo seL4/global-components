@@ -12,3 +12,4 @@
 *.template.c
 *.template.h
 remote-drivers/picotcp-socket-sync/server/khash.h
+components/BenchUtiliz/camkes-include/camkes-BenchUtiliz.h

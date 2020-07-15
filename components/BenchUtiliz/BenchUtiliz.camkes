@@ -15,11 +15,17 @@ import <SerialServer/SerialServer.camkes>;
 import <TimeServer/TimeServer.camkes>;
 import <global-connectors.camkes>;
 
+procedure IdleThread {
+	void start();
+	void stop(out uint64_t total, out uint64_t idle);
+};
+
 component BenchUtiliz {
     control;
     maybe uses PutChar serial_putchar;
     maybe uses GetChar serial_getchar;
 
+    provides IdleThread idle;
     /*
      * A trick for creating a thread in camkes.
      * These should be connected to each othe

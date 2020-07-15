@@ -15,6 +15,8 @@ cmake_minimum_required(VERSION 3.8.2)
 project(BenchUtiliz C)
 
 DeclareCAmkESComponent(BenchUtiliz SOURCES src/benchUtiliz.c LIBS sel4bench)
+CAmkESAddImportPath(camkes-include)
+CAmkESAddCPPInclude(camkes-include)
 
 if(KernelArchARM)
     set(KernelArmExportPMUUser ON CACHE BOOL "" FORCE)
