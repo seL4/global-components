@@ -26,4 +26,10 @@ component BenchUtiliz {
      */
     emits Callback bench_from;
     consumes Callback bench_to;
+
+    attribute int bench_to_priority = 1;
+
+    composition {
+        connection seL4Notification idle_thread(from bench_from, to bench_to);
+    }
 }
