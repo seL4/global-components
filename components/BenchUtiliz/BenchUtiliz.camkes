@@ -17,7 +17,7 @@ import <global-connectors.camkes>;
 
 procedure IdleThread {
 	void start();
-	void stop(out uint64_t total, out uint64_t idle);
+	void stop(out uint64_t total, out uint64_t kernel, out uint64_t idle);
 };
 
 component BenchUtiliz {

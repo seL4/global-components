@@ -15,6 +15,8 @@
 #include <camkes.h>
 #include <stdio.h>
 #include <sel4bench/sel4bench.h>
+#include <camkes/tls.h>
+#include <sel4/benchmark_utilisation_types.h>
 
 #define MAGIC_CYCLES 150
 
@@ -49,7 +51,7 @@ uint64_t idle_overflow_start;
 void getchar_handler(void)
 {
     seL4_Word badge;
-    uint64_t total, idle;
+    uint64_t total, kernel, idle;
     while (1) {
         seL4_Wait(serial_getchar_notification(), &badge);
         char ch = serial_getchar_buf->buf[serial_getchar_buf->head];
@@ -59,7 +61,7 @@ void getchar_handler(void)
             idle_start();
             break;
         case 'b':
-            idle_stop(&total, &idle);
+            idle_stop(&total, &kernel, &idle);
             printf("idle/tot: %llu/%llu, idle proportion: %f%%\n", idle, total, ((double) idle / (double) total) * 100);
             break;
         default:
@@ -74,6 +76,11 @@ void idle_start(void)
     if (!flag) {
         flag = 1;
         printf("Measurment starting...\n");
+#ifdef CONFIG_BENCHMARK_TRACK_UTILISATION
+        seL4_BenchmarkResetAllThreadsUtilisation();
+        seL4_BenchmarkResetLog();
+#endif
+
         start = (uint64_t)sel4bench_get_cycle_count();
         idle_ccount_start = ccount;
         idle_overflow_start = overflows;
@@ -82,7 +89,7 @@ void idle_start(void)
 }
 
 
-void idle_stop(uint64_t *total_ret, uint64_t *idle_ret)
+void idle_stop(uint64_t *total_ret, uint64_t *kernel_ret, uint64_t *idle_ret)
 {
     flag = 0;
     uint64_t total = ((uint64_t)sel4bench_get_cycle_count()) - start;
@@ -91,6 +98,16 @@ void idle_stop(uint64_t *total_ret, uint64_t *idle_ret)
     }
     total += ULONG_MAX * (overflows - idle_overflow_start);
     uint64_t idle_total = ccount - idle_ccount_start;
+#ifdef CONFIG_BENCHMARK_TRACK_UTILISATION
+    seL4_BenchmarkFinalizeLog();
+
+    seL4_BenchmarkGetThreadUtilisation(camkes_get_tls()->tcb_cap);
+    uint64_t *buffer = (uint64_t *)&seL4_GetIPCBuffer()->msg[0];
+    seL4_BenchmarkDumpAllThreadsUtilisation();
+    *kernel_ret = buffer[BENCHMARK_TOTAL_KERNEL_UTILISATION];
+#else
+    *kernel_ret = 0;
+#endif
     *total_ret = total;
     *idle_ret = idle_total;
 }
