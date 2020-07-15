@@ -28,21 +28,6 @@ struct {
 WEAK seL4_CPtr serial_getchar_notification(void);
 volatile bool flag = 0;
 
-
-void pre_init(void)
-{
-    sel4bench_init();
-    int err = bench_to_reg_callback(&count_idle, NULL);
-    if (err) {
-        ZF_LOGE("Failed to register callback handler");
-    }
-    bench_from_emit();
-
-    if (serial_putchar_putchar) {
-        set_putchar(serial_putchar_putchar);
-    }
-}
-
 uint64_t ccount = 0;
 uint64_t prev, start, ts, overflows;
 uint64_t idle_ccount_start;
@@ -146,6 +131,20 @@ void count_idle(UNUSED void *arg)
             COMPILER_MEMORY_FENCE();
         }
         prev = ts;
+    }
+}
+
+void pre_init(void)
+{
+    sel4bench_init();
+    int err = bench_to_reg_callback(&count_idle, NULL);
+    if (err) {
+        ZF_LOGE("Failed to register callback handler");
+    }
+    bench_from_emit();
+
+    if (serial_putchar_putchar) {
+        set_putchar(serial_putchar_putchar);
     }
 }
 
