@@ -13,8 +13,12 @@
 #define _VAR_STRINGIZE(...) #__VA_ARGS__
 #define VAR_STRINGIZE(...) _VAR_STRINGIZE(__VA_ARGS__)
 
+#include <camkes-BenchUtiliz.h>;
 
 
 #define single_threaded_component() \
     control; \
-    attribute int single_threaded = 1;
+    attribute int single_threaded = 1; \
+    BenchUtiliz_trace_interfaces_maybe(trace) \
+    attribute int number_tracepoints = 10; \
+    attribute int enable_tracing = 0;
