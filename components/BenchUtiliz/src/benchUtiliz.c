@@ -76,6 +76,7 @@ void idle_start(void)
     if (!flag) {
         flag = 1;
         printf("Measurment starting...\n");
+        trace_start_emit();
 #ifdef CONFIG_BENCHMARK_TRACK_UTILISATION
         seL4_BenchmarkResetAllThreadsUtilisation();
         seL4_BenchmarkResetLog();
@@ -110,6 +111,7 @@ void idle_stop(uint64_t *total_ret, uint64_t *kernel_ret, uint64_t *idle_ret)
 #endif
     *total_ret = total;
     *idle_ret = idle_total;
+    trace_stop_emit();
 }
 
 
