@@ -26,12 +26,12 @@ component BenchUtiliz {
     maybe uses GetChar serial_getchar;
 
     provides IdleThread idle;
-    /*
-     * A trick for creating a thread in camkes.
-     * These should be connected to each othe
-     */
+
     emits Callback bench_from;
     consumes Callback bench_to;
+
+    emits Trace trace_start;
+    emits Trace trace_stop;
 
     attribute int bench_to_priority = 1;
 
