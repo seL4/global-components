@@ -22,8 +22,8 @@ struct {
     uint32_t head;
     uint32_t tail;
     char buf[0x1000];
-} extern volatile *serial_getchar_buf;
-
+} extern WEAK volatile *serial_getchar_buf;
+WEAK seL4_CPtr serial_getchar_notification(void);
 volatile bool flag = 0;
 
 
@@ -36,7 +36,9 @@ void pre_init(void)
     }
     bench_from_emit();
 
-    set_putchar(serial_putchar_putchar);
+    if (serial_putchar_putchar) {
+        set_putchar(serial_putchar_putchar);
+    }
 }
 
 uint64_t ccount = 0;
@@ -126,7 +128,9 @@ void count_idle(UNUSED void *arg)
 
 int run(void)
 {
-    getchar_handler();
+    if (&serial_getchar_buf) {
+        getchar_handler();
+    }
 
     return 0;
 }

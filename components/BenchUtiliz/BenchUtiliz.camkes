@@ -17,8 +17,8 @@ import <global-connectors.camkes>;
 
 component BenchUtiliz {
     control;
-    uses PutChar serial_putchar;
-    uses GetChar serial_getchar;
+    maybe uses PutChar serial_putchar;
+    maybe uses GetChar serial_getchar;
 
     /*
      * A trick for creating a thread in camkes.
