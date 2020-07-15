@@ -90,16 +90,17 @@ struct handlers {
     seL4_Word badge;
     void (*callback_handler)(seL4_Word, void *);
     void * cookie;
+    const char* name;
 };
 
 static struct handlers *reg_handlers;
 static int num_handlers = 0;
-int single_threaded_component_register_handler(seL4_Word badge, void (*callback_handler)(seL4_Word, void *), void * cookie) {
+int single_threaded_component_register_handler(seL4_Word badge, const char* name, void (*callback_handler)(seL4_Word, void *), void * cookie) {
     reg_handlers = realloc(reg_handlers, (num_handlers+1) * sizeof(*reg_handlers));
     if (!reg_handlers) {
         ZF_LOGF("Failed to allocate handlers");
     }
-    reg_handlers[num_handlers] = (struct handlers) {.badge = badge, .callback_handler = callback_handler, .cookie = cookie};
+    reg_handlers[num_handlers] = (struct handlers) {.badge = badge, .callback_handler = callback_handler, .cookie = cookie, .name = name};
     num_handlers++;
     return 0;
 }

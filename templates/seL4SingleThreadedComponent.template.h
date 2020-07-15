@@ -29,5 +29,5 @@ typedef int (*camkes_module_init_fn_t)(ps_io_ops_t *io_ops);
 
 
 /* Function for registering notification event handlers under a certain badge value */
-int single_threaded_component_register_handler(seL4_Word badge, void (*callback_handler)(seL4_Word, void *), void * cookie);
+int single_threaded_component_register_handler(seL4_Word badge, const char* name, void (*callback_handler)(seL4_Word, void *), void * cookie);
 

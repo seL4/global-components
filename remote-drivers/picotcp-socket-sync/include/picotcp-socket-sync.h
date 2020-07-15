@@ -16,5 +16,5 @@
 #include <platsupport/io.h>
 
 
-typedef int (*register_callback_handler_fn_t)(seL4_Word badge, void (*callback_handler)(seL4_Word, void *),
+typedef int (*register_callback_handler_fn_t)(seL4_Word badge, const char*, void (*callback_handler)(seL4_Word, void *),
                                               void *cookie);
