@@ -110,9 +110,23 @@ size_t /*? me.interface.name ?*/_get_size(void) {
 /*- do allocate_cap(other_interface, is_reader=False) -*/
 /*- set notification = pop('notification') -*/
 
+/*- set disable_optimizations = configuration[me.interface.name].get("disable_optimizations", 0) -*/
+
+/*- if configuration[me.instance.name].get('single_threaded', 0) and disable_optimizations != 1 -*/
+extern seL4_CPtr signal_to_send;
+static void /*? me.interface.name ?*/_notify(void) {
+    if (signal_to_send) {
+        seL4_Signal(signal_to_send);
+    }
+    signal_to_send = /*? notification ?*/;
+
+}
+/*- else -*/
 static void /*? me.interface.name ?*/_notify(void) {
     seL4_Signal(/*? notification ?*/);
 }
+
+/*- endif -*/
 
 /*# We need to get the badge that they will signal us on #*/
 /*- do allocate_cap(me, is_reader=True) -*/

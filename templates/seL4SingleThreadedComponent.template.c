@@ -179,6 +179,9 @@ void trace_stop(void *_arg) {}
 
 /*- endif -*/
 
+
+seL4_CPtr signal_to_send = 0;
+
 int run(void) {
     int res = trace_start_reg_callback ? trace_start_reg_callback(trace_start, NULL): 0;
     if (res) {
@@ -287,10 +290,18 @@ int run(void) {
             }
         }
         TRACE_END(1);
-        info = /*? generate_seL4_Recv(options, endpoint,
+        if (signal_to_send) {
+            info = /*? generate_seL4_SignalRecv(options, 'signal_to_send', 'info', endpoint,
                                     '&badge',
                                     reply_cap_slot) ?*/;
+            signal_to_send = 0;
+        } else {
 
+            info = /*? generate_seL4_Recv(options, endpoint,
+                                        '&badge',
+                                        reply_cap_slot) ?*/;
+
+        }
 
     }
 
