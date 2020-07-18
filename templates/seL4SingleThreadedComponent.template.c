@@ -255,18 +255,20 @@ int run(void) {
                     }
                 /*-- else -*/
                     info = /*? generate_seL4_ReplyRecv(options, endpoint,
-                                                            info,
+                                                            'info',
                                                             '&badge',
                                                             reply_cap_slot) ?*/;
                 /*-- endif -*/
                 continue;
-            } else if (result = 0) {
+            } else if (result == 0) {
                 TRACE_END(0);
                 /* Don't reply to the caller */
                 info = /*? generate_seL4_Recv(options, endpoint,
                                                          '&badge',
                                                          reply_cap_slot) ?*/;
                 continue;
+            } else {
+                TRACE_END(0);
             }
 
         }
