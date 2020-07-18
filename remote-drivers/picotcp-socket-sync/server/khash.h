@@ -189,7 +189,14 @@ typedef khint_t khiter_t;
 #define kfree(P) free(P)
 #endif
 
-static const double __ac_HASH_UPPER = 0.77;
+/* He we replace an FPU computation FLOOR((x * .77) + 0.5) with FLOOR(((x * 77) + 50)/100).
+ * Implement x/100 with (((x)*1374389535llu)>>37) as 0.01 approximately equals 1374389535/BIT(37).
+ * This allows the computation to be achieved without using an FPU.
+ */
+//static const double __ac_HASH_UPPER = 0.77;
+
+#define DIV_100(num) (((num)*1374389535llu)>>37)
+#define COMPUTE_SIZE(num) DIV_100((num)*77llu + 50)
 
 #define __KHASH_TYPE(name, khkey_t, khval_t) \
 	typedef struct kh_##name##_s { \
@@ -248,7 +255,7 @@ static const double __ac_HASH_UPPER = 0.77;
 		{																\
 			kroundup32(new_n_buckets); 									\
 			if (new_n_buckets < 4) new_n_buckets = 4;					\
-			if (h->size >= (khint_t)(new_n_buckets * __ac_HASH_UPPER + 0.5)) j = 0;	/* requested size is too small */ \
+			if (h->size >= (khint_t)(COMPUTE_SIZE(new_n_buckets))) j = 0;	/* requested size is too small */ \
 			else { /* hash table size to be changed (shrink or expand); rehash */ \
 				new_flags = (khint32_t*)kmalloc(__ac_fsize(new_n_buckets) * sizeof(khint32_t));	\
 				if (!new_flags) return -1;								\
@@ -300,7 +307,7 @@ static const double __ac_HASH_UPPER = 0.77;
 			h->flags = new_flags;										\
 			h->n_buckets = new_n_buckets;								\
 			h->n_occupied = h->size;									\
-			h->upper_bound = (khint_t)(h->n_buckets * __ac_HASH_UPPER + 0.5); \
+			h->upper_bound = (khint_t)COMPUTE_SIZE(h->n_buckets); \
 		}																\
 		return 0;														\
 	}																	\
