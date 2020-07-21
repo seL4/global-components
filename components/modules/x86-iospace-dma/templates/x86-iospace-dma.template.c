@@ -64,7 +64,7 @@ int pc99_iospace_setup(ps_io_ops_t *io_ops, vka_t *vka, simple_t *camkes_simple,
     if (error) {
         return error;
     }
-    sscanf(iospace_config, "%x:%x:%x.%d", &iospace_id, &bus, &dev, &fun);
+    sscanf(iospace_config, "%hx:%x:%x.%d", &iospace_id, &bus, &dev, &fun);
     pci_bdf_int = bus * 256 + dev * 8 + fun;
     /* get this from the configuration */
     error = simple_get_iospace(camkes_simple, iospace_id, pci_bdf_int, &iospace);

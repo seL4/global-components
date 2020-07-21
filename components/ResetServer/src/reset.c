@@ -46,4 +46,5 @@ int ResetServer_init(ps_io_ops_t *io_ops)
 
     error = reset_sys_init(io_ops, NULL, &reset_sys);
     ZF_LOGF_IF(error, "Failed to initialise the reset subsystem with the BPMP");
+    return 0;
 }

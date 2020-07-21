@@ -63,7 +63,7 @@ seL4_Word /*? me.interface.name ?*/_get_sender_id(void) {
 			break;
     /*- endfor -*/
 		default:
-			ZF_LOGE("Invalid Badge: %"PRIdPTR" doesn't match any client ID");
+			ZF_LOGE("Invalid Badge: %"PRIdPTR" doesn't match any client ID", /*? connector.badge_symbol ?*/);
 	}
 
     return -1;
@@ -117,7 +117,7 @@ int /*? me.interface.name ?*/_handle_message(seL4_MessageInfo_t *info, seL4_Word
 
     unsigned size = seL4_MessageInfo_get_length(*info) * sizeof(seL4_Word);
     assert(size <= seL4_MsgMaxLength * sizeof(seL4_Word));
-    unsigned length;
+    unsigned length = 0;
     /*? connector.badge_symbol ?*/ = badge;
         /*- if len(type_dict.keys()) > 1 -*/
             switch (/*? connector.badge_symbol ?*/) {

@@ -117,7 +117,7 @@ int client_put_socket(seL4_Word client_id, picoserver_socket_t *new_socket)
     }
     /* Trying to replace an entry */
     if (ret == 0) {
-        ZF_LOGF("Tried to replace an entry in the socket table for client %d", client_id + 1);
+        ZF_LOGF("Tried to replace an entry in the socket table for client %"PRIuPTR, client_id + 1);
     }
     kh_val(client->socket_table, socket_iter) = new_socket;
 
@@ -225,7 +225,7 @@ void client_get_event(seL4_Word client_id, picoserver_event_t *ret_event)
     /* Retrieve the socket and get the event information */
     picoserver_socket_t *client_socket = client_get_socket(client_id, socket_id);
     ZF_LOGF_IF(client_socket == NULL,
-               "Could not find picoserver_socket struct for client id %u and socket %d",
+               "Could not find picoserver_socket struct for client id %"PRIuPTR" and socket %d",
                client_id + 1, socket_id);
     ret_event->socket_fd = socket_id;
     ret_event->events = client_socket->events;

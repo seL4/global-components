@@ -37,6 +37,7 @@ static int ClockServer_client_init(ps_io_ops_t *io_ops) {
         return error;
     }
 
+    return 0;
 }
 
 CAMKES_PRE_INIT_MODULE_DEFINE(clock_client_setup, ClockServer_client_init);

@@ -36,7 +36,7 @@ static int GPIOServer_client_init(ps_io_ops_t *io_ops) {
         ZF_LOGE("Failed to register the GPIOMUXServer interface");
         return error;
     }
-
+    return 0;
 }
 
 CAMKES_PRE_INIT_MODULE_DEFINE(gpio_client_setup, GPIOServer_client_init);

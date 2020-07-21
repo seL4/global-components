@@ -18,7 +18,7 @@
 
 
 static int startup_picotcp(ps_io_ops_t *io_ops) {
-    pico_stack_init();
+    return pico_stack_init();
 }
 typedef int (*register_callback_handler_fn_t)(seL4_Word badge, const char*, void (*callback_handler)(seL4_Word, void *),
                                               void *cookie);

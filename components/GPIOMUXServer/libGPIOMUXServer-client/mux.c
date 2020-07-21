@@ -22,14 +22,14 @@ typedef struct gpiomuxserver_mux_interface_data {
 
 static gpiomuxserver_mux_interface_data_t gpiomuxserver_mux_private_data;
 
-static int gpiomuxserver_feature_enable_wrapper(mux_sys_t *mux, mux_feature_t feature, enum mux_gpio_dir dir)
+static int gpiomuxserver_feature_enable_wrapper(const mux_sys_t *mux, mux_feature_t feature, enum mux_gpio_dir dir)
 {
     gpiomuxserver_mux_interface_data_t *gpiomuxserver_data = mux->priv;
 
     return gpiomuxserver_data->gpiomuxserver_feature_enable(feature, dir);
 }
 
-static int gpiomuxserver_feature_disable_wrapper(mux_sys_t *mux, mux_feature_t feature)
+static int gpiomuxserver_feature_disable_wrapper(const mux_sys_t *mux, mux_feature_t feature)
 {
     gpiomuxserver_mux_interface_data_t *gpiomuxserver_data = mux->priv;
 

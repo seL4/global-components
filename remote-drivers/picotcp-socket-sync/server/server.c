@@ -134,7 +134,7 @@ static void socket_cb(uint16_t ev, struct pico_socket *s)
 
     seL4_Word client_id = client_socket->client_id;
     int ret = client_put_event(client_id, client_socket->socket_fd, ev);
-    ZF_LOGF_IF(ret == -1, "Failed to set the event flags for client %u's socket %d",
+    ZF_LOGF_IF(ret == -1, "Failed to set the event flags for client %"PRIuPTR"'s socket %d",
                client_id + 1, client_socket->socket_fd);
 
     emit_client = 1;
@@ -478,7 +478,7 @@ int picotcp_socket_sync_server_init(ps_io_ops_t *io_ops, int num_clients_,
 {
     num_clients = num_clients_;
     picoserver_clients_init(num_clients);
-    callback_handler(0, notify_client, NULL);
+    callback_handler(0, "notify_client", notify_client, NULL);
 
     return 0;
 }

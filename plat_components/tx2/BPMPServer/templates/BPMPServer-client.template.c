@@ -37,6 +37,7 @@ static int BPMPServer_client_init(ps_io_ops_t *io_ops) {
         return -1;
     }
 
+    return 0;
 }
 
 CAMKES_PRE_INIT_MODULE_DEFINE(bpmp_client_setup, BPMPServer_client_init);

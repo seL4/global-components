@@ -52,8 +52,6 @@ static void write_callback(ps_chardevice_t *device, enum chardev_status stat,
 {
     virtqueue_token_t *vq_token = token;
     void *serial_buf = vq_token->serial_buf;
-    size_t buf_size = vq_token->buf_size;
-
     if (!serial_buf) {
         return;
     }
@@ -91,13 +89,12 @@ static void read_callback(ps_chardevice_t *device, enum chardev_status stat,
 
 static void handle_virtqueue_message(virtqueue_device_t *vq, virtqueue_ring_object_t *handle, enum virtqueue_op op)
 {
-    int res;
     void *serial_buffer;
     size_t buf_size;
 
     buf_size = virtqueue_scattered_available_size(vq, handle);
     if (!(serial_buffer = calloc(buf_size, sizeof(char)))) {
-        ZF_LOGE("Unable to alloc serial buffer of size: %u", buf_size);
+        ZF_LOGE("Unable to alloc serial buffer of size: %zu", buf_size);
         virtqueue_add_used_buf(vq, handle, 0);
         return;
     }
@@ -130,7 +127,6 @@ static void handle_virtqueue_message(virtqueue_device_t *vq, virtqueue_ring_obje
 
 static void handle_virtqueue_callback(virtqueue_device_t *vq, enum virtqueue_op op)
 {
-    volatile void *available_buf = NULL;
     virtqueue_ring_object_t handle;
 
     if (!virtqueue_get_available_buf(vq, &handle)) {
@@ -144,7 +140,7 @@ static void handle_virtqueue_callback(virtqueue_device_t *vq, enum virtqueue_op 
 
 void serial_read_wait_callback(void)
 {
-    int error;
+    int UNUSED error;
     error = serial_lock();
     if (VQ_DEV_POLL(&read_virtqueue)) {
         read_in_progress = 1;
@@ -155,7 +151,7 @@ void serial_read_wait_callback(void)
 
 void serial_write_wait_callback(void)
 {
-    int error;
+    int UNUSED error;
     error = serial_lock();
     if (VQ_DEV_POLL(&write_virtqueue)) {
         write_in_progress = 1;

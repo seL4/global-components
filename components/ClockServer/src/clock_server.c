@@ -221,5 +221,5 @@ int ClockServer_init(ps_io_ops_t *io_ops)
 
     error = ps_calloc(&ops->malloc_ops, 1, sizeof(*clock_table) * NCLOCKS, (void **) &clock_table);
     ZF_LOGF_IF(error, "Failed to allocate memory for the clock table");
-
+    return 0;
 }

@@ -17,7 +17,7 @@
 
 typedef struct gpiomuxserver_gpio_interface_data {
     int (*gpiomuxserver_init_pin)(gpio_id_t pin_id, gpio_dir_t dir);
-    int (*gpiomuxserver_set_level)(gpio_id_t pin_id, int level);
+    int (*gpiomuxserver_set_level)(gpio_id_t pin_id, gpio_level_t level);
     int (*gpiomuxserver_read_level)(gpio_id_t pin_id);
 } gpiomuxserver_gpio_interface_data_t;
 

@@ -53,7 +53,6 @@ static const char *multicast_addr;
 static void dhcp_callback(void *cli, int code)
 {
     struct pico_ip4 address, gateway, netmask, multicast, zero = {0};
-    char s_address[16] = { }, s_gateway[16] = { }, s_netmask[16] = { };
 
     ZF_LOGF_IF(code == PICO_DHCP_ERROR, "Error occurred in pico DHCP negotiation: %s", strerror(pico_err))
     if (code == PICO_DHCP_SUCCESS) {
@@ -123,6 +122,6 @@ int init_pico_post(ps_io_ops_t *io_ops, seL4_Word timer_badge, int (*timer_perio
     callback_handler(timer_badge, "pico_server_tick", stack_tick_callback, NULL);
     /* Start the timer for the TCP stack */
     timer_periodic(0, NS_IN_MS * PICO_TICK_MS);
-
+    return 0;
 
 }

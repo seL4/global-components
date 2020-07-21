@@ -271,7 +271,7 @@ static void internal_putchar(int b, int c)
         /* Since we're violating contract anyway (flushing in the
          * middle of someone else's line), flush all buffers, so the
          * fastpath can be used again. */
-        char is_done;
+        char is_done = 0;
         int i;
         int prev_client = last_out;
         if (prev_client != -1) {
