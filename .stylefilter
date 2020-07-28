@@ -13,3 +13,5 @@
 *.template.h
 remote-drivers/picotcp-socket-sync/server/khash.h
 components/BenchUtiliz/camkes-include/camkes-BenchUtiliz.h
+remote-drivers/picotcp-ethernet-async/camkes-include/camkes-picotcp-ethernet-async.h
+remote-drivers/picotcp-socket-sync/camkes-include/camkes-picotcp-socket-sync.h
