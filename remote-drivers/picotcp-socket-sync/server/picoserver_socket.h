@@ -28,7 +28,6 @@ typedef struct picoserver_socket_async {
 
 } picoserver_socket_async_t;
 
-
 typedef struct picoserver_socket {
     int protocol;
     int client_id;
@@ -39,4 +38,3 @@ typedef struct picoserver_socket {
     /* This is set if the client sets the socket as async */
     picoserver_socket_async_t *async_transport;
 } picoserver_socket_t;
-

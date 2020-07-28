@@ -168,7 +168,6 @@ static void socket_cb(uint16_t ev, struct pico_socket *s)
 
         emit_client = 1;
     }
-
 }
 
 int pico_control_open(bool is_udp)
@@ -258,7 +257,6 @@ picoserver_peer_t pico_control_accept(int socket_fd)
 
     picoserver_peer_t peer = {0};
 
-
     picoserver_socket_t *client_socket = NULL;
 
     int ret = server_control_common(client_id, socket_fd, &client_socket);
@@ -308,7 +306,6 @@ int pico_control_shutdown(int socket_fd, int mode)
 {
     seL4_Word client_id = client_check();
 
-
     picoserver_socket_t *client_socket = NULL;
 
     int ret = server_control_common(client_id, socket_fd, &client_socket);
@@ -351,13 +348,11 @@ static void cleanup_async_socket(picoserver_socket_t *client_socket)
         free(client_socket->async_transport);
         client_socket->async_transport = NULL;
     }
-
 }
 
 int pico_control_close(int socket_fd)
 {
     seL4_Word client_id = client_check();
-
 
     picoserver_socket_t *client_socket = NULL;
 
@@ -376,7 +371,6 @@ int pico_control_close(int socket_fd)
 int pico_control_set_async(int socket_fd, bool enabled)
 {
     seL4_Word client_id = client_check();
-
 
     picoserver_socket_t *client_socket = NULL;
 
@@ -397,14 +391,12 @@ int pico_control_set_async(int socket_fd, bool enabled)
         ZF_LOGW("pico_control_set_async called with no-op");
     }
     return 0;
-
 }
 
 
 picoserver_event_t pico_control_event_poll(void)
 {
     seL4_Word client_id = client_check();
-
 
     /* Retrieve the client's outstanding events */
     picoserver_event_t event = {0};
@@ -436,7 +428,6 @@ int pico_send_write(int socket_fd, int len, int buffer_offset)
     void *client_buf = pico_send_buf(pico_send_enumerate_badge(client_id));
     picoserver_socket_t *client_socket = NULL;
 
-
     int ret = server_communication_common(client_id, socket_fd, len, buffer_offset,
                                           buffer_size, &client_socket, &client_buf);
     if (ret) {
@@ -458,7 +449,6 @@ int pico_send_send(int socket_fd, int len, int buffer_offset)
     void *client_buf = pico_send_buf(pico_send_enumerate_badge(client_id));
     picoserver_socket_t *client_socket = NULL;
 
-
     int ret = server_communication_common(client_id, socket_fd, len, buffer_offset,
                                           buffer_size, &client_socket, &client_buf);
     if (ret) {
@@ -479,7 +469,6 @@ int pico_send_sendto(int socket_fd, int len, int buffer_offset, uint32_t dst_add
     size_t buffer_size = pico_send_buf_size(pico_send_enumerate_badge(client_id));
     void *client_buf = pico_send_buf(pico_send_enumerate_badge(client_id));
     picoserver_socket_t *client_socket = NULL;
-
 
     int ret = server_communication_common(client_id, socket_fd, len, buffer_offset,
                                           buffer_size, &client_socket, &client_buf);
@@ -504,7 +493,6 @@ int pico_recv_read(int socket_fd, int len, int buffer_offset)
     void *client_buf = pico_recv_buf(pico_recv_enumerate_badge(client_id));
     picoserver_socket_t *client_socket = NULL;
 
-
     int ret = server_communication_common(client_id, socket_fd, len, buffer_offset,
                                           buffer_size, &client_socket, &client_buf);
     if (ret) {
@@ -525,7 +513,6 @@ int pico_recv_recv(int socket_fd, int len, int buffer_offset)
     size_t buffer_size = pico_recv_buf_size(pico_recv_enumerate_badge(client_id));
     void *client_buf = pico_recv_buf(pico_recv_enumerate_badge(client_id));
     picoserver_socket_t *client_socket = NULL;
-
 
     int ret = server_communication_common(client_id, socket_fd, len, buffer_offset,
                                           buffer_size, &client_socket, &client_buf);
@@ -583,7 +570,6 @@ static void tx_complete(void *cookie, int len)
         ZF_LOGE("TX: Error while enqueuing available buffer");
     }
     emit_client_async = true;
-
 }
 
 
@@ -593,11 +579,11 @@ static void tx_socket(picoserver_socket_t *client_socket)
         ZF_LOGE("Socket is null");
         return;
     }
+
     if (client_socket->async_transport == NULL) {
         ZF_LOGE("Socket isn't setup for async");
         return;
     }
-
 
     while (client_socket->async_transport->tx_pending_queue) {
         ZF_LOGF_IF(client_socket->async_transport->tx_pending_queue_end == NULL, "Inconsistent queue state");
@@ -631,16 +617,12 @@ static void tx_socket(picoserver_socket_t *client_socket)
             }
             tx_complete(msg->cookie_save, msg->total_len);
         }
-
-
     }
-
 }
 
 
 static void tx_queue_handle(void)
 {
-
     while (1) {
 
         virtqueue_ring_object_t handle;
@@ -707,7 +689,6 @@ static void tx_queue_handle(void)
         }
 
     }
-
 }
 
 
@@ -721,7 +702,6 @@ static void rx_complete(void *cookie, int len)
         ZF_LOGE("RX: Error while enqueuing available buffer");
     }
     emit_client_async = true;
-
 }
 
 static void rx_socket(picoserver_socket_t *client_socket)
@@ -730,10 +710,12 @@ static void rx_socket(picoserver_socket_t *client_socket)
         ZF_LOGE("Socket is null");
         return;
     }
+
     if (client_socket->async_transport == NULL) {
         ZF_LOGE("Socket isn't setup for async");
         return;
     }
+
     while (client_socket->async_transport->rx_pending_queue) {
         ZF_LOGF_IF(client_socket->async_transport->rx_pending_queue_end == NULL, "Inconsistent queue state");
         int ret;
@@ -768,7 +750,6 @@ static void rx_socket(picoserver_socket_t *client_socket)
             }
             rx_complete(msg->cookie_save, msg->total_len);
         }
-
     }
 }
 
@@ -788,7 +769,6 @@ static void rx_queue_handle(void)
             ZF_LOGE("No message received");
         }
 
-        
         tx_msg_t *msg = DECODE_DMA_ADDRESS(buf);
         ZF_LOGF_IF(msg == NULL, "msg is null");
         ZF_LOGF_IF((msg->total_len > 1400) || (msg->total_len == 0), "bad msg len in rx %zd", msg->total_len);
@@ -822,7 +802,6 @@ static void rx_queue_handle(void)
         } else {
             ret = pico_socket_recv(client_socket->socket, msg->buf, msg->total_len);
         }
-        // printf("Ret: %d for sock: %d\n", ret, client_socket->socket_fd);
         if (ret == -1) {
             /* Free the internal tx buffer in case tx fails. Up to the client to retry the trasmission */
             ZF_LOGE("Picosocket_rx: This shouldn't happen.  Handle error case");
@@ -841,8 +820,6 @@ static void rx_queue_handle(void)
             msg->done_len = ret;
             rx_complete((void *)(uintptr_t)handle.first, msg->done_len);
         }
-
-
     }
 }
 
