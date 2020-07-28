@@ -31,8 +31,8 @@ typedef void(*get_mac_server_fn_t)(uint8_t *b1, uint8_t *b2, uint8_t *b3, uint8_
 typedef void(*get_mac_client_fn_t)(uint8_t *b1, uint8_t *b2, uint8_t *b3, uint8_t *b4, uint8_t *b5, uint8_t *b6);
 
 
-typedef int (*register_callback_handler_fn_t)(seL4_Word badge, const char*, void (*callback_handler)(seL4_Word, void *),
-                                              void *cookie);
+typedef int (*register_callback_handler_fn_t)(seL4_Word badge, const char *,
+                                              void (*callback_handler)(seL4_Word, void *), void *cookie);
 typedef void (*register_get_mac_server_fn)(get_mac_server_fn_t get_mac, void *cookie);
 
 

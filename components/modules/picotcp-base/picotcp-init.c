@@ -98,8 +98,9 @@ void eth_init_custom_ip(struct pico_device *dev, const char *ip_addr)
         // Eg: pico_igmp_state_change(&ipaddr, &multicast, .... );
     }
 }
-typedef int (*register_callback_handler_fn_t)(seL4_Word badge, const char*, void (*callback_handler)(seL4_Word, void *),
-                                              void *cookie);
+
+typedef int (*register_callback_handler_fn_t)(seL4_Word badge, const char *,
+                                              void (*callback_handler)(seL4_Word, void *), void *cookie);
 
 int init_pico_post(ps_io_ops_t *io_ops, seL4_Word timer_badge, int (*timer_periodic)(int p_tid, uint64_t p_ns),
                    const char *ip_addr, const char *multicast_addr_, register_callback_handler_fn_t callback_handler)
