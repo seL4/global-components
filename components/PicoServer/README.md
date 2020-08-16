@@ -13,7 +13,7 @@
 # PicoServer
 
 This is a CAmkES component that is intended to wrap around the PicoTCP TCP/ICP
-stack library and multiplex cleint access to it.
+stack library and multiplex client access to it.
 
 ## Dependencies
 
