@@ -291,7 +291,7 @@ int run(void) {
         }
         TRACE_END(1);
         if (signal_to_send) {
-            /*? generate_seL4_SignalRecv(options, 'signal_to_send', 'info', endpoint, '&badge', reply_cap_slot) ?*/;
+            /*? generate_seL4_SignalRecv(options, 'info', 'signal_to_send', 'info', endpoint, '&badge', reply_cap_slot) ?*/;
             signal_to_send = 0;
         } else {
 
