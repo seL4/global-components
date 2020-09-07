@@ -64,8 +64,14 @@
 /*- endif -*/
 /*- set cached = configuration[me.instance.name].get('%s_hardware_cached' % me.instance.name, cached_default) -*/
 
+/*- if 'paddr' in configuration[me.parent.name] and me in me.parent.to_ends -*/
+  /*- set paddr = configuration[me.parent.name].get('paddr') -*/  
+/*- else -*/
+  /*- set paddr = None -*/
+/*- endif -*/
+
 /*- set perm = macros.get_perm(configuration, me.instance.name, me.interface.name) -*/
-/*? register_shared_variable('%s_data' % me.parent.name, dataport_symbol_name, dataport_size, frame_size=page_size, perm=perm, cached=cached) ?*/
+/*? register_shared_variable('%s_data' % me.parent.name, dataport_symbol_name, dataport_size, frame_size=page_size, perm=perm, cached=cached, paddr=paddr) ?*/
 
 volatile /*? macros.dataport_type(me.interface.type) ?*/ * /*? me.interface.name ?*/ =
     (volatile /*? macros.dataport_type(me.interface.type) ?*/ *) &/*? dataport_symbol_name ?*/;
