@@ -27,7 +27,6 @@ component RTC {
     maybe uses PutChar putchar;
     uses IOPort cmos_address;
     uses IOPort cmos_data;
-    attribute int heap_size = 0;
 
     /* Connect the hardware RTC to the RTC component */
     composition {

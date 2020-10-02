@@ -28,7 +28,6 @@ component PCIConfigIO {
     uses IOPort config_address;
     uses IOPort config_data;
     uses PutChar putchar;
-    attribute int heap_size = 0;
 
     /* Connect io ports to pci config space */
     composition {
