@@ -145,7 +145,8 @@
 
   /*# Create the badged endpoint #*/
 
-    /*- for i,_irq in enumerate(irq_set) -*/
+    /*- for i,irq_node in enumerate(irq_set) -*/
+        /*- set _irq = irq_node['irq'] -*/
 
         /*- set interrupt_ntfn = alloc_cap('%s_%s_%d_notification_object_cap' % (name, badges[i], False), notification_object, read=False, write=True) -*/
         /*- do cap_space.cnode[interrupt_ntfn].set_badge(badges[i]) -*/
