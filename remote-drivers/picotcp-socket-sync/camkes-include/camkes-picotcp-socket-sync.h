@@ -33,11 +33,11 @@ import <picotcp-socket-sync.camkes>;
     provides PicoRecv name##_recv; \
     provides PicoSend name##_send; \
     emits Init name##_init1; \
-    uses VirtQueueDev name##_tx; \
-    uses VirtQueueDev name##_rx; \
+    maybe uses VirtQueueDev name##_tx; \
+    maybe uses VirtQueueDev name##_rx; \
     attribute int name##_tx_shmem_size = 8192*4; \
     attribute int name##_rx_shmem_size = 8192*4; \
-    dataport Buf name##_dma_pool; \
+    maybe dataport Buf name##_dma_pool; \
     consumes Init name##_init2;
 
 
