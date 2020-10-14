@@ -847,14 +847,28 @@ int picotcp_socket_sync_server_init(ps_io_ops_t *io_ops, int num_clients_,
     seL4_Word tx_badge;
     seL4_Word rx_badge;
 
+    int num_registered_virtqueues = camkes_virtqueue_channel_num();
+    if (num_registered_virtqueues < 2) {
+        /* Amount of virtqueues is less than expected */
+        return 0;
+    }
+
+    int tx_virtqueue_id = camkes_virtqueue_get_id_from_name("pico_tx");
+    int rx_virtqueue_id = camkes_virtqueue_get_id_from_name("pico_rx");
+
+    if (tx_virtqueue_id == -1 || rx_virtqueue_id == -1) {
+        /* We don't have the virtqueues we expect */
+        return 0;
+    }
+
     /* Initialise read virtqueue */
-    int error = camkes_virtqueue_device_init_with_recv(&tx_virtqueue, camkes_virtqueue_get_id_from_name("pico_tx"),
+    int error = camkes_virtqueue_device_init_with_recv(&tx_virtqueue, (unsigned) tx_virtqueue_id,
                                                        NULL, &tx_badge);
     if (error) {
         ZF_LOGE("Unable to initialise serial server read virtqueue");
     }
     /* Initialise write virtqueue */
-    error = camkes_virtqueue_device_init_with_recv(&rx_virtqueue, camkes_virtqueue_get_id_from_name("pico_rx"),
+    error = camkes_virtqueue_device_init_with_recv(&rx_virtqueue, (unsigned) rx_virtqueue_id,
                                                    NULL, &rx_badge);
     if (error) {
         ZF_LOGE("Unable to initialise serial server write virtqueue");
