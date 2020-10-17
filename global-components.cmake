@@ -12,55 +12,50 @@
 
 cmake_minimum_required(VERSION 3.8.2)
 
-CAmkESAddImportPath(components)
-CAmkESAddImportPath(plat_components/${KernelPlatform})
-CAmkESAddImportPath(interfaces)
-CAmkESAddImportPath(plat_interfaces/${KernelPlatform})
+CAmkESAddImportPath(
+    components
+    plat_components/${KernelPlatform}
+    interfaces
+    plat_interfaces/${KernelPlatform}
+)
+
 CAmkESAddTemplatesPath(templates)
 
-add_subdirectory(
-    ${CMAKE_CURRENT_LIST_DIR}/remote-drivers/picotcp-ethernet-async/
+foreach(
+    comp
+    IN
+    ITEMS
     remote-drivers/picotcp-ethernet-async
-)
-add_subdirectory(
-    ${CMAKE_CURRENT_LIST_DIR}/components/modules/fdt-bind-driver/
-    components/modules/fdt-bind-driver
-)
-add_subdirectory(
-    ${CMAKE_CURRENT_LIST_DIR}/components/modules/dynamic-untyped-allocators/
-    components/modules/dynamic-untyped-allocators
-)
-add_subdirectory(
-    ${CMAKE_CURRENT_LIST_DIR}/components/modules/single-threaded/
-    components/modules/single-threaded
-)
-add_subdirectory(
-    ${CMAKE_CURRENT_LIST_DIR}/components/modules/x86-iospace-dma/
-    components/modules/x86-iospace-dma
-)
-add_subdirectory(
-    ${CMAKE_CURRENT_LIST_DIR}/remote-drivers/picotcp-socket-sync/
     remote-drivers/picotcp-socket-sync
+    components/modules/fdt-bind-driver
+    components/modules/dynamic-untyped-allocators
+    components/modules/single-threaded
+    components/modules/x86-iospace-dma
+    components/modules/picotcp-base
+    components/ClockServer
+    components/GPIOMUXServer
+    components/ResetServer
+    plat_components/tx2/BPMPServer
 )
-add_subdirectory(
-    ${CMAKE_CURRENT_LIST_DIR}/components/modules/picotcp-base/ components/modules/picotcp-base
-)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/components/ClockServer/ components/ClockServer)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/components/GPIOMUXServer/ components/GPIOMUXServer)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/components/ResetServer/ components/ResetServer)
-add_subdirectory(
-    ${CMAKE_CURRENT_LIST_DIR}/plat_components/tx2/BPMPServer/ plat_components/tx2/BPMPServer
-)
+    add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/${comp}" ${comp})
+endforeach()
 
-include(${CMAKE_CURRENT_LIST_DIR}/components/PCIConfigIO/CMakeLists.txt)
-include(${CMAKE_CURRENT_LIST_DIR}/components/RTC/CMakeLists.txt)
-include(${CMAKE_CURRENT_LIST_DIR}/components/SerialServer/CMakeLists.txt)
-include(${CMAKE_CURRENT_LIST_DIR}/components/TimeServer/CMakeLists.txt)
-include(${CMAKE_CURRENT_LIST_DIR}/components/FileServer/CMakeLists.txt)
-include(${CMAKE_CURRENT_LIST_DIR}/components/VirtQueue/CMakeLists.txt)
-include(${CMAKE_CURRENT_LIST_DIR}/components/BenchUtiliz/CMakeLists.txt)
-include(${CMAKE_CURRENT_LIST_DIR}/components/Ethdriver/CMakeLists.txt)
-include(${CMAKE_CURRENT_LIST_DIR}/components/PicoServer/CMakeLists.txt)
+foreach(
+    comp
+    IN
+    ITEMS
+    PCIConfigIO
+    RTC
+    SerialServer
+    TimeServer
+    FileServer
+    VirtQueue
+    BenchUtiliz
+    Ethdriver
+    PicoServer
+)
+    include("${CMAKE_CURRENT_LIST_DIR}/components/${comp}/CMakeLists.txt")
+endforeach()
 
 foreach(
     connector
