@@ -12,16 +12,20 @@
 
 cmake_minimum_required(VERSION 3.8.2)
 
-project(BenchUtiliz C)
-
-DeclareCAmkESComponent(BenchUtiliz SOURCES src/benchUtiliz.c LIBS sel4bench)
 CAmkESAddImportPath(camkes-include)
 CAmkESAddCPPInclude(camkes-include)
 
-if(KernelArchARM)
-    set(KernelArmExportPMUUser ON CACHE BOOL "" FORCE)
-elseif(KernelArchX86)
-    set(KernelExportPMCUser ON CACHE BOOL "" FORCE)
+if(KernelArchARM AND NOT KernelArmExportPMUUser)
+    message("BenchUtiliz not available, as KernelArmExportPMUUser is OFF")
+    return()
+elseif(KernelArchX86 AND NOT KernelExportPMCUser)
+    message("BenchUtiliz not available, as KernelExportPMCUser is OFF")
+    return()
 else()
-    message("Unsupported platform.")
+    message("BenchUtiliz not available, as platform is unsupported")
+    return()
 endif()
+
+project(BenchUtiliz C)
+
+DeclareCAmkESComponent(BenchUtiliz SOURCES src/benchUtiliz.c LIBS sel4bench)
