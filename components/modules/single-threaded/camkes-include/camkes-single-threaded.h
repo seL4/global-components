@@ -13,7 +13,7 @@
 #define _VAR_STRINGIZE(...) #__VA_ARGS__
 #define VAR_STRINGIZE(...) _VAR_STRINGIZE(__VA_ARGS__)
 
-#include <camkes-BenchUtiliz.h>;
+#include <camkes-BenchUtiliz.h>
 
 
 #define single_threaded_component() \
