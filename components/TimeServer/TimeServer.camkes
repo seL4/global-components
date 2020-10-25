@@ -14,7 +14,6 @@
 
 import <Timer.idl4>;
 import <PutChar.idl4>;
-import <timers.camkes>;
 
 #ifdef HARDWARE_TIMER_COMPONENT
     HARDWARE_TIMER_COMPONENT
