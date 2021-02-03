@@ -1,16 +1,10 @@
 <!--
-     Copyright 2020, Data61
-     Commonwealth Scientific and Industrial Research Organisation (CSIRO)
-     ABN 41 687 119 230.
+     Copyright 2020, Data61, CSIRO (ABN 41 687 119 230)
 
-     This software may be distributed and modified according to the terms of
-     the BSD 2-Clause license. Note that NO WARRANTY is provided.
-     See "LICENSE_BSD2.txt" for details.
-
-     @TAG(DATA61_BSD)
+     SPDX-License-Identifier: CC-BY-SA-4.0
 -->
 
-# GPIOMUXServer 
+# GPIOMUXServer
 
 This is a CAmkES component that is intended to abstract over a platform's GPIO
 and pin multiplexer controller, and multiplex client access to it.
@@ -69,4 +63,4 @@ The pin multiplexing part of the component may interfere with the GPIO part of
 the component, that is, if a client requests that a feature be switched on via
 the pin multiplexer, another client may lose access to a GPIO pin. There is no
 form of access control with regards to both the GPIO pins and the pin
-multiplexer features. 
+multiplexer features.

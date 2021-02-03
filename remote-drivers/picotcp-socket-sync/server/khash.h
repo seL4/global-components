@@ -23,6 +23,8 @@
    SOFTWARE.
 */
 
+/* SPDX-License-Identifier: MIT */
+
 /*
   An example:
 
