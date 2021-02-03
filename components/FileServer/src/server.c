@@ -27,13 +27,15 @@ typedef struct cpio_file_data_wrap {
 extern char _cpio_archive[];
 extern char _cpio_archive_end[];
 
-void pre_init() {
+void pre_init()
+{
     /* install the _cpio_archive */
     unsigned long cpio_size = _cpio_archive_end - _cpio_archive;
     muslcsys_install_cpio_interface(_cpio_archive, cpio_size, cpio_get_file);
 }
 
-bool validate_client_fd(int fd, seL4_Word client) {
+bool validate_client_fd(int fd, seL4_Word client)
+{
     if (!valid_fd(fd)) {
         ZF_LOGE("Client %zu attempted to use invalid fd %d", client, fd);
         return false;
@@ -43,7 +45,7 @@ bool validate_client_fd(int fd, seL4_Word client) {
         ZF_LOGE("Client %zu attempted to use fd %d of a non-open file", client, fd);
         return false;
     }
-    cpio_file_data_wrap_t *data = (cpio_file_data_wrap_t*)fd_struct->data;
+    cpio_file_data_wrap_t *data = (cpio_file_data_wrap_t *)fd_struct->data;
     if (data->client != client) {
         ZF_LOGE("Client %zu attempted to use fd %d that is for client %zu", client, fd, data->client);
         return false;
@@ -51,7 +53,8 @@ bool validate_client_fd(int fd, seL4_Word client) {
     return true;
 }
 
-int fs_ctrl_open(const char *name, int flags) {
+int fs_ctrl_open(const char *name, int flags)
+{
     /* try the open and return early if we get an error */
     int fd = open(name, flags);
     if (fd < 0) {
@@ -73,7 +76,8 @@ int fs_ctrl_open(const char *name, int flags) {
     return fd;
 }
 
-int64_t fs_ctrl_seek(int fd, int64_t offset, int whence) {
+int64_t fs_ctrl_seek(int fd, int64_t offset, int whence)
+{
     seL4_Word client = fs_ctrl_get_sender_id();
     if (!validate_client_fd(fd, client)) {
         return -1;
@@ -81,7 +85,8 @@ int64_t fs_ctrl_seek(int fd, int64_t offset, int whence) {
     return lseek(fd, offset, whence);
 }
 
-ssize_t fs_ctrl_read(int fd, size_t size) {
+ssize_t fs_ctrl_read(int fd, size_t size)
+{
     seL4_Word client = fs_ctrl_get_sender_id();
     if (!validate_client_fd(fd, client)) {
         return -1;
@@ -95,7 +100,8 @@ ssize_t fs_ctrl_read(int fd, size_t size) {
     return read(fd, dataport, size);
 }
 
-int fs_ctrl_close(int fd) {
+int fs_ctrl_close(int fd)
+{
     seL4_Word client = fs_ctrl_get_sender_id();
     if (!validate_client_fd(fd, client)) {
         return -EBADF;

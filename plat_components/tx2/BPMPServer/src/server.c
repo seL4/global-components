@@ -67,7 +67,7 @@ int bpmp_server_init(ps_io_ops_t *io_ops)
 {
 
     int error = ps_interface_find(&io_ops->interface_registration_ops, TX2_BPMP_INTERFACE,
-                              interface_search_handler, NULL);
+                                  interface_search_handler, NULL);
     ZF_LOGF_IF(error, "Failed to find bpmp driver");
     printf("found interface\n");
 

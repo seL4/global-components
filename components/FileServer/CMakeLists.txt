@@ -12,4 +12,7 @@ project(FileServer C)
 # on a per instances basis by the system through ExtendCAmkESComponentInstance
 DeclareCAmkESComponent(FileServer SOURCES src/server.c)
 
-add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/libFileServer-client" ${CMAKE_CURRENT_BINARY_DIR}/libFileServer-client)
+add_subdirectory(
+    "${CMAKE_CURRENT_LIST_DIR}/libFileServer-client"
+    ${CMAKE_CURRENT_BINARY_DIR}/libFileServer-client
+)
