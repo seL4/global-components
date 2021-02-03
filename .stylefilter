@@ -10,3 +10,7 @@ remote-drivers/picotcp-socket-sync/server/khash.h
 components/BenchUtiliz/camkes-include/camkes-BenchUtiliz.h
 remote-drivers/picotcp-ethernet-async/camkes-include/camkes-picotcp-ethernet-async.h
 remote-drivers/picotcp-socket-sync/camkes-include/camkes-picotcp-socket-sync.h
+components/modules/x86-iospace-dma/camkes-include/camkes-x86-iospace-dma.h
+components/modules/picotcp-base/camkes-include/camkes-picotcp-base.h
+components/modules/dynamic-untyped-allocators/camkes-include/camkes-dynamic-untyped-allocators.h
+components/SerialServer/camkes-putchar-client/camkes-include/camkes-SerialServer-camkes-putchar-client.h
