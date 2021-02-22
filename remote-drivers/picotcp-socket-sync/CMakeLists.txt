@@ -35,9 +35,11 @@ DeclareCAmkESConnector(
 add_library(picotcp-socket-sync INTERFACE)
 
 target_include_directories(picotcp-socket-sync INTERFACE include)
+target_include_directories(picotcp-socket-sync INTERFACE ${PICOTCP_PATH}/include)
 
 add_library(PicoServer-client INTERFACE)
 target_include_directories(PicoServer-client INTERFACE client_include)
+target_include_directories(PicoServer-client INTERFACE ${PICOTCP_PATH}/include)
 target_link_libraries(PicoServer-client INTERFACE picotcp-socket-sync)
 
 add_library(picotcp-socket-sync-server EXCLUDE_FROM_ALL server/server.c server/picoserver_client.c)
