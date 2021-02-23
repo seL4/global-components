@@ -3,7 +3,6 @@
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
-  #*/
 
 /*- if me.parent.type.to_threads == 0 -*/
     /*- include 'seL4RPCNoThreads-to.template.h' -*/
