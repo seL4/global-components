@@ -219,7 +219,7 @@ int picotcp_ethernet_async_client_init(ps_io_ops_t *io_ops, const char *tx_virtq
     bool add_to_mapper = false;
     /* preallocate buffers */
     for (int i = 0; i < NUM_RX_BUFS; i++) {
-        void *buf = ps_dma_alloc(&io_ops->dma_manager, BUF_SIZE, 64, 1, PS_MEM_NORMAL);
+        void *buf = ps_dma_alloc(&io_ops->dma_manager, BUF_SIZE, 64, 0, PS_MEM_NORMAL);
         ZF_LOGF_IF(buf == NULL, "Alloc Failed\n");
         memset(buf, 0, BUF_SIZE);
         virtqueue_ring_object_t handle;
@@ -245,7 +245,7 @@ int picotcp_ethernet_async_client_init(ps_io_ops_t *io_ops, const char *tx_virtq
     }
 
     for (int i = 0; i < NUM_TX_BUFS; i++) {
-        void *buf = ps_dma_alloc(&io_ops->dma_manager, BUF_SIZE, 64, 1, PS_MEM_NORMAL);
+        void *buf = ps_dma_alloc(&io_ops->dma_manager, BUF_SIZE, 64, 0, PS_MEM_NORMAL);
         ZF_LOGF_IF(buf == NULL, "Alloc Failed\n");
 
         memset(buf, 0, BUF_SIZE);
