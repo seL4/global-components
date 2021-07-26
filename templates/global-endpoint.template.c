@@ -27,7 +27,7 @@
     /*? raise(Exception('%s.%s_global_endpoint can no longer be set to an arbirtary value: %s %s' % (instance, interface_end.interface.name, config_name, name))) ?*/
   /*- endif -*/
 
-  /*- set badge = macros.global_endpoint_badges(composition, interface_end, configuration) -*/
+  /*- set badge = macros.global_endpoint_badges(composition, interface_end, configuration, options.architecture) -*/
   /*- set stash_name = "%s_global_notification" % (name) -*/
 
   /*# Check the global stash for our endpoint #*/
