@@ -1,5 +1,6 @@
 #
 # Copyright 2018, Data61, CSIRO (ABN 41 687 119 230)
+# Copyright 2021, HENSOLDT Cyber GmbH
 #
 # SPDX-License-Identifier: BSD-2-Clause
 #
@@ -10,14 +11,13 @@ CAmkESAddImportPath(interfaces plat_interfaces/${KernelPlatform})
 
 CAmkESAddTemplatesPath(templates)
 
+# Connector templates with FROM and TO only
 foreach(
     connector
     IN
     ITEMS
-    seL4RPCDataportSignal
     seL4GlobalAsynch
     seL4GlobalAsynchCallback
-    seL4Ethdriver
     seL4MessageQueue
     seL4RPCOverMultiSharedData
 )
@@ -30,6 +30,32 @@ foreach(
     )
 endforeach()
 
+# Connector templates with FROM, FROM_HEADER, TO and TO_HEADER
+foreach(
+    connector
+    IN
+    ITEMS
+    seL4RPCCallSignal
+    seL4RPCDataport
+    seL4RPCDataportSignal
+    seL4RPCNoThreads
+    seL4GPIOServer
+    seL4Ethdriver
+)
+    DeclareCAmkESConnector(
+        ${connector}
+        FROM
+        ${connector}-from.template.c
+        FROM_HEADER
+        ${connector}-from.template.h
+        TO
+        ${connector}-to.template.c
+        TO_HEADER
+        ${connector}-to.template.h
+    )
+endforeach()
+
+# Specific connector templates not fitting with the schemes above
 DeclareCAmkESConnector(
     seL4SharedDataWithCaps
     FROM
@@ -43,25 +69,7 @@ DeclareCAmkESConnector(
     FROM
     seL4RPCCallSignal-from.template.c
     FROM_HEADER
-    get-notification.template.h
-    TO
-    seL4RPCCallSignal-to.template.c
-)
-
-DeclareCAmkESConnector(
-    seL4SerialServer
-    FROM
-    seL4RPCDataportSignal-from.template.c
-    FROM_HEADER
-    get-notification.template.h
-    TO
-    seL4RPCDataportSignal-to.template.c
-)
-
-DeclareCAmkESConnector(
-    seL4RPCCallSignal
-    FROM
-    seL4RPCCallSignal-from.template.c
+    seL4RPCCallSignal-from.template.h
     TO
     seL4RPCCallSignal-to.template.c
     TO_HEADER
@@ -69,9 +77,21 @@ DeclareCAmkESConnector(
 )
 
 DeclareCAmkESConnector(
+    seL4SerialServer
+    FROM
+    seL4RPCDataportSignal-from.template.c
+    FROM_HEADER
+    seL4RPCDataportSignal-from.template.h
+    TO
+    seL4RPCDataportSignal-to.template.c
+)
+
+DeclareCAmkESConnector(
     seL4RPCCallSignalNoThreads
     FROM
     seL4RPCCallSignal-from.template.c
+    FROM_HEADER
+    seL4RPCCallSignal-from.template.h
     TO
     seL4RPCCallSignal-to.template.c
     TO_HEADER
@@ -83,7 +103,7 @@ DeclareCAmkESConnector(
     FROM
     seL4RPCCallSignal-from.template.c
     FROM_HEADER
-    get-notification.template.h
+    seL4RPCCallSignal-from.template.h
     TO
     seL4RPCCallSignal-to.template.c
     TO_HEADER
@@ -91,19 +111,11 @@ DeclareCAmkESConnector(
 )
 
 DeclareCAmkESConnector(
-    seL4RPCDataport
-    FROM
-    seL4RPCDataport-from.template.c
-    TO
-    seL4RPCDataport-to.template.c
-    TO_HEADER
-    seL4RPCDataport-to.template.h
-)
-
-DeclareCAmkESConnector(
     seL4RPCDataportNoThreads
     FROM
     seL4RPCDataport-from.template.c
+    FROM_HEADER
+    seL4RPCDataport-from.template.h
     TO
     seL4RPCDataport-to.template.c
     TO_HEADER
@@ -114,6 +126,8 @@ DeclareCAmkESConnector(
     seL4PicoServer
     FROM
     seL4RPCDataport-from.template.c
+    FROM_HEADER
+    seL4RPCDataport-from.template.h
     TO
     seL4RPCDataport-to.template.c
     TO_HEADER
@@ -122,16 +136,6 @@ DeclareCAmkESConnector(
 
 DeclareCAmkESConnector(
     seL4GlobalAsynchHardwareInterrupt TO seL4GlobalAsynchHardwareInterrupt.template.c
-)
-
-DeclareCAmkESConnector(
-    seL4RPCNoThreads
-    FROM
-    seL4RPCNoThreads-from.template.c
-    TO
-    seL4RPCNoThreads-to.template.c
-    TO_HEADER
-    seL4RPCNoThreads-to.template.h
 )
 
 DeclareCAmkESConnector(
@@ -152,16 +156,4 @@ DeclareCAmkESConnector(
     seL4VirtQueues-to.template.c
     FROM_HEADER
     seL4VirtQueues-from.template.h
-)
-
-DeclareCAmkESConnector(
-    seL4GPIOServer
-    FROM
-    seL4GPIOServer-from.template.c
-    TO
-    seL4GPIOServer-to.template.c
-    FROM_HEADER
-    seL4GPIOServer-from.template.h
-    TO_HEADER
-    seL4GPIOServer-to.template.h
 )
