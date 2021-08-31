@@ -27,6 +27,9 @@
 #define MAX_CLIENTS 12
 #define CLIENT_OUTPUT_BUFFER_SIZE 4096
 
+#define CTRL_C 0x03
+#define CTRL_Z 0x1A
+
 /* TODO: have the MultiSharedData template generate a header with these */
 void getchar_emit(unsigned int id) WEAK;
 seL4_Word getchar_enumerate_badge(unsigned int id) WEAK;
@@ -354,13 +357,13 @@ static void handle_char(uint8_t c)
     /* some manually written state machine magic to detect switching of input direction */
     switch (statemachine) {
     case 0:
-        if (c == '\r' || c == '\n') {
+        if (c == '\r' || c == '\n' || c == CTRL_C || c == CTRL_Z) {
             statemachine = 1;
         }
         give_client_char(c);
         break;
     case 1:
-        if (c == '\r' || c == '\n') {
+        if (c == '\r' || c == '\n' || c == CTRL_C || c == CTRL_Z) {
             give_client_char(c);
         } else if (c == ESCAPE_CHAR) {
             statemachine = 2;
