@@ -37,8 +37,11 @@
 
 volatile void * /*? shmem_name ?*/ = (volatile void *) & /*? shmem_symbol ?*/;
 
-size_t /*? me.interface.name ?*/_get_size(void)
-{
+volatile void * /*? me.interface.name ?*/_get_buf(void) {
+    return /*? shmem_name ?*/;
+}
+
+size_t /*? me.interface.name ?*/_get_size(void) {
     return ROUND_UP_UNSAFE(/*? shmem_size ?*/, PAGE_SIZE_4K);
 }
 
