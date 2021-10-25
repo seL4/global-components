@@ -30,9 +30,11 @@ seL4_CPtr get_dma_frame_cap(vspace_t *vspace, void *vaddr)
     return cap;
 }
 
-static USED SECTION("_dma_frames") struct {} dummy_dma_frame;
-extern dma_frame_t *__start__dma_frames[];
-extern dma_frame_t *__stop__dma_frames[];
+/* Force the _dma_pools section to be created even if no modules are defined. */
+static USED SECTION("_dma_pools") struct {} dummy_dma_pool;
+/* Definitions so that we can find the exposed DMA frames */
+extern dma_pool_t *__start__dma_pools[];
+extern dma_pool_t *__stop__dma_pools[];
 
 
 static uintptr_t dma_pin(void *cookie, void *addr, size_t size)
@@ -84,12 +86,14 @@ int pc99_iospace_setup(ps_io_ops_t *io_ops, vka_t *vka, simple_t *camkes_simple,
         return error;
     }
 
-    for (dma_frame_t **frame = __start__dma_frames;
-         frame < __stop__dma_frames; frame++) {
-        int error = sel4utils_iommu_dma_alloc_iospace(iospace_dma.cookie, (void *)(*frame)->vaddr, (*frame)->size);
-        if (error) {
-            ZF_LOGE("Failed to setup IOMMU for DMA region: (%p, 0x%lx bytes)", (void *)(*frame)->vaddr, (*frame)->size);
-            return error;
+    for (dma_pool_t **pool = __start__dma_pools; pool < __stop__dma_pools; pool++) {
+        for (size_t frame_id = 0; frame_id < (*pool)->num_frames; frame_id++) {
+            dma_frame_t *frame = (*pool)->dma_frames[frame_id];
+            int error = sel4utils_iommu_dma_alloc_iospace(iospace_dma.cookie, (void *)frame->vaddr, frame->size);
+            if (error) {
+                ZF_LOGE("Failed to setup IOMMU for DMA region: (%p, 0x%lx bytes)", (void *)frame->vaddr, frame->size);
+                return error;
+            }
         }
     }
 
