@@ -1,5 +1,6 @@
 #
 # Copyright 2018, Data61, CSIRO (ABN 41 687 119 230)
+# Copyright 2022, Technology Innovation Institute
 #
 # SPDX-License-Identifier: BSD-2-Clause
 #
@@ -17,7 +18,11 @@ set(CAmkESCPP ON CACHE BOOL "" FORCE)
 # ARM platforms have similar serial configurations in their DTSes and can share
 # similar headers and code
 if(KernelArchARM)
-    set(PlatPrefix "arm_common")
+    if(KernelPlatformRpi4)
+        set(PlatPrefix "bcm2711")
+    else()
+        set(PlatPrefix "arm_common")
+    endif()
 else()
     set(PlatPrefix "${KernelPlatform}")
 endif()
