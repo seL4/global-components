@@ -51,8 +51,7 @@
 /*- set shmem_symbol_size = "MAX_UNSAFE(%s, %s)" % (type_size, dataport_size) -*/
 /*? macros.shared_buffer_symbol(sym=dataport_symbol_name, shmem_size=shmem_symbol_size, page_size=page_size) ?*/
 
-/*- set arch_name = obj_space.spec.arch.capdl_name() -*/
-/*- if arch_name in ['aarch32', 'aarch64', 'arm_hyp', 'ia32', 'x86_64'] -*/
+/*- if options.architecture in ['aarch32', 'arm_hyp', 'aarch64', 'ia32', 'x86_64'] -*/
     /*- set cached_default = true -*/
 /*- else -*/
     /*- set cached_default = false -*/
