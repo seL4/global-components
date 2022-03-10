@@ -60,7 +60,7 @@
 /*- set cached = configuration[me.instance.name].get('%s_hardware_cached' % me.interface.name, cached_default) -*/
 
 /*- if 'paddr' in configuration[me.parent.name] and me in me.parent.to_ends -*/
-  /*- set paddr = configuration[me.parent.name].get('paddr') -*/  
+  /*- set paddr = configuration[me.parent.name].get('paddr') -*/
 /*- else -*/
   /*- set paddr = None -*/
 /*- endif -*/
