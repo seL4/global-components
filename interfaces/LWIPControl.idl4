@@ -1,0 +1,26 @@
+/*
+ * Copyright 2020, Data61
+ * Commonwealth Scientific and Industrial Research Organisation (CSIRO)
+ * ABN 41 687 119 230.
+ *
+ * This software may be distributed and modified according to the terms of
+ * the GNU General Public License version 2. Note that NO WARRANTY is provided.
+ * See "LICENSE_GPLv2.txt" for details.
+ *
+ * @TAG(DATA61_GPL)
+ */
+
+procedure LWIPControl {
+    include "lwip/ip_addr.h";
+    /* Only support IPv4 and UDP/TCP at the moment */
+    int open(in bool is_udp);
+    int bind(in int socket_fd, in ip_addr_t local_addr, in uint16_t port);
+    int connect(in int socket_fd, in ip_addr_t server_addr, in uint16_t port);
+    int listen(in int socket_fd, in int backlog);
+    int accept(in int socket_fd, out ip_addr_t peer_addr, out uint16_t peer_port, out int peer_fd);
+    int shutdown(in int socket_fd, in int shut_rx, in int shut_tx);
+    int close(in int socket_fd);
+    // NOTE: Should be for all sockets?
+    int poll_events(in int socket_fd);
+    int set_async(in int socket_fd, in bool enable);
+};

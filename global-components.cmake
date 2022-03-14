@@ -16,11 +16,13 @@ foreach(
     ITEMS
     remote-drivers/picotcp-ethernet-async
     remote-drivers/picotcp-socket-sync
+    remote-drivers/lwip-ethernet-async
     components/modules/fdt-bind-driver
     components/modules/dynamic-untyped-allocators
     components/modules/single-threaded
     components/modules/x86-iospace-dma
     components/modules/picotcp-base
+    components/modules/lwip-base
     components/ClockServer
     components/GPIOMUXServer
     components/ResetServer
