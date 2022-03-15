@@ -34,7 +34,6 @@ CAMKES_ENV_INIT_MODULE_DEFINE(/*? connection_name ?*/_setup_pre, _init_lwip_pre)
 
 static int init_lwip(ps_io_ops_t *io_ops) {
 
-    //return init_lwip_post(io_ops, 0, NULL, NULL, /*? connection_name ?*/_ip_addr, /*? connection_name ?*/_multicast_addr, single_threaded_component_register_handler);
     return init_lwip_post(io_ops, /*? connection_name ?*/_timer_notification_badge(), /*? connection_name ?*/_timer_periodic, /*? connection_name ?*/_timer_time, /*? connection_name ?*/_ip_addr, /*? connection_name ?*/_multicast_addr, single_threaded_component_register_handler);
 }
 

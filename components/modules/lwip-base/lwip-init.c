@@ -106,7 +106,6 @@ int init_lwip_post(ps_io_ops_t *io_ops, seL4_Word timer_badge, int (*timer_perio
         ZF_LOGF_IF(dhcp_start(netif), "Failed to initiate the DHCP negotiation");
     }
 
-    //callback_handler(timer_badge, "lwip_stack_tick_callback", stack_tick_callback, NULL);
     callback_handler(0, "lwip_stack_tick_callback", stack_tick_callback, NULL);
     /* Start the timer for the TCP stack */
     timer_periodic(0, NS_IN_MS * LWIP_TICK_MS);

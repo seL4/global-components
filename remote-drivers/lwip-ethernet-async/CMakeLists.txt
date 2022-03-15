@@ -48,7 +48,6 @@ target_link_libraries(
     lwip-ethernet-async
     ethdrivers
     shared_ringbuffer
-    LWIPServer-client
 )
 
 add_library(lwip-ethernet-async-client EXCLUDE_FROM_ALL client.c)
@@ -58,5 +57,4 @@ target_link_libraries(
     lwip-ethernet-async
     lwip
     shared_ringbuffer
-    LWIPServer-client
 )

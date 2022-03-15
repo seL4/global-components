@@ -61,7 +61,6 @@ static register_cb_fn reg_tx_cb;
  */
 static void eth_tx_complete(void *iface, void *cookie)
 {   
-    trace_extra_point_start(1);
     ZF_LOGW("Packets have been transferred or dropped");
     server_data_t *state = iface;
 
@@ -69,8 +68,6 @@ static void eth_tx_complete(void *iface, void *cookie)
 
     int err = enqueue_avail(state->tx_ring, desc->encoded_addr, desc->len, desc->cookie);
     ZF_LOGF_IF(err, "lwip_eth_send: Error while enqueuing available buffer, tx available queue full");
-
-    trace_extra_point_end(1, 1);
 }
 
 /**
@@ -123,7 +120,6 @@ static uintptr_t eth_allocate_rx_buf(void *iface, size_t buf_size, void **cookie
  */
 static void eth_rx_complete(void *iface, unsigned int num_bufs, void **cookies, unsigned int *lens)
 {
-    trace_extra_point_start(0);
     server_data_t *state = iface;
     
     for (int i = 0; i < num_bufs; i++) {
@@ -134,7 +130,6 @@ static void eth_rx_complete(void *iface, unsigned int num_bufs, void **cookies, 
 
     /* Notify the client */
     notify(state->rx_ring);
-    trace_extra_point_end(0, 1);
 }
 
 static struct raw_iface_callbacks ethdriver_callbacks = {
@@ -152,7 +147,6 @@ static struct raw_iface_callbacks ethdriver_callbacks = {
  */
 static void tx_send(void *iface)
 {
-    trace_extra_point_start(2);
     ZF_LOGW("We have packets that need to be sent");
     server_data_t *state = iface;
 
@@ -176,7 +170,6 @@ static void tx_send(void *iface)
 
     int error = reg_tx_cb(tx_send, state);
     ZF_LOGF_IF(error, "Unable to register transmit callback handler");
-    trace_extra_point_end(2, 1);
 }
 
 /**
@@ -284,13 +277,6 @@ int lwip_ethernet_async_server_init(ps_io_ops_t *io_ops, register_get_mac_server
 
     data->eth_driver->cb_cookie = data;
     data->eth_driver->i_cb = ethdriver_callbacks;
-
-    error = trace_extra_point_register_name(0, "eth_rx_complete");
-    ZF_LOGF_IF(error, "Failed to register extra trace point 0");
-    error = trace_extra_point_register_name(1, "eth_tx_complete");
-    ZF_LOGF_IF(error, "Failed to register extra trace point 1");
-    error = trace_extra_point_register_name(2, "tx_send ntfn");
-    ZF_LOGF_IF(error, "Failed to register extra trace point 2");
 
     data->eth_driver->i_fn.get_mac(data->eth_driver, data->hw_mac);
     data->eth_driver->i_fn.raw_poll(data->eth_driver);

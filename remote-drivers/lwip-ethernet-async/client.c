@@ -186,7 +186,6 @@ static struct pbuf *create_interface_buffer(state_t *state, ethernet_buffer_t *b
  */
 static void rx_queue(void *cookie)
 {
-    trace_extra_point_start(0);
     ZF_LOGW("New packets have been received");
     state_t *state = cookie;
     /* get buffers from used RX ring */
@@ -215,8 +214,6 @@ static void rx_queue(void *cookie)
 
     int error = reg_rx_cb(rx_queue, state);
     ZF_LOGF_IF(error, "Unable to register handler");
-
-    trace_extra_point_end(0, 1);
 }
 
 
@@ -424,9 +421,6 @@ int lwip_ethernet_async_client_init(ps_io_ops_t *io_ops, get_mac_client_fn_t get
     ZF_LOGF_IF(error, "Failed to calloc tx ring data");
     data->tx_ring = tx_ring;
     client_init_tx(data, tx_avail, tx_used, tx_notify);
-
-    error = trace_extra_point_register_name(0, "rx_queue ntfn");
-    ZF_LOGF_IF(error, "Failed to register extra trace point 0");
 
     LWIP_MEMPOOL_INIT(RX_POOL);
 
