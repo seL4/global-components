@@ -1,15 +1,8 @@
 /*
- * Copyright 2019, Data61
- * Commonwealth Scientific and Industrial Research Organisation (CSIRO)
- * ABN 41 687 119 230.
+ * Copyright 2019, Data61, CSIRO (ABN 41 687 119 230)
  *
- * This software may be distributed and modified according to the terms of
- * the GNU General Public License version 2. Note that NO WARRANTY is provided.
- * See "LICENSE_GPLv2.txt" for details.
- *
- * @TAG(DATA61_GPL)
+ * SPDX-License-Identifier: GPL-2.0-only
  */
-
 #include <autoconf.h>
 
 #include <string.h>
@@ -25,7 +18,7 @@
 
 #define LWIP_TICK_MS 10
 
-bool timers_initialised;
+bool timers_initialised = false;
 
 uint64_t (*timer_get_time_fn)(void);
 
@@ -90,7 +83,7 @@ int init_lwip_post(ps_io_ops_t *io_ops, seL4_Word timer_badge, int (*timer_perio
 
     struct netif *netif = netif_find("e0");
     if (netif == NULL) {
-        ZF_LOGE("No device registered to call dhcp on or start");
+        ZF_LOGF("No device registered to call dhcp on or start");
     }
 
     timer_get_time_fn = timer_get_time;

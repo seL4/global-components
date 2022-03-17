@@ -1,15 +1,8 @@
 /*
- * Copyright 2020, Data61
- * Commonwealth Scientific and Industrial Research Organisation (CSIRO)
- * ABN 41 687 119 230.
+ * Copyright 2022, UNSW (ABN 57 195 873 179)
  *
- * This software may be distributed and modified according to the terms of
- * the BSD 2-Clause license. Note that NO WARRANTY is provided.
- * See "LICENSE_BSD2.txt" for details.
- *
- * @TAG(DATA61_BSD)
+ * SPDX-License-Identifier: BSD-2-Clause
  */
-
 #include <autoconf.h>
 #include <stdint.h>
 #include <string.h>
@@ -184,7 +177,7 @@ static struct pbuf *create_interface_buffer(state_t *state, ethernet_buffer_t *b
  * @param cookie client state data. 
  *
  */
-static void rx_queue(void *cookie)
+static void process_rx_queue(void *cookie)
 {
     ZF_LOGW("New packets have been received");
     state_t *state = cookie;
@@ -199,6 +192,7 @@ static void rx_queue(void *cookie)
         /* Little sanity check */
         if (buffer->dma_addr != encoded_addr) {
             ZF_LOGE("buffer->dma_addr != encoded_addr, dma_addr = %p, encoded_addr = %p", buffer->dma_addr, encoded_addr);
+            continue;
         }
 
         ZF_LOGW("processing packet %p, index %d, of length %d", buffer->dma_addr, buffer->index, len);
@@ -212,7 +206,7 @@ static void rx_queue(void *cookie)
         }
     }
 
-    int error = reg_rx_cb(rx_queue, state);
+    int error = reg_rx_cb(process_rx_queue, state);
     ZF_LOGF_IF(error, "Unable to register handler");
 }
 
@@ -351,10 +345,8 @@ static void client_init_tx(state_t *data, void *tx_avail, void *tx_used, notify_
  */
 static void client_init_rx(state_t *data, void *rx_avail, void *rx_used, register_cb_fn reg_rx)
 {
-    int error = reg_rx(rx_queue, data);
-    if (error) {
-        ZF_LOGE("Unable to register handler");
-    }
+    int error = reg_rx(process_rx_queue, data);
+    ZF_LOGF_IF(error, "Unable to register handler");
 
     reg_rx_cb = reg_rx;
 

@@ -1,15 +1,8 @@
 /*
- * Copyright 2020, Data61
- * Commonwealth Scientific and Industrial Research Organisation (CSIRO)
- * ABN 41 687 119 230.
+ * Copyright 2022, UNSW (ABN 57 195 873 179)
  *
- * This software may be distributed and modified according to the terms of
- * the GNU General Public License version 2. Note that NO WARRANTY is provided.
- * See "LICENSE_GPLv2.txt" for details.
- *
- * @TAG(DATA61_GPL)
+ * SPDX-License-Identifier: BSD-2-Clause
  */
-
 #include <autoconf.h>
 #include <stddef.h>
 #include <stdbool.h>
@@ -34,6 +27,7 @@
 #include <shared_ringbuffer/shared_ringbuffer.h>
 #include <shared_ringbuffer/gen_config.h>
 
+/* Ethernet MTU is 1500 bytes. 2048 is the next 2^n size */
 #define BUF_SIZE 2048
 
 typedef struct data {
@@ -126,6 +120,9 @@ static void eth_rx_complete(void *iface, unsigned int num_bufs, void **cookies, 
         /* Add buffers to used rx ring. */
         buff_desc_t *desc = cookies[i];
         int err = enqueue_used(state->rx_ring, desc->encoded_addr, (size_t)lens[i], desc->cookie);
+        if (err) {
+            ZF_LOGE(err, "Enqueue failed: the RX used ring is full");
+        }
     }
 
     /* Notify the client */
