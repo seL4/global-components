@@ -152,8 +152,8 @@ DeclareCAmkESConnector(
     seL4VirtQueues
     FROM
     seL4VirtQueues-from.template.c
-    TO
-    seL4VirtQueues-to.template.c
     FROM_HEADER
     seL4VirtQueues-from.template.h
+    TO
+    empty.c
 )
