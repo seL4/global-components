@@ -27,7 +27,6 @@ DeclareCAmkESComponent(
     SOURCES
     src/serial.c
     src/plat.c
-    src/server_virtqueue.c
     src/plat/${PlatPrefix}/plat.c
     LIBS
     virtqueue

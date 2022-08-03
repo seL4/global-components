@@ -16,23 +16,25 @@ import <VirtQueue/VirtQueue.camkes>;
 component SerialServer {
     control;
     has mutex serial;
-    provides PutChar processed_putchar;
-    provides PutChar raw_putchar;
-    provides Batch processed_batch;
-    provides Batch raw_batch;
-    provides GetChar getchar;
+    
+    /* Serial virtqueues */
+    maybe uses VirtQueueDev recv1;
+    maybe uses VirtQueueDrv send1;
+    maybe uses VirtQueueDev recv2;
+    maybe uses VirtQueueDrv send2;
+    maybe uses VirtQueueDev recv3;
+    maybe uses VirtQueueDrv send3;
+
+    attribute {
+        int send_id;
+        int recv_id;
+    } serial_layout[] = [];
+
     uses Timer timeout;
 
-    /* Virtqueue connection to faciliate read and write */
-    maybe uses VirtQueueDev read;
-    maybe uses VirtQueueDev write;
-    //emits Callback self;
-    emits Callback self_read;
-    emits Callback self_write;
-
-    //maybe consumes Callback serial_wait;
-    maybe consumes Callback serial_write_wait;
-    maybe consumes Callback serial_read_wait;
+    /* Callback for serial writes */
+    emits Callback self;
+    consumes Callback serial_wait;
 
     /* Size of the driver's heap */
     attribute int heap_size = 16 * 1024;
