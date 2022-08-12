@@ -21,7 +21,7 @@ component PCIConfigIO {
     provides PCIConfig pci_config;
     uses IOPort config_address;
     uses IOPort config_data;
-    uses PutChar putchar;
+    maybe uses PutChar putchar;
 
     /* Connect io ports to pci config space */
     composition {

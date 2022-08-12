@@ -24,15 +24,25 @@
 
 #define ESCAPE_CHAR '@'
 #define NUM_CLIENTS ARRAY_SIZE(serial_layout)
-#define BUFSIZE 4088
 
-typedef struct getchar_client {
-    virtqueue_device_t *recv_queue;
-    virtqueue_driver_t *send_queue;
+/* 4088 because the serial_shmem_t struct has to be 0x1000 bytes big */
+#define BUFSIZE (0x1000 - 2 * sizeof(uint32_t)) 
+
+/* This struct occupies exactly 1 page and represents the data in the shmem region */
+typedef struct serial_shmem {
+    uint32_t head;
+    uint32_t tail;
+    char buf[BUFSIZE];
+} serial_shmem_t;
+compile_time_assert(serial_shmem_1k_size, sizeof(serial_shmem_t) == 0x1000);
+
+typedef struct client {
+    void (*notify)(void);
+    volatile serial_shmem_t *recv_buf;
+    volatile serial_shmem_t *send_buf;
 } client_t;
 
 static client_t *clients = NULL;
-char gather_buf[BUFSIZE];
 
 static ps_io_ops_t io_ops;
 
@@ -268,68 +278,36 @@ static void internal_putchar(int b, int c)
     error = serial_unlock();
 }
 
-static void serial_notify_free_send(virtqueue_driver_t *queue)
+static int serial_notify_recv(int client)
 {
-    void *buf = NULL;
-    size_t buf_size = 0, wr_len = 0;
-    vq_flags_t flag;
-    virtqueue_ring_object_t handle;
-    while (virtqueue_get_used_buf(queue, &handle, &wr_len)) {
-        while (camkes_virtqueue_driver_gather_buffer(queue, &handle, &buf, &buf_size, &flag) >= 0) {
-            /* Clean up and free the buffer we allocated */
-            camkes_virtqueue_buffer_free(queue, buf);
+    volatile serial_shmem_t *buffer = clients[client].recv_buf;
+    while (buffer->head != buffer->tail) {
+        char ch = buffer->buf[buffer->head];
+        if (ch == '\n') {
+            internal_putchar(client, '\r');
         }
-    }
-}
-
-static int serial_notify_recv(int client, virtqueue_device_t *queue)
-{
-    int err;
-    void *buf = NULL;
-    size_t buf_size = 0;
-    vq_flags_t flag;
-    virtqueue_ring_object_t handle;
-
-    while (virtqueue_get_available_buf(queue, &handle)) {
-        size_t len = virtqueue_scattered_available_size(queue, &handle);
-        if (camkes_virtqueue_device_gather_copy_buffer(queue, &handle, gather_buf, len) < 0) {
-            ZF_LOGW("Dropping data for client %d: Can't gather vq buffer.", client);
-            continue;
-        }
-
-        /* Print to serial */
-        for (size_t i = 0; i < len; i++) {
-            char ch = gather_buf[i];
-            if (ch == '\n') {
-                internal_putchar(client, '\r');
-            }
-            internal_putchar(client, ch);
-        }
-        queue->notify();
+        internal_putchar(client, ch);
+        buffer->head = (buffer->head + 1) % BUFSIZE;
     }
 }
 
 /* This is called whenever one of our virtqueues get notified */
 void serial_wait_callback(void)
 {
-    /* Walk through all recv virtqueues and poll for data */
+    /* Walk through all recv buffers and poll for data */
     for (int i = 0; i < NUM_CLIENTS; i++) {
-        if (clients[i].recv_queue && VQ_DEV_POLL(clients[i].recv_queue)) {
-            serial_notify_recv(i, clients[i].recv_queue);
-        }
-        
-        if (clients[i].send_queue && VQ_DRV_POLL(clients[i].send_queue)) {
-            serial_notify_free_send(clients[i].send_queue);
+        if (clients[i].recv_buf->head != clients[i].recv_buf->tail) {
+            serial_notify_recv(i);
         }
     }
 }
 
 static void internal_raw_putchar(int id, int c)
 {
-    /* This is so overkill we need a better solution than this */
-    int err = camkes_virtqueue_driver_scatter_send_buffer(clients[id].send_queue, (void *) &c, 1);
-    ZF_LOGE_IF(err < 0, "Unknown error while enqueuing char for client %d", id);
-    clients[id].send_queue->notify();
+    volatile serial_shmem_t *putchar_buf = clients[id].send_buf;
+    putchar_buf->buf[putchar_buf->tail] = c;
+    putchar_buf->tail = (putchar_buf->tail + 1) % BUFSIZE;
+    clients[id].notify();
 }
 
 static void give_client_char(uint8_t c)
@@ -511,67 +489,34 @@ void pre_init(void)
     ZF_LOGF_IF(error, "Failed to unlock serial");
 }
 
-int virtqueue_init(void)
+int shmem_regions_init(void)
 {
     int err;
+
     /* Query what clients exist */
     clients = calloc(NUM_CLIENTS, sizeof(client_t));
 
     for (int i = 0; i < NUM_CLIENTS; i++) {
-        virtqueue_driver_t *vq_send;
-        virtqueue_device_t *vq_recv;
+        camkes_virtqueue_channel_t *recv_channel = get_virtqueue_channel(VIRTQUEUE_DEVICE, serial_layout[i].recv_id);
+        camkes_virtqueue_channel_t *send_channel = get_virtqueue_channel(VIRTQUEUE_DRIVER, serial_layout[i].send_id);
 
-        vq_recv = malloc(sizeof(*vq_recv));
-        if (!vq_recv) {
-            ZF_LOGE("Unable to alloc recv camkes-virtqueue for client: %d", i);
-            err = -1;
-            goto cleanup;
+        if (!recv_channel || !send_channel) {
+            ZF_LOGE("Failed to get channel");
+            return 1;
         }
 
-        vq_send = malloc(sizeof(*vq_send));
-        if (!vq_send) {
-            ZF_LOGE("Unable to alloc send camkes-virtqueue for client: %d", i);
-            err = -1;
-            goto cleanup;
-        }
-
-        /* Initialise read virtqueue */
-        err = camkes_virtqueue_device_init(vq_recv, serial_layout[i].recv_id);
-        if (err) {
-            ZF_LOGE("Unable to initialise serial server recv virtqueue for client %d", i);
-            goto cleanup;
-        }
-
-        /* Initialise write virtqueue */
-        err = camkes_virtqueue_driver_init(vq_send, serial_layout[i].send_id);
-        if (err) {
-            ZF_LOGE("Unable to initialise serial server send virtqueue for client %d", i);
-            goto cleanup;
-        }
-
-        clients[i].recv_queue = vq_recv;
-        clients[i].send_queue = vq_send;       
+        clients[i].notify = send_channel->notify;
+        clients[i].recv_buf = (serial_shmem_t *) recv_channel->channel_buffer;
+        clients[i].send_buf = (serial_shmem_t *) send_channel->channel_buffer;
     }
 
     return 0;
-
-cleanup:
-    for (int i = 0; i < num_clients; i++) {
-        if (clients[i].recv_queue) {
-            free(clients[i].recv_queue);
-        }
-        if (clients[i].send_queue) {
-            free(clients[i].send_queue);
-        }
-    }
-
-    return err;
 }
 
 void post_init(void)
 {
     if (num_registered_virtqueue_channels > 0) {
-        int res = virtqueue_init();
+        int res = shmem_regions_init();
         ZF_LOGE_IF(res, "Serial server does not support read and write virtqueues");
     }
 }

@@ -24,6 +24,8 @@ component SerialServer {
     maybe uses VirtQueueDrv send2;
     maybe uses VirtQueueDev recv3;
     maybe uses VirtQueueDrv send3;
+    maybe uses VirtQueueDev recv4;
+    maybe uses VirtQueueDrv send4;
 
     attribute {
         int send_id;
