@@ -26,7 +26,7 @@
 #define NUM_CLIENTS ARRAY_SIZE(serial_layout)
 
 /* 4088 because the serial_shmem_t struct has to be 0x1000 bytes big */
-#define BUFSIZE (0x1000 - 2 * sizeof(uint32_t)) 
+#define BUFSIZE (0x1000 - 2 * sizeof(uint32_t))
 
 /* This struct occupies exactly 1 page and represents the data in the shmem region */
 typedef struct serial_shmem {
