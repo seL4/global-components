@@ -24,7 +24,8 @@
 #include "server_virtqueue.h"
 
 #define ESCAPE_CHAR '@'
-#define MAX_CLIENTS 12
+#define MAX_CLIENTS 10
+#define MAX_BADGE   (MAX_CLIENTS-1)
 #define CLIENT_OUTPUT_BUFFER_SIZE 4096
 
 #define CTRL_C 0x03
@@ -73,13 +74,11 @@ const char *all_output_colours[2][MAX_CLIENTS] = {
     {
         /* Processed streams */
         ANSI_COLOR(RED),
-        ANSI_COLOR(GREEN),
         ANSI_COLOR(BLUE),
         ANSI_COLOR(MAGENTA),
         ANSI_COLOR(YELLOW),
         ANSI_COLOR(CYAN),
         ANSI_COLOR(RED, BOLD)
-        ANSI_COLOR(GREEN, BOLD),
         ANSI_COLOR(BLUE, BOLD),
         ANSI_COLOR(MAGENTA, BOLD),
         ANSI_COLOR(YELLOW, BOLD),
@@ -88,13 +87,11 @@ const char *all_output_colours[2][MAX_CLIENTS] = {
     {
         /* Raw streams */
         ANSI_COLOR2(RED, WHITE),
-        ANSI_COLOR2(GREEN, WHITE),
         ANSI_COLOR2(BLUE, WHITE),
         ANSI_COLOR2(MAGENTA, WHITE),
         ANSI_COLOR2(YELLOW, WHITE),
         ANSI_COLOR2(CYAN, WHITE),
         ANSI_COLOR2(RED, WHITE, BOLD)
-        ANSI_COLOR2(GREEN, WHITE, BOLD),
         ANSI_COLOR2(BLUE, WHITE, BOLD),
         ANSI_COLOR2(MAGENTA, WHITE, BOLD),
         ANSI_COLOR2(YELLOW, WHITE, BOLD),
@@ -176,7 +173,7 @@ static int is_newline(const uint8_t *c)
     return (c[0] == '\r' && c[1] == '\n') || (c[0] == '\n' && c[1] == '\r');
 }
 
-static int active_client = 0;
+static int active_client = -2;
 static int active_multiclients = 0;
 
 /* Try coalescing client output. This is intended for use with
@@ -313,9 +310,23 @@ static void internal_putchar(int b, int c)
     error = serial_unlock();
 }
 
+static getchar_client_t *getchar_client_from_badge(int badge)
+{
+    for (int i = 0; i < num_getchar_clients; i++) {
+        if (getchar_clients[i].client_id == badge) {
+            return &getchar_clients[i];
+        }
+    }
+    return NULL;
+}
+
 static void internal_raw_putchar(int id, int c)
 {
-    getchar_client_t *client = &getchar_clients[id];
+    getchar_client_t *client = getchar_client_from_badge(id);
+    if (NULL == client) {
+        ZF_LOGW("Client with badge %d not found", id);
+        return;
+    }
     uint32_t next_tail = (client->buf->tail + 1) % sizeof(client->buf->buf);
     if (next_tail == client->buf->head) {
         /* full */
@@ -406,7 +417,7 @@ static void handle_char(uint8_t c)
             last_out = -1;
             printf(COLOR_RESET "\r\n --- SerialServer help ---"
                    "\r\n Escape char: %c"
-                   "\r\n 0 - %-2d switches input to that client"
+                   "\r\n # -    switches to client #"
                    "\r\n ?      shows this help"
                    "\r\n s      dump seL4 scheduler (depends on CONFIG_DEBUG_BUILD)"
                    "\r\n m      simultaneous multi-client input"
@@ -414,16 +425,20 @@ static void handle_char(uint8_t c)
                    "\r\n          0: no debugging"
                    "\r\n          1: debug multi-input mode output coalescing"
                    "\r\n          2: debug flush_buffer_line"
-                   "\r\n", ESCAPE_CHAR, num_getchar_clients - 1);
+                   "\r\n", ESCAPE_CHAR);
             statemachine = 1;
             break;
         default:
             last_out = -1;
             statemachine = 1;
-            if (c >= '0' && c < '0' + num_getchar_clients) {
-                int client = c - '0';
-                printf(COLOR_RESET "\r\nSwitching input to %d\r\n", client);
-                active_client = client;
+            if (c >= '0' && c <= '9') {
+                int badge = c - '0';
+                if (NULL == getchar_client_from_badge(badge)) {
+                    printf(COLOR_RESET "\r\nClient %d is not valid\r\n", badge);
+                } else {
+                    printf(COLOR_RESET "\r\nSwitching input to %d\r\n", badge);
+                    active_client = badge;
+                }
             } else {
                 printf(COLOR_RESET "\r\nInvalid SerialServer command: %c"
                        "\r\nType %c? for help"
@@ -523,10 +538,17 @@ void pre_init(void)
         getchar_clients = calloc(num_getchar_clients, sizeof(getchar_client_t));
         for (int i = 0; i < num_getchar_clients; i++) {
             unsigned int badge = getchar_enumerate_badge(i);
-            assert(badge <= num_getchar_clients);
+            if (badge > MAX_BADGE) {
+                ZF_LOGE("Client badge %d exceeds range 0->%d", badge, MAX_BADGE);
+                continue;
+            }
             getchar_clients[i].client_id = badge;
             getchar_clients[i].buf = getchar_buf(badge);
             getchar_clients[i].last_head = -1;
+
+            if (-2 == active_client) {
+                active_client = badge;
+            }
         }
     }
     plat_post_init(&(io_ops.irq_ops));
