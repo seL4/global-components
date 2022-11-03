@@ -131,6 +131,14 @@ static size_t /*? me.interface.name ?*/_get_size(void) {
     return /*? dataport_size ?*/;
 }
 
+static size_t /*? me.interface.name ?*/_get_frame_size_bits(void) {
+    /*# register_shared_variable() in camkes-tool/runner/Context.py creates
+     *# array of frames of same size; therefore we can use the size of the
+     *# first one.
+     #*/
+    return /*? frame_objs[0].get_size_bits() ?*/;
+}
+
 static seL4_CapRights_t /*? me.interface.name ?*/_get_rights(void) {
     /*- if perm is none -*/
         return seL4_AllRights;
@@ -150,5 +158,6 @@ dataport_caps_handle_t /*? me.interface.name ?*/_handle = {
     .get_num_frame_caps = /*? me.interface.name ?*/_get_num_frame_caps,
     .get_frame_caps = /*? me.interface.name ?*/_get_frame_caps,
     .get_size = /*? me.interface.name ?*/_get_size,
+    .get_frame_size_bits = /*? me.interface.name ?*/_get_frame_size_bits,
     .get_rights = /*? me.interface.name ?*/_get_rights,
 };
