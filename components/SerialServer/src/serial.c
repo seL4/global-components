@@ -39,23 +39,6 @@ enum putchar_interfaces {
     NUM_PUTCHAR_INTERFACES,
 };
 
-/* TODO: have the MultiSharedData template generate a header with these */
-void getchar_emit(unsigned int id) WEAK;
-seL4_Word getchar_enumerate_badge(unsigned int id) WEAK;
-seL4_Word raw_putchar_enumerate_badge(unsigned int id) WEAK;
-seL4_Word raw_batch_enumerate_badge(unsigned int id) WEAK;
-seL4_Word processed_putchar_enumerate_badge(unsigned int id) WEAK;
-seL4_Word processed_batch_enumerate_badge(unsigned int id) WEAK;
-unsigned int getchar_num_badges() WEAK;
-unsigned int raw_putchar_num_badges() WEAK;
-unsigned int raw_batch_num_badges() WEAK;
-unsigned int processed_putchar_num_badges() WEAK;
-unsigned int processed_batch_num_badges() WEAK;
-void *getchar_buf(unsigned int id) WEAK;
-void *processed_batch_buf(unsigned int id) WEAK;
-void *raw_batch_buf(unsigned int id) WEAK;
-int getchar_largest_badge(void) WEAK;
-
 typedef seL4_Word(*enumerate_badge_t)(unsigned int);
 typedef unsigned int (*num_badges_t)(void);
 typedef void *(*get_buf_t)(seL4_Word);

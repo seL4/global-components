@@ -84,6 +84,8 @@ DeclareCAmkESConnector(
     seL4RPCDataportSignal-from.template.h
     TO
     seL4RPCDataportSignal-to.template.c
+    TO_HEADER
+    seL4RPCDataportSignal-to.template.h
 )
 
 DeclareCAmkESConnector(
