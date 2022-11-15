@@ -379,6 +379,9 @@ int server_init(ps_io_ops_t *io_ops)
     /* preallocate buffers */
     for (int i = 0; i < RX_BUFS; i++) {
         void *buf = ps_dma_alloc(&io_ops->dma_manager, BUF_SIZE, 4, 1, PS_MEM_NORMAL);
+        if (!buf) {
+            buf = ps_dma_alloc(&io_ops->dma_manager, BUF_SIZE, 4, 0, PS_MEM_NORMAL);
+        }
         assert(buf);
         memset(buf, 0, BUF_SIZE);
         uintptr_t phys = ps_dma_pin(&io_ops->dma_manager, buf, BUF_SIZE);
@@ -396,6 +399,9 @@ int server_init(ps_io_ops_t *io_ops)
         clients[client].dataport = client_buf(clients[client].client_id);
         for (int i = 0; i < CLIENT_TX_BUFS; i++) {
             void *buf = ps_dma_alloc(&io_ops->dma_manager, BUF_SIZE, 4, 1, PS_MEM_NORMAL);
+            if (!buf) {
+                buf = ps_dma_alloc(&io_ops->dma_manager, BUF_SIZE, 4, 0, PS_MEM_NORMAL);
+            }
             assert(buf);
             memset(buf, 0, BUF_SIZE);
             uintptr_t phys = ps_dma_pin(&io_ops->dma_manager, buf, BUF_SIZE);
