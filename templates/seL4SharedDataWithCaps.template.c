@@ -74,7 +74,7 @@ volatile /*? macros.dataport_type(me.interface.type) ?*/ * /*? me.interface.name
 
 int /*? me.interface.name ?*/_wrap_ptr(dataport_ptr_t *p, void *ptr) {
     if ((uintptr_t)ptr < (uintptr_t)/*? me.interface.name ?*/ ||
-            (uintptr_t)ptr >= (uintptr_t)/*? me.interface.name ?*/ + /*? macros.dataport_size(me.interface.type) ?*/) {
+            (uintptr_t)ptr - (uintptr_t)/*? me.interface.name ?*/ >= /*? macros.dataport_size(me.interface.type) ?*/) {
         return -1;
     }
     p->id = /*? id ?*/;
