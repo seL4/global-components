@@ -89,7 +89,7 @@
 /*- set shmem_symbol = shmem_symbol.replace('.', '_') -*/
 /*- set page_size = macros.get_page_size(shmem_size, options.architecture) -*/
 /*- if page_size == 0 -*/
-  /*? raise(TemplateError('Setting %s.%s_shmem_size does not meet minimum size and alignment requirements. %d must be at least %d and %d aligned' % (me.instance.name, me.interface.name, size, 4096, 4096))) ?*/
+  /*? raise(TemplateError('Setting %s.%s_shmem_size does not meet minimum size and alignment requirements. %d must be at least %d and %d aligned' % (me.instance.name, me.interface.name, shmem_size, 4096, 4096))) ?*/
 /*- endif -*/
 
 /*? macros.shared_buffer_symbol(sym=shmem_symbol, shmem_size=shmem_size, page_size=page_size) ?*/
