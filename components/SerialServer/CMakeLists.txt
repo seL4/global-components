@@ -27,6 +27,8 @@ else()
     set(PlatPrefix "${KernelPlatform}")
 endif()
 
+CAmkESAddTemplatesPath(templates)
+
 DeclareCAmkESComponent(
     SerialServer
     SOURCES
@@ -37,6 +39,8 @@ DeclareCAmkESComponent(
     LIBS
     virtqueue
     vswitch
+    TEMPLATE_HEADERS
+    seL4SerialServer.template.h
 )
 
 CAmkESAddCPPInclude("${CMAKE_CURRENT_LIST_DIR}/include/plat/${PlatPrefix}/")

@@ -24,20 +24,24 @@
 #include "server_virtqueue.h"
 
 #define ESCAPE_CHAR '@'
-#define MAX_CLIENTS 12
+#define MAX_CLIENTS 10
+#define MAX_BADGE   MAX_CLIENTS
 #define CLIENT_OUTPUT_BUFFER_SIZE 4096
 
 #define CTRL_C 0x03
 #define CTRL_Z 0x1A
 
-/* TODO: have the MultiSharedData template generate a header with these */
-void getchar_emit(unsigned int id) WEAK;
-seL4_Word getchar_enumerate_badge(unsigned int id) WEAK;
-unsigned int getchar_num_badges() WEAK;
-void *getchar_buf(unsigned int id) WEAK;
-void *processed_batch_buf(unsigned int id) WEAK;
-void *raw_batch_buf(unsigned int id) WEAK;
-int getchar_largest_badge(void) WEAK;
+enum putchar_interfaces {
+    RAW_PUTCHAR,
+    PROCESSED_PUTCHAR,
+    RAW_BATCH,
+    PROCESSED_BATCH,
+    NUM_PUTCHAR_INTERFACES,
+};
+
+typedef seL4_Word(*enumerate_badge_t)(unsigned int);
+typedef unsigned int (*num_badges_t)(void);
+typedef void *(*get_buf_t)(seL4_Word);
 
 typedef struct getchar_buffer {
     uint32_t head;
@@ -52,6 +56,18 @@ typedef struct getchar_client {
     volatile client_buffer_t *buf;
     uint32_t last_head;
 } getchar_client_t;
+
+typedef struct putchar_client {
+    unsigned int client_id;
+    client_buffer_t *buf;
+} putchar_client_t;
+
+typedef struct putchar_info {
+    enumerate_badge_t enumerate_badge;
+    num_badges_t num_badges;
+    get_buf_t get_buf;
+    const char *name;
+} putchar_info_t;
 
 static ps_io_ops_t io_ops;
 
@@ -68,18 +84,46 @@ static int has_data = 0;
 static int num_getchar_clients = 0;
 static getchar_client_t *getchar_clients = NULL;
 
+static putchar_client_t **putchar_clients;
+static int num_putchar_clients[NUM_PUTCHAR_INTERFACES];
+
+static putchar_info_t putchar_information[NUM_PUTCHAR_INTERFACES] = {
+    {
+        .num_badges = raw_putchar_num_badges,
+        .enumerate_badge = raw_putchar_enumerate_badge,
+        .get_buf = NULL,
+        .name = "raw_putchar",
+    },
+    {
+        .num_badges = processed_putchar_num_badges,
+        .enumerate_badge = processed_putchar_enumerate_badge,
+        .get_buf = NULL,
+        .name = "processed_putchar",
+    },
+    {
+        .num_badges = raw_batch_num_badges,
+        .enumerate_badge = raw_batch_enumerate_badge,
+        .get_buf = raw_batch_buf,
+        .name = "raw_batch",
+    },
+    {
+        .num_badges = processed_batch_num_badges,
+        .enumerate_badge = processed_batch_enumerate_badge,
+        .get_buf = processed_batch_buf,
+        .name = "processed_batch",
+    },
+};
+
 /* We predefine output colours for clients */
 const char *all_output_colours[2][MAX_CLIENTS] = {
     {
         /* Processed streams */
         ANSI_COLOR(RED),
-        ANSI_COLOR(GREEN),
         ANSI_COLOR(BLUE),
         ANSI_COLOR(MAGENTA),
         ANSI_COLOR(YELLOW),
         ANSI_COLOR(CYAN),
         ANSI_COLOR(RED, BOLD)
-        ANSI_COLOR(GREEN, BOLD),
         ANSI_COLOR(BLUE, BOLD),
         ANSI_COLOR(MAGENTA, BOLD),
         ANSI_COLOR(YELLOW, BOLD),
@@ -88,13 +132,11 @@ const char *all_output_colours[2][MAX_CLIENTS] = {
     {
         /* Raw streams */
         ANSI_COLOR2(RED, WHITE),
-        ANSI_COLOR2(GREEN, WHITE),
         ANSI_COLOR2(BLUE, WHITE),
         ANSI_COLOR2(MAGENTA, WHITE),
         ANSI_COLOR2(YELLOW, WHITE),
         ANSI_COLOR2(CYAN, WHITE),
         ANSI_COLOR2(RED, WHITE, BOLD)
-        ANSI_COLOR2(GREEN, WHITE, BOLD),
         ANSI_COLOR2(BLUE, WHITE, BOLD),
         ANSI_COLOR2(MAGENTA, WHITE, BOLD),
         ANSI_COLOR2(YELLOW, WHITE, BOLD),
@@ -176,7 +218,7 @@ static int is_newline(const uint8_t *c)
     return (c[0] == '\r' && c[1] == '\n') || (c[0] == '\n' && c[1] == '\r');
 }
 
-static int active_client = 0;
+static int active_client = -2;
 static int active_multiclients = 0;
 
 /* Try coalescing client output. This is intended for use with
@@ -313,9 +355,40 @@ static void internal_putchar(int b, int c)
     error = serial_unlock();
 }
 
+static getchar_client_t *getchar_client_from_badge(int badge)
+{
+    for (int i = 0; i < num_getchar_clients; i++) {
+        if (getchar_clients[i].client_id == badge) {
+            return &getchar_clients[i];
+        }
+    }
+    return NULL;
+}
+
+static putchar_client_t *putchar_client_from_badge(int badge, int interface)
+{
+    if (interface >= NUM_PUTCHAR_INTERFACES) {
+        ZF_LOGW("Interface number %d is invalid", interface);
+        return NULL;
+    }
+    putchar_client_t *putchar_intf_clients = putchar_clients[interface];
+    int num_clients = num_putchar_clients[interface];
+
+    for (int i = 0; i < num_clients; i++) {
+        if (putchar_intf_clients[i].client_id == badge) {
+            return &putchar_intf_clients[i];
+        }
+    }
+    return NULL;
+}
+
 static void internal_raw_putchar(int id, int c)
 {
-    getchar_client_t *client = &getchar_clients[id];
+    getchar_client_t *client = getchar_client_from_badge(id);
+    if (NULL == client) {
+        ZF_LOGW("Client with badge %d not found", id);
+        return;
+    }
     uint32_t next_tail = (client->buf->tail + 1) % sizeof(client->buf->buf);
     if (next_tail == client->buf->head) {
         /* full */
@@ -406,7 +479,7 @@ static void handle_char(uint8_t c)
             last_out = -1;
             printf(COLOR_RESET "\r\n --- SerialServer help ---"
                    "\r\n Escape char: %c"
-                   "\r\n 0 - %-2d switches input to that client"
+                   "\r\n # -    switches to client #"
                    "\r\n ?      shows this help"
                    "\r\n s      dump seL4 scheduler (depends on CONFIG_DEBUG_BUILD)"
                    "\r\n m      simultaneous multi-client input"
@@ -414,16 +487,21 @@ static void handle_char(uint8_t c)
                    "\r\n          0: no debugging"
                    "\r\n          1: debug multi-input mode output coalescing"
                    "\r\n          2: debug flush_buffer_line"
-                   "\r\n", ESCAPE_CHAR, num_getchar_clients - 1);
+                   "\r\n", ESCAPE_CHAR);
             statemachine = 1;
             break;
         default:
             last_out = -1;
             statemachine = 1;
-            if (c >= '0' && c < '0' + num_getchar_clients) {
+            if (c >= '0' && c <= '9') {
                 int client = c - '0';
-                printf(COLOR_RESET "\r\nSwitching input to %d\r\n", client);
-                active_client = client;
+                int badge = client + 1;
+                if (NULL == getchar_client_from_badge(badge)) {
+                    printf(COLOR_RESET "\r\nClient %d is not valid\r\n", client);
+                } else {
+                    printf(COLOR_RESET "\r\nSwitching input to %d\r\n", client);
+                    active_client = badge;
+                }
             } else {
                 printf(COLOR_RESET "\r\nInvalid SerialServer command: %c"
                        "\r\nType %c? for help"
@@ -523,12 +601,47 @@ void pre_init(void)
         getchar_clients = calloc(num_getchar_clients, sizeof(getchar_client_t));
         for (int i = 0; i < num_getchar_clients; i++) {
             unsigned int badge = getchar_enumerate_badge(i);
-            assert(badge <= num_getchar_clients);
+            if (badge > MAX_BADGE || !badge) {
+                ZF_LOGE("getchar badge %d invalid. "
+                        "Set client's interface_attributes to a value "
+                        "between 1 and %d", badge, MAX_BADGE);
+                continue;
+            }
             getchar_clients[i].client_id = badge;
             getchar_clients[i].buf = getchar_buf(badge);
             getchar_clients[i].last_head = -1;
+
+            if (-2 == active_client) {
+                active_client = badge;
+            }
         }
     }
+
+    putchar_clients = calloc(NUM_PUTCHAR_INTERFACES, sizeof(putchar_client_t *));
+    ZF_LOGF_IF(NULL == putchar_clients, "Failed to calloc putchar clients");
+
+    for (int i = 0; i < NUM_PUTCHAR_INTERFACES; i++) {
+        putchar_info_t putchar_info = putchar_information[i];
+        if (putchar_info.num_badges) {
+            num_putchar_clients[i] = putchar_info.num_badges();
+            putchar_clients[i] = calloc(num_putchar_clients[i], sizeof(putchar_client_t));
+            ZF_LOGF_IF(NULL == putchar_clients[i], "Failed to calloc putchar client entry");
+            for (int j = 0; j < num_putchar_clients[i]; j++) {
+                unsigned int badge = putchar_info.enumerate_badge(j);
+                if (badge > MAX_BADGE || !badge) {
+                    ZF_LOGE("%s badge %d invalid. "
+                            "Set client's interface_attributes to a value "
+                            "between 1 and %d", putchar_info.name, badge, MAX_BADGE);
+                    continue;
+                }
+                putchar_clients[i][j].client_id = badge;
+                if (putchar_info.get_buf) {
+                    putchar_clients[i][j].buf = putchar_info.get_buf(badge);
+                }
+            }
+        }
+    }
+
     plat_post_init(&(io_ops.irq_ops));
     /* Start regular heartbeat of 500ms */
     timeout_periodic(0, 500000000);
@@ -549,30 +662,49 @@ seL4_Word processed_putchar_get_sender_id(void) WEAK;
 void processed_putchar_putchar(int c)
 {
     seL4_Word n = processed_putchar_get_sender_id();
-    if (c == '\n') {
-        internal_putchar(n, '\r');
+    putchar_client_t *client = putchar_client_from_badge(n, PROCESSED_PUTCHAR);
+    if (NULL == client) {
+        ZF_LOGW("Client with badge %d not found", n);
+        return;
     }
-    internal_putchar((int)n, c);
+
+    if (c == '\n') {
+        internal_putchar(client->client_id - 1, '\r');
+    }
+    internal_putchar((int)client->client_id - 1, c);
 }
 
 seL4_Word raw_putchar_get_sender_id(void) WEAK;
 void raw_putchar_putchar(int c)
 {
     seL4_Word n = raw_putchar_get_sender_id();
-    internal_putchar((int)n + MAX_CLIENTS, c);
+    putchar_client_t *client = putchar_client_from_badge(n, RAW_PUTCHAR);
+    if (NULL == client) {
+        ZF_LOGW("Client with badge %d not found", n);
+        return;
+    }
+
+    internal_putchar((int)client->client_id - 1 + MAX_CLIENTS, c);
 }
 
 seL4_Word processed_batch_get_sender_id(void) WEAK;
 void processed_batch_batch(void)
 {
     seL4_Word n = processed_batch_get_sender_id();
-    client_buffer_t *putchar_buf = processed_batch_buf(n);
+    putchar_client_t *client = putchar_client_from_badge(n, PROCESSED_BATCH);
+    if (NULL == client) {
+        ZF_LOGW("Client with badge %d not found", n);
+        return;
+    }
+
+    client_buffer_t *putchar_buf = client->buf;
+
     while (putchar_buf->head != putchar_buf->tail) {
         char ch = putchar_buf->buf[putchar_buf->head];
         if (ch == '\n') {
-            internal_putchar(n, '\r');
+            internal_putchar(client->client_id - 1, '\r');
         }
-        internal_putchar((int)n, ch);
+        internal_putchar((int)client->client_id - 1, ch);
         putchar_buf->head = (putchar_buf->head + 1) % sizeof(putchar_buf->buf);
     }
 }
@@ -581,10 +713,17 @@ seL4_Word raw_batch_get_sender_id(void) WEAK;
 void raw_batch_batch(void)
 {
     seL4_Word n = raw_batch_get_sender_id();
-    client_buffer_t *putchar_buf = raw_batch_buf(n);
+    putchar_client_t *client = putchar_client_from_badge(n, RAW_BATCH);
+    if (NULL == client) {
+        ZF_LOGW("Client with badge %d not found", n);
+        return;
+    }
+
+    client_buffer_t *putchar_buf = client->buf;
+
     while (putchar_buf->head != putchar_buf->tail) {
         char ch = putchar_buf->buf[putchar_buf->head];
-        internal_putchar((int)n + MAX_CLIENTS, ch);
+        internal_putchar((int)client->client_id - 1 + MAX_CLIENTS, ch);
         putchar_buf->head = (putchar_buf->head + 1) % sizeof(putchar_buf->buf);
     }
 }
