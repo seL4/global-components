@@ -105,6 +105,11 @@ const char *all_output_colours[2][MAX_CLIENTS] = {
 #define COLOUR_INDEX_TO_STYLE(x) ((x) / (MAX_CLIENTS - 1))
 #define COLOUR_INDEX_TO_SLOT(x)  ((x) % MAX_CLIENTS)
 
+static void retag_client_prints(int client)
+{
+    printf("%s%s", COLOR_RESET, all_output_colours[COLOUR_INDEX_TO_STYLE(client)][COLOUR_INDEX_TO_SLOT(client)]);
+}
+
 static void flush_buffer(int b)
 {
     const char *col = all_output_colours[COLOUR_INDEX_TO_STYLE(b)][COLOUR_INDEX_TO_SLOT(b)];
@@ -113,7 +118,7 @@ static void flush_buffer(int b)
         return;
     }
     if (b != last_out) {
-        printf("%s%s", COLOR_RESET, col);
+        retag_client_prints(b);
         last_out = b;
     }
     for (i = 0; i < output_buffers_used[b]; i++) {
@@ -154,7 +159,7 @@ static bool flush_buffer_line(int b)
         return 0;
     }
     if (b != last_out) {
-        printf("%s%s", COLOR_RESET, all_output_colours[COLOUR_INDEX_TO_STYLE(b)][COLOUR_INDEX_TO_SLOT(b)]);
+        retag_client_prints(b);
         last_out = b;
     }
     int i;
@@ -294,7 +299,7 @@ static void internal_putchar(int b, int c)
          * it's probably going to overflow again, so let's avoid
          * that. */
         if (last_out != b) {
-            printf("%s%s", COLOR_RESET, all_output_colours[COLOUR_INDEX_TO_STYLE(b)][COLOUR_INDEX_TO_SLOT(b)]);
+            retag_client_prints(b);
             last_out = b;
         }
     } else if ((index >= 1 && is_newline(buffer + index - 1) && coalesce_status == -1)
