@@ -107,7 +107,12 @@ const char *all_output_colours[2][MAX_CLIENTS] = {
 
 static void retag_client_prints(int client)
 {
-    printf("%s%s", COLOR_RESET, all_output_colours[COLOUR_INDEX_TO_STYLE(client)][COLOUR_INDEX_TO_SLOT(client)]);
+    #if defined(CONFIG_LIB_PLAT_SUPPORT_SERIAL_TEXT_VGA)
+    // take 1 off to start at 0 and remove MAX_CLIENT offset we added earlier
+        printf("VM[%d]:", (client -1) - MAX_CLIENTS);
+    #else
+        printf("%s%s", COLOR_RESET, all_output_colours[COLOUR_INDEX_TO_STYLE(client)][COLOUR_INDEX_TO_SLOT(client)]);
+    #endif
 }
 
 static void flush_buffer(int b)
