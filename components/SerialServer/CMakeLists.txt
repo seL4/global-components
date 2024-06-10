@@ -24,7 +24,8 @@ if(KernelArchARM)
         set(PlatPrefix "arm_common")
     endif()
 else()
-    set(PlatPrefix "${KernelPlatform}")
+    set(OutputDevice "com")
+    set(PlatPrefix "${KernelPlatform}/${OutputDevice}")
 endif()
 
 DeclareCAmkESComponent(
