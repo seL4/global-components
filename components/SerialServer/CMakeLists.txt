@@ -24,7 +24,12 @@ if(KernelArchARM)
         set(PlatPrefix "arm_common")
     endif()
 else()
-    set(PlatPrefix "${KernelPlatform}")
+    if(LibPlatSupportX86ConsoleDeviceVGA)
+        set(OutputDevice "vga")
+    else()
+        set(OutputDevice "com")
+    endif()
+    set(PlatPrefix "${KernelPlatform}/${OutputDevice}")
 endif()
 
 DeclareCAmkESComponent(
