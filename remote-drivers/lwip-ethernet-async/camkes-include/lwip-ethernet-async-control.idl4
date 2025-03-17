@@ -1,0 +1,12 @@
+/*
+ * Copyright 2022, UNSW (ABN 57 195 873 179)
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+/* This needs to be here for the mac procedure */
+import <VirtQueue/VirtQueue.camkes>;
+
+procedure lwip_ethernet_async_control {
+    void mac(out uint8_t b1, out uint8_t b2, out uint8_t b3, out uint8_t b4, out uint8_t b5, out uint8_t b6);
+};

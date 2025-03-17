@@ -1,0 +1,15 @@
+/*
+ * Copyright 2020, Data61, CSIRO (ABN 41 687 119 230)
+ *
+ * SPDX-License-Identifier: GPL-2.0-only
+ */
+procedure LWIPRecv {
+    include "lwip/ip_addr.h";
+    int read(in int socket_fd, in int len, in int buffer_offset);
+    int recv(in int socket_fd, in int len, in int buffer_offset);
+    /* 
+     * src_addr will be returned in network order, (1.2.3.4 -> 0x04030201), 
+     * remote_port in non-network order (port 9000 -> (uint16_t) 9000)
+     */
+    int recvfrom(in int socket_fd, in int len, in int buffer_offset, out ip_addr_t src_addr, out u16_t remote_port);
+};
