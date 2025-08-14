@@ -13,9 +13,5 @@ CAmkESAddCPPInclude(camkes-include)
 CAmkESAddTemplatesPath(templates)
 
 DeclareCAmkESConnector(
-    SerialServerCamkesPutcharClient
-    FROM
-    SerialServer-camkes-putchar-client.template.c
-    TO
-    empty.c
+    SerialServerCamkesPutcharClient FROM SerialServer-camkes-putchar-client.template.c TO empty.c
 )

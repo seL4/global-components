@@ -10,10 +10,16 @@ cmake_minimum_required(VERSION 3.16.0)
 project(SerialServer C)
 
 if(KernelArchARM)
-    set(CAmkESDTS ON CACHE BOOL "" FORCE)
+    set(CAmkESDTS
+        ON
+        CACHE BOOL "" FORCE
+    )
 endif()
 
-set(CAmkESCPP ON CACHE BOOL "" FORCE)
+set(CAmkESCPP
+    ON
+    CACHE BOOL "" FORCE
+)
 
 # ARM platforms have similar serial configurations in their DTSes and can share
 # similar headers and code

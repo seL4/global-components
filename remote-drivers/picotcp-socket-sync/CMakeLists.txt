@@ -42,9 +42,5 @@ target_link_libraries(PicoServer-client INTERFACE picotcp-socket-sync)
 
 add_library(picotcp-socket-sync-server EXCLUDE_FROM_ALL server/server.c server/picoserver_client.c)
 target_link_libraries(
-    picotcp-socket-sync-server
-    sel4camkes
-    picotcp
-    picotcp-socket-sync
-    PicoServer-client
+    picotcp-socket-sync-server sel4camkes picotcp picotcp-socket-sync PicoServer-client
 )

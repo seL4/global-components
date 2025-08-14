@@ -12,35 +12,17 @@ CAmkESAddImportPath(interfaces plat_interfaces/${KernelPlatform})
 CAmkESAddTemplatesPath(templates)
 
 # Connector templates with FROM and TO only
-foreach(
-    connector
-    IN
-    ITEMS
-    seL4GlobalAsynch
-    seL4GlobalAsynchCallback
-    seL4MessageQueue
-    seL4RPCOverMultiSharedData
+foreach(connector IN ITEMS seL4GlobalAsynch seL4GlobalAsynchCallback seL4MessageQueue
+                           seL4RPCOverMultiSharedData
 )
     DeclareCAmkESConnector(
-        ${connector}
-        FROM
-        ${connector}-from.template.c
-        TO
-        ${connector}-to.template.c
+        ${connector} FROM ${connector}-from.template.c TO ${connector}-to.template.c
     )
 endforeach()
 
 # Connector templates with FROM, FROM_HEADER, TO and TO_HEADER
-foreach(
-    connector
-    IN
-    ITEMS
-    seL4RPCCallSignal
-    seL4RPCDataport
-    seL4RPCDataportSignal
-    seL4RPCNoThreads
-    seL4GPIOServer
-    seL4Ethdriver
+foreach(connector IN ITEMS seL4RPCCallSignal seL4RPCDataport seL4RPCDataportSignal seL4RPCNoThreads
+                           seL4GPIOServer seL4Ethdriver
 )
     DeclareCAmkESConnector(
         ${connector}
@@ -57,10 +39,7 @@ endforeach()
 
 # Specific connector templates not fitting with the schemes above
 DeclareCAmkESConnector(
-    seL4SharedDataWithCaps
-    FROM
-    seL4SharedDataWithCaps.template.c
-    TO
+    seL4SharedDataWithCaps FROM seL4SharedDataWithCaps.template.c TO
     seL4SharedDataWithCaps.template.c
 )
 
@@ -139,11 +118,7 @@ DeclareCAmkESConnector(
 )
 
 DeclareCAmkESConnector(
-    seL4DTBHardwareThreadless
-    FROM
-    empty.c
-    TO
-    seL4DTBHardwareThreadless.template.c
+    seL4DTBHardwareThreadless FROM empty.c TO seL4DTBHardwareThreadless.template.c
 )
 
 DeclareCAmkESConnector(seL4DTBHWThreadless TO seL4DTBHardwareThreadless.template.c)
