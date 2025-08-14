@@ -12,7 +12,15 @@ CAmkESAddImportPath(camkes-include)
 CAmkESAddCPPInclude(camkes-include)
 CAmkESAddTemplatesPath(templates)
 
-DeclareCAmkESConnector(PicotcpBaseInit FROM pico-init.template.c FROM_LIBS picotcp-init TO empty.c)
+DeclareCAmkESConnector(
+    PicotcpBaseInit
+    FROM
+    pico-init.template.c
+    FROM_LIBS
+    picotcp-init
+    TO
+    empty.c
+)
 
 add_library(picotcp-init EXCLUDE_FROM_ALL picotcp-init.c)
 target_link_libraries(picotcp-init sel4camkes picotcp)

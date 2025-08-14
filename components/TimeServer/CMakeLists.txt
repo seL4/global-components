@@ -9,9 +9,15 @@ cmake_minimum_required(VERSION 3.16.0)
 project(TimeServer C)
 
 if(KernelArchARM)
-    set(CAmkESDTS ON CACHE BOOL "" FORCE)
+    set(CAmkESDTS
+        ON
+        CACHE BOOL "" FORCE
+    )
 endif()
-set(CAmkESCPP ON CACHE BOOL "" FORCE)
+set(CAmkESCPP
+    ON
+    CACHE BOOL "" FORCE
+)
 
 if("${KernelPlatform}" STREQUAL "pc99")
     list(APPEND TimeServerPlatSources src/plat/pc99/plat.c)

@@ -12,7 +12,10 @@ CAmkESAddImportPath(camkes-include)
 CAmkESAddCPPInclude(camkes-include)
 CAmkESAddTemplatesPath(templates)
 
-set(CAmkESDTS ON CACHE BOOL "" FORCE)
+set(CAmkESDTS
+    ON
+    CACHE BOOL "" FORCE
+)
 
 DeclareCAmkESConnector(
     BPMPServerInit
