@@ -12,7 +12,7 @@ CAmkESAddImportPath(interfaces plat_interfaces/${KernelPlatform})
 CAmkESAddTemplatesPath(templates)
 
 # Connector templates with FROM and TO only
-foreach(connector IN ITEMS seL4GlobalAsynch seL4GlobalAsynchCallback seL4MessageQueue
+foreach(connector IN ITEMS seL4GlobalAsynchCallback seL4MessageQueue
                            seL4RPCOverMultiSharedData
 )
     DeclareCAmkESConnector(
@@ -41,6 +41,16 @@ endforeach()
 DeclareCAmkESConnector(
     seL4SharedDataWithCaps FROM seL4SharedDataWithCaps.template.c TO
     seL4SharedDataWithCaps.template.c
+)
+
+DeclareCAmkESConnector(
+    seL4GlobalAsynch
+    FROM
+    seL4GlobalAsynch-from.template.c
+    FROM_HEADER
+    seL4GlobalAsynch-from.template.h
+    TO
+    seL4GlobalAsynch-to.template.c
 )
 
 DeclareCAmkESConnector(
