@@ -108,8 +108,8 @@ static int done_init = 0;
 void client_emit(unsigned int client_id);
 unsigned int client_get_sender_id(void);
 unsigned int client_num_badges(void);
-unsigned int client_enumerate_badge(unsigned int i);
-void *client_buf(unsigned int client_id);
+seL4_Word client_enumerate_badge(unsigned int i);
+void *client_buf(seL4_Word client_id);
 bool client_has_mac(unsigned int client_id);
 void client_get_mac(unsigned int client_id, uint8_t *mac);
 
